@@ -1,0 +1,13 @@
+.venv
+.antlr
+src/C.interp
+src/C.tokens
+src/CLexer.interp
+src/clexer.rs
+src/CLexer.tokens
+src/clistener.rs
+src/cparser.rs
+
+# Added by cargo
+
+/target
