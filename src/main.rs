@@ -9,15 +9,12 @@ use crate::libs::cparser::CParser;
 use crate::subc2pv::SubC2PVListener;
 
 fn main() {
-    let input = String::from("int main() {
-    printf(\"Hello, World!\\n\");
-    return 0;
-}");
+    let input = "int main(void) { printf(\"Hello, World!\\n\"); return 0; }".into();
 
-    let lexer = CLexer::new(Box::new(InputStream::new(input)));
+    let lexer = CLexer::new(InputStream::new(input));
     let token_source = CommonTokenStream::new(lexer);
 
-    let mut parser = CParser::new(Box::new(token_source));
+    let mut parser = CParser::new(token_source);
     parser.add_parse_listener(Box::new(SubC2PVListener {}));
     let result = parser.compilationUnit();
 
