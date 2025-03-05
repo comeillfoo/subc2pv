@@ -1,13 +1,9 @@
 .venv
 .antlr
-src/C.interp
-src/C.tokens
-src/CLexer.interp
-src/clexer.rs
-src/CLexer.tokens
-src/clistener.rs
-src/cparser.rs
+src/libs/*
+!src/libs/mod.rs
 
 # Added by cargo
 
 /target
+/Cargo.lock
