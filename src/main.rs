@@ -15,7 +15,7 @@ fn main() {
     let token_source = CommonTokenStream::new(lexer);
 
     let mut parser = CParser::new(token_source);
-    parser.add_parse_listener(Box::new(SubC2PVListener {}));
+    parser.add_parse_listener(Box::new(SubC2PVListener::new()));
     let result = parser.compilationUnit();
 
     assert!(result.is_ok());
