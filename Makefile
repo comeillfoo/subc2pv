@@ -6,7 +6,7 @@ PARSERDIR=$(SRCDIR)/libs
 PARSER_FILES=C.interp C.tokens CLexer.interp clexer.rs CLexer.tokens \
 	clistener.rs cparser.rs
 
-all: C.g4
+all: SubC.g4
 	$(ANTLR4) -o $(PARSERDIR) -Dlanguage=Rust $<
 
 clean:
