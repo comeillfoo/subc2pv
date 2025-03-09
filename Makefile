@@ -3,8 +3,8 @@ ANTLR4=antlr4
 SRCDIR=src
 PARSERDIR=$(SRCDIR)/libs
 
-PARSER_FILES=C.interp C.tokens CLexer.interp clexer.rs CLexer.tokens \
-	clistener.rs cparser.rs
+PARSER_FILES=SubC.interp SubC.tokens SubCLexer.interp subclexer.rs SubCLexer.tokens \
+	subclistener.rs subcparser.rs
 
 all: SubC.g4
 	$(ANTLR4) -o $(PARSERDIR) -Dlanguage=Rust $<
