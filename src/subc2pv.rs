@@ -29,7 +29,7 @@ impl<'input> SubC2PVListener {
 impl<'input> ParseTreeListener<'input, SubCParserContextType> for SubC2PVListener {
     fn enter_every_rule(&mut self, ctx: &dyn SubCParserContext<'input>) {
         println!(
-            "rule entered {}",
+            "dbg: rule entered {}",
             subcparser::ruleNames
                 .get(ctx.get_rule_index())
                 .unwrap_or(&"error")
