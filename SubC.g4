@@ -10,14 +10,15 @@ translationUnit
     ;
 
 externalDeclaration
-    : functionDefinition
-    // | declaration // TODO: implement for struct and enum and typedef
-    | ';' // stray ;
+    : functionDeclarationOrDefinition
+    // | structOrUnionDeclarationDefinition
+    // | enumerationDeclaration
+    // | enumerationDefinition
+    // | typeAliasDefinition
     ;
 
-// ==== function begin ====
-functionDefinition
-    : functionDeclarationSpecifier* returnType Identifier '(' (parameterDeclaration (',' parameterDeclaration)*)? ')' compoundStatement
+functionDeclarationOrDefinition
+    : functionDeclarationSpecifier* returnType Identifier '(' (parameterDeclaration (',' parameterDeclaration)*)? ')' (';' | compoundStatement)
     ;
 
 functionDeclarationSpecifier
@@ -42,7 +43,6 @@ parameterDeclaration
 compoundStatement
     : '{' (blockItem+)? '}'
     ;
-// ==== function end ====
 
 // ==== variable declaration begin =====
 variableDeclaration
@@ -401,4 +401,39 @@ fragment CCharSequence
 fragment CChar
     : ~['\\\r\n]
     | EscapeSequence
+    ;
+
+MultiLineMacro
+    : '#' (~[\n]*? '\\' '\r'? '\n')+ ~ [\n]+ -> channel (HIDDEN)
+    ;
+
+Directive
+    : '#' ~ [\n]* -> channel (HIDDEN)
+    ;
+
+// ignore the following asm blocks:
+/*
+    asm
+    {
+        mfspr x, 286;
+    }
+ */
+AsmBlock
+    : 'asm' ~'{'* '{' ~'}'* '}' -> channel(HIDDEN)
+    ;
+
+Whitespace
+    : [ \t]+ -> channel(HIDDEN)
+    ;
+
+Newline
+    : ('\r' '\n'? | '\n') -> channel(HIDDEN)
+    ;
+
+BlockComment
+    : '/*' .*? '*/' -> channel(HIDDEN)
+    ;
+
+LineComment
+    : '//' ~[\r\n]* -> channel(HIDDEN)
     ;
