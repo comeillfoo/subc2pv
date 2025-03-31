@@ -8,7 +8,7 @@ mod lut;
 
 use crate::libs::subclexer::SubCLexer;
 use crate::libs::subcparser::SubCParser;
-use crate::subc2pv::SubC2PVListener;
+use crate::subc2pv::{SubC2PVListener, hash_code};
 
 fn usage(selfarg: String) -> u8 {
     println!(r#"Usage: {} [options] <path-to-file.c>
@@ -27,10 +27,13 @@ fn extract_proto(path: String, lut: Option<lut::LookupTable>) -> u8 {
             let token_source = CommonTokenStream::new(lexer);
 
             let mut parser = SubCParser::new(token_source);
-            parser.add_parse_listener(Box::new(SubC2PVListener::new()));
-            let result = parser.compilationUnit();
-
-            assert!(result.is_ok());
+            let listener_id = parser.add_parse_listener(Box::new(SubC2PVListener::new()));
+            let unit = parser.compilationUnit();
+            assert!(unit.is_ok());
+            let listener = parser.remove_parse_listener(listener_id);
+            if let Some(protocol) = listener.ctx2pv.get(&hash_code(unit.unwrap().as_ref())) {
+                println!("{}", protocol);
+            }
             0
         },
         Err(e) => e.raw_os_error().unwrap_or(1) as u8

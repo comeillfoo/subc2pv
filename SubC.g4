@@ -10,198 +10,23 @@ translationUnit
     ;
 
 externalDeclaration
-    : functionDeclarationOrDefinition
+    : enumDeclaration
+    | enumDefinition
+    // | functionDeclarationOrDefinition
     // | structOrUnionDeclarationDefinition
-    // | enumerationDeclaration
-    // | enumerationDefinition
     // | typeAliasDefinition
     ;
 
-functionDeclarationOrDefinition
-    : functionDeclarationSpecifier* returnType Identifier '(' (parameterDeclaration (',' parameterDeclaration)*)? ')' (';' | compoundStatement)
+enumDeclaration
+    : 'enum' Identifier ';'
     ;
 
-functionDeclarationSpecifier
-    : 'extern'
-    | 'static'
-    | 'inline'
-    | '_Noreturn'
-    | '__inline__' // GCC extension
-    | '__stdcall'
-    // | gccAttributeSpecifier
-    | '__declspec' '(' Identifier ')'
+enumDefinition
+    : 'enum' Identifier? '{' enumerator (',' enumerator)* ','? '}' ';'
     ;
 
-returnType
-    : typeName
-    ;
-
-parameterDeclaration
-    : typeName Identifier
-    ;
-
-compoundStatement
-    : '{' (blockItem+)? '}'
-    ;
-
-// ==== variable declaration begin =====
-variableDeclaration
-    : 'static'? typeName Identifier ('=' (primaryExpression | functionCallExpression))? ';'
-    ;
-
-primaryExpression
-    : Identifier
-    | Constant
-    | StringLiteral+
-    ;
-
-functionCallExpression
-    : Identifier '(' (expression (',' expression)*)? ')'
-    ;
-// ==== variable declaraction end ====
-
-blockItem
-    : statement
-    | variableDeclaration
-    ;
-
-statement
-    : compoundStatement
-    | assignmentStatement
-    ;
-
-assignmentStatement
-    : Identifier '=' expression ';'
-    ;
-
-expression
-    : conditionalExpression
-    ;
-
-conditionalExpression
-    : logicalOrExpression ('?' expression ':' conditionalExpression)?
-    ;
-
-logicalOrExpression
-    : logicalAndExpression ('||' logicalAndExpression)*
-    ;
-
-logicalAndExpression
-    : inclusiveOrExpression ('&&' inclusiveOrExpression)*
-    ;
-
-inclusiveOrExpression
-    : exclusiveOrExpression ('|' exclusiveOrExpression)*
-    ;
-
-exclusiveOrExpression
-    : andExpression ('^' andExpression)*
-    ;
-
-andExpression
-    : equalityExpression ('&' equalityExpression)*
-    ;
-
-equalityExpression
-    : relationalExpression (('==' | '!=') relationalExpression)*
-    ;
-
-relationalExpression
-    : shiftExpression (('<' | '>' | '<=' | '>=') shiftExpression)*
-    ;
-
-shiftExpression
-    : additiveExpression (('<<' | '>>') additiveExpression)*
-    ;
-
-additiveExpression
-    : multiplicativeExpression (('+' | '-') multiplicativeExpression)*
-    ;
-
-multiplicativeExpression
-    : castExpression (('*' | '/' | '%') castExpression)*
-    ;
-
-castExpression
-    : '__extension__'? '(' typeName ')' castExpression
-    | unaryExpression
-    ;
-
-unaryExpression
-    : ('++' | '--' | 'sizeof')* (
-        postfixExpression
-        | unaryOperator castExpression
-        | ('sizeof' | '_Alignof') '(' typeName ')'
-    )
-    ;
-
-unaryOperator
-    : '&'
-    | '*'
-    | '+'
-    | '-'
-    | '~'
-    | '!'
-    ;
-
-postfixExpression
-    : primaryExpression (
-        '[' expression ']'
-        | ('.' | '->') Identifier
-        | '++'
-        | '--'
-    )*
-    ;
-
-typeQualifier
-    : 'const'
-    | 'restrict'
-    | 'volatile'
-    | '_Atomic'
-    ;
-
-typeSpecifier
-    : 'void'
-    | 'char'
-    | 'short'
-    | 'int'
-    | 'long'
-    | 'float'
-    | 'double'
-    | 'signed'
-    | 'unsigned'
-    | '_Bool'
-    | '_Complex'
-    | '__m128'
-    | '__m128d'
-    | '__m128i'
-    | '__extension__' '(' ('__m128' | '__m128d' | '__m128i') ')'
-    // | atomicTypeSpecifier
-    // | structOrUnionSpecifier
-    // | enumSpecifier
-    // | typedefName
-    // | '__typeof__' '(' constantExpression ')' // GCC extension
-    ;
-
-typeName
-    : specifierQualifierList abstractDeclarator?
-    ;
-
-specifierQualifierList
-    : (typeSpecifier | typeQualifier) specifierQualifierList?
-    ;
-
-abstractDeclarator
-    : pointer
-    // | pointer? directAbstractDeclarator gccDeclaratorExtension*
-    ;
-
-pointer
-    : (('*' | '^') typeQualifierList?)+ // ^ - Blocks language extension
-    ;
-
-typeQualifierList
-    : typeQualifier+
+enumerator
+    : Identifier ('=' Constant)?
     ;
 
 // Lexer rules
