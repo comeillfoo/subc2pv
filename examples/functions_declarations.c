@@ -95,4 +95,4 @@ extern static inline void* buzz5(const int* x);
 extern static inline void* buzz6(int const* x);
 extern static inline void* buzz7(int* const x);
 extern static inline void* buzz8(int* restrict x, int* restrict y);
-extern static inline void* buzz8(int* restrict x, int* restrict y, ...);
+extern static inline void* buzz9(int* restrict x, int* restrict y, ...);
