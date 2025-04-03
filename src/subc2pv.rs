@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use antlr_rust::tree::{ParseTree, ParseTreeListener};
 
-use crate::libs::subcparser::{self, EnumDeclarationContextAttrs, EnumDefinitionContextAttrs, EnumeratorContextAttrs, SubCParserContext, SubCParserContextType};
+use crate::libs::subcparser::{self, EnumDeclarationContextAttrs, EnumDefinitionContextAttrs, EnumeratorContextAttrs, FunctionDeclarationContextAttrs, SubCParserContext, SubCParserContextType};
 use crate::libs::subclistener::SubCListener;
 
 pub fn hash_code<T: Sized>(obj: &T) -> usize {
@@ -12,7 +12,9 @@ pub struct SubC2PVListener {
     pub ctx2pv: HashMap<usize, String>,
     terms: HashSet<String>,
     enum_types: HashMap<String, Vec<String>>,
-    anon_enum_counter: usize
+    anon_enum_counter: usize,
+    declared_functions: HashMap<String, (Option<String>, Vec<(String, String)>)>,
+    defined_functions: HashMap<String, (Option<String>, Vec<(String, String)>)>
 }
 
 impl SubC2PVListener {
@@ -21,7 +23,9 @@ impl SubC2PVListener {
             ctx2pv: HashMap::new(),
             terms: HashSet::new(),
             enum_types: HashMap::new(),
-            anon_enum_counter: 0
+            anon_enum_counter: 0,
+            declared_functions: HashMap::new(),
+            defined_functions: HashMap::new()
         }
     }
 
@@ -71,8 +75,7 @@ impl<'input> SubCListener<'input> for SubC2PVListener {
                 .collect());
             return;
         }
-        panic!("Enumeration name {} already defined", ename);
-        // TODO: better handling
+        panic!("Enumeration name {} already defined", ename); // TODO: better handling
     }
 
     fn exit_enumDeclaration(&mut self, _ctx: &subcparser::EnumDeclarationContext<'input>) {
@@ -82,10 +85,17 @@ impl<'input> SubCListener<'input> for SubC2PVListener {
                 self.enum_types.insert(ename, vec![]);
                 return;
             }
-            panic!("Enumeration name {} already defined", ename);
-            // TODO: better handling
+            panic!("Enumeration name {} already defined", ename); // TODO: better handling
         }
         panic!("Enumeration declaration must have name");
+    }
+
+    fn exit_functionDeclaration(&mut self, _ctx: &subcparser::FunctionDeclarationContext<'input>) {
+        let function_name = _ctx.Identifier().unwrap().get_text();
+        if self.declared_functions.contains_key(&function_name) {
+            panic!("Function '{}' already defined", function_name);
+        }
+        self.declared_functions.insert(function_name, (None, vec![]));
     }
 
     fn exit_compilationUnit(&mut self, _ctx: &subcparser::CompilationUnitContext<'input>) {

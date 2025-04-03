@@ -2,19 +2,13 @@ grammar SubC;
 
 // Parser rules
 compilationUnit
-    : translationUnit? EOF
+    : declarationOrDefinition* EOF
     ;
 
-translationUnit
-    : externalDeclaration+
-    ;
-
-externalDeclaration
+declarationOrDefinition
     : enumDeclaration
     | enumDefinition
-    // | functionDeclarationOrDefinition
-    // | structOrUnionDeclarationDefinition
-    // | typeAliasDefinition
+    | functionDeclaration
     ;
 
 enumDeclaration
@@ -27,6 +21,71 @@ enumDefinition
 
 enumerator
     : Identifier ('=' Constant)?
+    ;
+
+functionDeclaration
+    : functionAttribute* entityType Identifier '(' ('void' | parametersDeclaration)? ')' ';'
+    ;
+
+functionAttribute
+    : 'inline'
+    | 'static'
+    | 'extern'
+    | '_Noreturn'
+    | '__inline__' // GCC extension
+    | '__stdcall'
+    | '__declspec' '(' Identifier ')'
+    ;
+
+parametersDeclaration
+    : parameterDeclaration (',' parameterDeclaration)* (',' '...')?
+    ;
+
+parameterDeclaration
+    : entityType Identifier?
+    ;
+
+entityType
+    : directType
+    | typeQualifier? directType '*'
+    | directType typeQualifier '*'
+    | directType '*' typeQualifier
+    ;
+
+directType
+    : 'void'
+    | numericType
+    | '_Bool'
+    | '_Complex'
+    | '__m128'
+    | '__m128d'
+    | '__m128i'
+    | '__extension__' '(' ('__m128' | '__m128d' | '__m128i') ')'
+    | enumType
+    ;
+
+numericType
+    : numericTypeSignedness? ('char' | 'short' | 'int' | 'long' | 'long' 'long')
+    | numericTypeSignedness
+    | 'float'
+    | 'double'
+    ;
+
+numericTypeSignedness
+    : 'signed'
+    | 'unsigned'
+    ;
+
+enumType
+    : 'enum' '{' enumerator (',' enumerator)* ','? '}'
+    | 'enum' Identifier
+    ;
+
+typeQualifier
+    : 'const'
+    | 'restrict'
+    | 'volatile'
+    | '_Atomic'
     ;
 
 // Lexer rules
