@@ -4,6 +4,9 @@ src/libs/*
 !src/libs/mod.rs
 
 # Added by cargo
-
 /target
 /Cargo.lock
+
+# For python project
+__pycache__
+/libs/*
