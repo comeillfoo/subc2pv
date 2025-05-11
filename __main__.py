@@ -4,6 +4,8 @@ import argparse
 import pathlib
 from typing import Optional
 
+from SubC2PV import SubC2PV
+
 
 def args_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser('subc2pv')
@@ -32,7 +34,9 @@ def main() -> int:
     basename: str = str(infile).removesuffix('.c')
     outfile: pathlib.Path = path_or_default(args.output, basename + '.pv')
     lut: pathlib.Path = path_or_default(args.lut, basename + '.lut')
-    # print(infile, outfile, lut)
+
+    subc2pv = SubC2PV.from_path(infile, lut)
+    subc2pv.extract_to_path(outfile)
     return 0
 
 

@@ -4,7 +4,7 @@ ANTLR4=antlr4
 PARSERDIR=libs
 
 PARSER_FILES=SubC.interp SubC.tokens SubCLexer.interp subclexer.rs SubCLexer.tokens \
-	subclistener.rs subcparser.rs
+	subclistener.rs subcparser.rs SubCLexer.py SubCListener.py SubCParser.py
 
 all: SubC.g4
 	$(ANTLR4) -o $(PARSERDIR) -Dlanguage=Python3 $<
@@ -15,4 +15,7 @@ update-deps:
 clean:
 	@rm -f $(addprefix $(PARSERDIR)/,$(PARSER_FILES))
 
-.PHONY: clean update-requirements
+clean-junk:
+	@rm -rf ./__pycache__
+
+.PHONY: clean update-requirements clean-junk
