@@ -24,7 +24,7 @@ class Translator:
         listener = SubC2PVListener()
         walker = antlr4.ParseTreeWalker()
         walker.walk(listener, root_node)
-        return Model()
+        return listener.model()
 
 
     @classmethod

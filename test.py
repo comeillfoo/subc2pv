@@ -2,6 +2,42 @@
 import unittest
 import pathlib
 
+from translator import Translator
+
+class TranslatorTestCases(unittest.TestCase):
+    def test_empty_stream(self):
+        translator = Translator.from_line('')
+        model = translator.translate()
+        self.assertTrue(not model.functions, 'No functions should be parsed')
+        self.assertTrue(not model.preamble, 'No preamble should be generated')
+
+    def test_enum_declaration(self):
+        enum_names = [ 'T', 'asdfadsfsdf', '____', 'Mtypes', ]
+        for enum_name in enum_names:
+            translator = Translator.from_line(f'enum {enum_name};')
+            model = translator.translate()
+            self.assertTrue(not model.functions, 'No functions should be parsed')
+            self.assertEqual(model.preamble, f'type {enum_name}.\n')
+
+    def test_enum_definition(self):
+        enums = [
+            ('T', ('A', 'b', 'C')),
+            ('asdfasdf', ('asdff', 'aslkdnf')),
+            ('________', ('__')),
+            ('Mtypes', ('SEND', 'RECV', 'ACK', 'NACK'))
+        ]
+        for (enum_name, enum_consts) in enums:
+            lines = [f'enum {enum_name}', '{' ]
+            expected = [f'type {enum_name}.']
+            for enum_const in enum_consts:
+                lines.append(f'\t{enum_const},')
+                expected.append(f'const {enum_const}: {enum_name}.')
+            lines.append('};')
+            expected.append('\n')
+            translator = Translator.from_lines(lines)
+            model = translator.translate()
+            self.assertTrue(not model.functions, 'No functions should be parsed')
+            self.assertEqual(model.preamble, '\n'.join(expected))
 
 from lut import LookUpTable
 
