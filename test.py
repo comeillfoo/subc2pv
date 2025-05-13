@@ -36,8 +36,47 @@ class TranslatorTestCases(unittest.TestCase):
             expected.append('\n')
             translator = Translator.from_lines(lines)
             model = translator.translate()
-            self.assertTrue(not model.functions, 'No functions should be parsed')
+            self.assertTrue(not model.functions)
             self.assertEqual(model.preamble, '\n'.join(expected))
+
+    def test_struct_and_union_declarations(self):
+        names = [ '_', 'A', 'asdfkljdsfn', '_tmp8', 'message' ]
+        for name in names:
+            for ttype in ('struct', 'union'):
+                translator = Translator.from_line(f'{ttype} {name};')
+                model = translator.translate()
+                self.assertTrue(not model.functions)
+                self.assertEqual(model.preamble, f'type {name}.\n')
+
+    def test_empty_struct_and_union_definitions(self):
+        names = [ '_', 'A', 'asdfkljdsfn', '_tmp8', 'message' ]
+        for name in names:
+            for ttype in ('struct', 'union'):
+                translator = Translator.from_line(f'{ttype} {name} ' + '{ };')
+                model = translator.translate()
+                self.assertTrue(not model.functions)
+                expected = '\n'.join([f'type {name}.', '',
+                                      f'fun _{name}_init(): {name}.'])
+                self.assertEqual(model.preamble, expected)
+
+    def test_struct_and_union_with_single_enum_definition(self):
+        names = [ '_', 'A', 'asdfkljdsfn', '_tmp8', 'message' ]
+        for name in names:
+            for ttype in ('struct', 'union'):
+                translator = Translator.from_lines([
+                    f'{ttype} {name}',
+                    '{',
+                    '\tenum A x;',
+                    '};'
+                ])
+                model = translator.translate()
+                self.assertTrue(not model.functions)
+                expected = '\n'.join([
+                    f'type {name}.', '', f'fun _{name}_get_x(self: {name}): A.',
+                    f'fun _{name}_set_x(self: {name}, x: A): {name}.',
+                    f'fun _{name}_init(x: A): {name}.'])
+                self.assertEqual(model.preamble, expected)
+
 
 from lut import LookUpTable
 

@@ -8,8 +8,8 @@ compilationUnit
 declarationOrDefinition
     : enumDeclaration
     | enumDefinition
-    // | structDeclaration
-    // | structDefinition
+    | structOrUnionDeclaration
+    | structOrUnionDefinition
     ;
 
 enumDeclaration
@@ -24,9 +24,36 @@ enumerator
     : Identifier ('=' Constant)?
     ;
 
+structOrUnion
+    : 'struct'
+    | 'union'
+    ;
+
+structOrUnionDeclaration
+    : structOrUnion Identifier ';'
+    ;
+
+structOrUnionDefinition
+    : structOrUnion Identifier '{' field* '}' ';'
+    ;
+
+field
+    : typeName Identifier ';'
+    ;
+
 enumType
     : 'enum' '{' enumerator (',' enumerator)* ','? '}'
     | 'enum' Identifier
+    ;
+
+structOrUnionType
+    : structOrUnion '{' field* '}'
+    | structOrUnion Identifier
+    ;
+
+typeName
+    : enumType
+    | structOrUnionType
     ;
 
 // Lexer rules
