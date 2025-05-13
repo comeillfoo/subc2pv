@@ -10,7 +10,7 @@ class SubC2PVListener(SubCListener):
         super().__init__()
         self._tree = {}
         self._types_id = -1
-        self._types = []
+        self.globals = []
         self._model = Model()
 
     def model(self) -> Model:
@@ -22,11 +22,11 @@ class SubC2PVListener(SubCListener):
         return super().exitCompilationUnit(ctx)
 
     def exitDeclarationOrDefinition(self, ctx):
-        self._tree[ctx] = '\n'.join(self._types)
+        self._tree[ctx] = '\n'.join(self.globals)
         return super().exitDeclarationOrDefinition(ctx)
 
     def exitEnumDeclaration(self, ctx):
-        self._types.append(f'type {str(ctx.Identifier())}.\n')
+        self.globals.append(f'type {str(ctx.Identifier())}.\n')
         return super().exitEnumDeclaration(ctx)
 
     def _new_enumeration(self, name: str, ctx) -> str:
@@ -39,11 +39,11 @@ class SubC2PVListener(SubCListener):
 
     def exitEnumDefinition(self, ctx):
         tname = str(ctx.Identifier())
-        self._types.append(self._new_enumeration(tname, ctx))
+        self.globals.append(self._new_enumeration(tname, ctx))
         return super().exitEnumDefinition(ctx)
 
     def exitStructOrUnionDeclaration(self, ctx):
-        self._types.append(f'type {str(ctx.Identifier())}.\n')
+        self.globals.append(f'type {str(ctx.Identifier())}.\n')
         return super().exitStructOrUnionDeclaration(ctx)
 
     def _new_fielded_type(self, name: str, ctx) -> str:
@@ -62,7 +62,7 @@ class SubC2PVListener(SubCListener):
 
     def exitStructOrUnionDefinition(self, ctx):
         tname = str(ctx.Identifier())
-        self._types.append(self._new_fielded_type(tname, ctx))
+        self.globals.append(self._new_fielded_type(tname, ctx))
         return super().exitStructOrUnionDefinition(ctx)
 
     def exitTypeName(self, ctx):
@@ -78,7 +78,7 @@ class SubC2PVListener(SubCListener):
         tname = self._next_type_name() if is_anon else str(ctx.Identifier())
         self._tree[ctx] = tname
         if is_anon:
-            self._types.append(self._new_enumeration(tname, ctx))
+            self.globals.append(self._new_enumeration(tname, ctx))
         return super().exitEnumType(ctx)
 
     def exitStructOrUnionType(self, ctx):
@@ -86,5 +86,5 @@ class SubC2PVListener(SubCListener):
         tname = self._next_type_name() if is_anon else str(ctx.Identifier())
         self._tree[ctx] = tname
         if is_anon:
-            self._types.append(self._new_fielded_type(tname, ctx))
+            self.globals.append(self._new_fielded_type(tname, ctx))
         return super().exitStructOrUnionType(ctx)
