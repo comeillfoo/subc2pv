@@ -17,5 +17,6 @@ clean:
 
 clean-junk:
 	@rm -rf ./__pycache__
+	@rm -rf $(PARSERDIR)/__pycache__
 
 .PHONY: clean update-requirements clean-junk
