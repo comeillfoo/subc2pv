@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import unittest
 import pathlib
+from typing import Tuple
 
 from translator import Translator
 
@@ -48,11 +49,20 @@ class TranslatorTestCases(unittest.TestCase):
                 self.assertTrue(not model.functions)
                 self.assertEqual(model.preamble, f'type {name}.\n')
 
+    def _dict2fielded_def(self, name: str, fields: Tuple[str, str] = [],
+                          ttype: str = 'struct') -> str:
+        lines = [f'{ttype} {name}', '{']
+        for fname, ftype in fields:
+            lines.append(f'{ftype} {fname};')
+        lines.append('};')
+        return '\n'.join(lines)
+
     def test_empty_struct_and_union_definitions(self):
         names = [ '_', 'A', 'asdfkljdsfn', '_tmp8', 'message' ]
         for name in names:
             for ttype in ('struct', 'union'):
-                translator = Translator.from_line(f'{ttype} {name} ' + '{ };')
+                translator = Translator.from_line(
+                    self._dict2fielded_def(name, ttype=ttype))
                 model = translator.translate()
                 self.assertTrue(not model.functions)
                 expected = '\n'.join([f'type {name}.', '',
@@ -63,12 +73,8 @@ class TranslatorTestCases(unittest.TestCase):
         names = [ '_', 'A', 'asdfkljdsfn', '_tmp8', 'message' ]
         for name in names:
             for ttype in ('struct', 'union'):
-                translator = Translator.from_lines([
-                    f'{ttype} {name}',
-                    '{',
-                    '\tenum A x;',
-                    '};'
-                ])
+                translator = Translator.from_line(
+                    self._dict2fielded_def(name, [('x', 'enum A')], ttype))
                 model = translator.translate()
                 self.assertTrue(not model.functions)
                 expected = '\n'.join([
@@ -76,6 +82,50 @@ class TranslatorTestCases(unittest.TestCase):
                     f'fun _{name}_set_x(self: {name}, x: A): {name}.',
                     f'fun _{name}_init(x: A): {name}.'])
                 self.assertEqual(model.preamble, expected)
+
+    def test_structs_single_integer(self):
+        structs = [
+            ('_', ('x', 'int')),
+            ('A', ('x', 'char')),
+            ('client', ('port', 'short')),
+            ('server', ('addr', 'long')),
+            ('asf', ('field', '__m128')),
+            ('Q', ('PP9', '__m128d')),
+            ('WFD2', ('_qwerty_', '__m128i')),
+        ]
+
+        for sname, sfield in structs:
+            translator = Translator.from_line(self._dict2fielded_def(sname, [sfield]))
+            model = translator.translate()
+            self.assertTrue(not model.functions)
+            fname, _ = sfield
+            expected = '\n'.join([
+                f'type {sname}.', '', f'fun _{sname}_get_{fname}(self: {sname}): nat.',
+                f'fun _{sname}_set_{fname}(self: {sname}, {fname}: nat): {sname}.',
+                f'fun _{sname}_init({fname}: nat): {sname}.'])
+            self.assertEqual(model.preamble, expected)
+
+    def test_structs_single_bool(self):
+        structs = [
+            ('_', ('x', '_Bool')),
+            ('A', ('x', '_Bool')),
+            ('client', ('port', '_Bool')),
+            ('server', ('addr', '_Bool')),
+            ('asf', ('field', '_Bool')),
+            ('Q', ('PP9', '_Bool')),
+            ('WFD2', ('_qwerty_', '_Bool')),
+        ]
+
+        for sname, sfield in structs:
+            translator = Translator.from_line(self._dict2fielded_def(sname, [sfield]))
+            model = translator.translate()
+            self.assertTrue(not model.functions)
+            fname, _ = sfield
+            expected = '\n'.join([
+                f'type {sname}.', '', f'fun _{sname}_get_{fname}(self: {sname}): bool.',
+                f'fun _{sname}_set_{fname}(self: {sname}, {fname}: bool): {sname}.',
+                f'fun _{sname}_init({fname}: bool): {sname}.'])
+            self.assertEqual(model.preamble, expected)
 
 
 from lut import LookUpTable

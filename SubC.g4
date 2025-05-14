@@ -52,8 +52,20 @@ structOrUnionType
     ;
 
 typeName
-    : enumType
+    : builtinType
     | structOrUnionType
+    | enumType
+    ;
+
+builtinType
+    : 'char'
+    | 'short'
+    | 'int'
+    | 'long'
+    | '_Bool'
+    | '__m128'
+    | '__m128d'
+    | '__m128i'
     ;
 
 // Lexer rules

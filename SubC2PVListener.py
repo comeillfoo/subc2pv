@@ -88,3 +88,17 @@ class SubC2PVListener(SubCListener):
         if is_anon:
             self.globals.append(self._new_fielded_type(tname, ctx))
         return super().exitStructOrUnionType(ctx)
+
+    def exitBuiltinType(self, ctx):
+        trans_table = {
+            'char': 'nat',
+            'short': 'nat',
+            'int': 'nat',
+            'long': 'nat',
+            '_Bool': 'bool',
+            '__m128': 'nat',
+            '__m128d': 'nat',
+            '__m128i': 'nat',
+        }
+        self._tree[ctx] = trans_table[ctx.getText()]
+        return super().exitBuiltinType(ctx)
