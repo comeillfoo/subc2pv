@@ -95,7 +95,7 @@ class SubC2PVListener(SubCListener):
     def _funParams2pv(self, ctx: Any, anon: bool = False):
         params = {
             False: lambda types: zip(types, ctx.Identifier()),
-            True: lambda types: map(lambda p: (f'p{p[0]}', p[1]), enumerate(types)),
+            True: lambda types: map(lambda p: (p[1], f'p{p[0]}'), enumerate(types)),
         }
         _funParam2pv = lambda param: f'{param[1]}: {param[0]}'
         return ', '.join(map(_funParam2pv,

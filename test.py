@@ -10,6 +10,20 @@ class TranslatorTestCases(unittest.TestCase):
         '_tmp8', 'message', 'client', 'server', 'ASF', 'Q', 'WFD2', 'x', 'port',
         'addr', 'field', 'PP9', '__qwerty__' ]
 
+    TESTS_TYPES = {
+        '_Bool': 'bool',
+        'char': 'nat',
+        'short': 'nat',
+        'int': 'nat',
+        'long': 'nat',
+        '__m128': 'nat',
+        '__m128d': 'nat',
+        '__m128i': 'nat',
+        'enum _Enum': '_Enum',
+        'struct _Struct': '_Struct',
+        'union _Union': '_Union'
+    }
+
     def test_empty_stream(self):
         model = Translator.from_line('').translate()
         self.assertTrue(not model.functions, 'No functions should be parsed')
@@ -73,7 +87,7 @@ class TranslatorTestCases(unittest.TestCase):
                                 f'fun _{name}_init(): {name}.'])
         self.assertEqual(model.preamble, expected)
 
-    def _fielded_with_single_enum_definition_subtest(self, name: str, ttype: str):
+    def _fielded_with_single_enum_subtest(self, name: str, ttype: str):
         model = Translator.from_line(
             self._dict2fielded_def(name, [('x', 'enum A')], ttype)).translate()
         self.assertTrue(not model.functions)
@@ -124,31 +138,68 @@ class TranslatorTestCases(unittest.TestCase):
                 at_subtest(name, ttype, 'empty-definition',
                            self._fielded_empty_definition_subtest)
                 at_subtest(name, ttype, 'single-enum-definition',
-                           self._fielded_with_single_enum_definition_subtest)
+                           self._fielded_with_single_enum_subtest)
                 at_subtest(name, ttype, 'single-integer-definition',
                            self._fielded_single_integer_subtest)
                 at_subtest(name, ttype, 'single-bool-definition',
                            self._fielded_single_bool_subtest)
 
-    def _function_void_declaration_subtest(self, name: str):
-        model = Translator.from_line(f'static _Noreturn inline void {name}(void);').translate()
+    def _function_declare_void_0params(self, name: str, use_void: bool = False):
+        source = f'static _Noreturn inline void {name}({"void" if use_void else ""});'
+        model = Translator.from_line(source).translate()
         self.assertTrue(not model.preamble)
         self.assertEqual((name, f'let {name}() = 0.'), model.functions[0])
 
-    def _function_bool_declaration_subtest(self, name: str):
-        model = Translator.from_line(f'extern __stdcall __inline__ _Bool {name}();').translate()
-        self.assertTrue(not model.preamble)
-        self.assertEqual((name, f'fun {name}(): bool.'), model.functions[0])
+    def _function_declare_nonvoid_0params(self, name: str, use_void: bool = False):
+        tmplt = 'extern __stdcall __inline__ {} {}({});'
+        for rtype, pvtype in self.TESTS_TYPES.items():
+            source = tmplt.format(rtype, name, 'void' if use_void else '')
+            model = Translator.from_line(source).translate()
+            self.assertTrue(not model.preamble)
+            self.assertEqual((name, f'fun {name}(): {pvtype}.'), model.functions[0])
 
-    def test_single_non_void_function_declaration(self):
+    def _function_0params_declaration_subtest(self, name: str):
+        for use_void in (False, True):
+            self._function_declare_void_0params(name, use_void)
+            self._function_declare_nonvoid_0params(name, use_void)
+
+    def _function_declare_void_1param(self, name: str, anon: bool):
+        tmplt = 'void {}({});'
+        for ptype, pvtype in self.TESTS_TYPES.items():
+            param_name = 'p0' if anon else f'arg_{name}'
+            param = ptype + ('' if anon else f' {param_name}')
+            model = Translator.from_line(tmplt.format(name, param)).translate()
+            self.assertTrue(not model.preamble)
+            self.assertEqual((name, f'let {name}({param_name}: {pvtype}) = 0.'),
+                             model.functions[0])
+
+    def _function_declare_nonvoid_1param(self, name: str, anon: bool):
+        tmplt = 'static {} %s({});' % (name)
+        pname = 'p0' if anon else f'arg_{name}'
+        def _test_single(rtype: str, rpvtype: str, ptype: str, ppvtype: str):
+            param = ptype + ('' if anon else f' {pname}')
+            model = Translator.from_line(tmplt.format(rtype, param)).translate()
+            self.assertTrue(not model.preamble)
+            self.assertEqual((name, f'fun {name}({pname}: {ppvtype}): {rpvtype}.'),
+                             model.functions[0])
+        for rtype, rpvtype in self.TESTS_TYPES.items():
+            for ptype, ppvtype in self.TESTS_TYPES.items():
+                _test_single(rtype, rpvtype, ptype, ppvtype)
+
+    def _function_1param_declaration_subtest(self, name: str):
+        for anon in (False, True):
+            self._function_declare_void_1param(name, anon)
+            self._function_declare_nonvoid_1param(name, anon)
+
+    def test_single_function_declaration(self):
         def at_subtest(name: str, subtest: str, fun):
             with self.subTest(f'{subtest}:{name}'):
                 fun(name)
         for name in self.IDENTIFIERS:
-            at_subtest(name, 'function-void-declaration',
-                       self._function_void_declaration_subtest)
-            at_subtest(name, 'function-declaration-return-bool',
-                       self._function_bool_declaration_subtest)
+            at_subtest(name, 'function-noparams-declaration',
+                       self._function_0params_declaration_subtest)
+            at_subtest(name, 'function-single-param-declaration',
+                       self._function_1param_declaration_subtest)
 
 
 from lut import LookUpTable
