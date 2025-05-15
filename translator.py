@@ -6,13 +6,22 @@ from libs.SubCLexer import SubCLexer
 from libs.SubCParser import SubCParser
 from SubC2PVListener import SubC2PVListener
 
-from model import Model
-
+from model import Model, FunctionModel
 
 
 class Translator:
     def __init__(self, stream: antlr4.InputStream):
         self._stream = stream
+
+
+    def _listener2model(self, listener: SubC2PVListener) -> Model:
+        def _chain(*iterables):
+            for it in iterables:
+                for each in it:
+                    yield each
+        return Model('\n'.join(listener._globals),
+                     list(_chain(listener._functionsDeclarations.items(),
+                                 listener._functionsDefinitions.items())))
 
 
     def translate(self) -> Model:
@@ -24,7 +33,7 @@ class Translator:
         listener = SubC2PVListener()
         walker = antlr4.ParseTreeWalker()
         walker.walk(listener, root_node)
-        return listener.model()
+        return self._listener2model(listener)
 
 
     @classmethod

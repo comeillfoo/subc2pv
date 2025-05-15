@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import Tuple
+from typing import Tuple, Optional, Any
 
 from libs.SubCListener import SubCListener
 from model import Model
@@ -10,23 +10,12 @@ class SubC2PVListener(SubCListener):
         super().__init__()
         self._tree = {}
         self._types_id = -1
-        self.globals = []
-        self._model = Model()
-
-    def model(self) -> Model:
-        return self._model
-
-    def exitCompilationUnit(self, ctx):
-        self._model.preamble = '\n'.join(map(self._tree.get,
-                                             ctx.declarationOrDefinition()))
-        return super().exitCompilationUnit(ctx)
-
-    def exitDeclarationOrDefinition(self, ctx):
-        self._tree[ctx] = '\n'.join(self.globals)
-        return super().exitDeclarationOrDefinition(ctx)
+        self._globals = []
+        self._functionsDeclarations = {}
+        self._functionsDefinitions = {}
 
     def exitEnumDeclaration(self, ctx):
-        self.globals.append(f'type {str(ctx.Identifier())}.\n')
+        self._globals.append(f'type {str(ctx.Identifier())}.\n')
         return super().exitEnumDeclaration(ctx)
 
     def _new_enumeration(self, name: str, ctx) -> str:
@@ -39,11 +28,11 @@ class SubC2PVListener(SubCListener):
 
     def exitEnumDefinition(self, ctx):
         tname = str(ctx.Identifier())
-        self.globals.append(self._new_enumeration(tname, ctx))
+        self._globals.append(self._new_enumeration(tname, ctx))
         return super().exitEnumDefinition(ctx)
 
     def exitStructOrUnionDeclaration(self, ctx):
-        self.globals.append(f'type {str(ctx.Identifier())}.\n')
+        self._globals.append(f'type {str(ctx.Identifier())}.\n')
         return super().exitStructOrUnionDeclaration(ctx)
 
     def _new_fielded_type(self, name: str, ctx) -> str:
@@ -62,7 +51,7 @@ class SubC2PVListener(SubCListener):
 
     def exitStructOrUnionDefinition(self, ctx):
         tname = str(ctx.Identifier())
-        self.globals.append(self._new_fielded_type(tname, ctx))
+        self._globals.append(self._new_fielded_type(tname, ctx))
         return super().exitStructOrUnionDefinition(ctx)
 
     def exitTypeName(self, ctx):
@@ -78,7 +67,7 @@ class SubC2PVListener(SubCListener):
         tname = self._next_type_name() if is_anon else str(ctx.Identifier())
         self._tree[ctx] = tname
         if is_anon:
-            self.globals.append(self._new_enumeration(tname, ctx))
+            self._globals.append(self._new_enumeration(tname, ctx))
         return super().exitEnumType(ctx)
 
     def exitStructOrUnionType(self, ctx):
@@ -86,7 +75,7 @@ class SubC2PVListener(SubCListener):
         tname = self._next_type_name() if is_anon else str(ctx.Identifier())
         self._tree[ctx] = tname
         if is_anon:
-            self.globals.append(self._new_fielded_type(tname, ctx))
+            self._globals.append(self._new_fielded_type(tname, ctx))
         return super().exitStructOrUnionType(ctx)
 
     def exitBuiltinType(self, ctx):
@@ -102,3 +91,34 @@ class SubC2PVListener(SubCListener):
         }
         self._tree[ctx] = trans_table[ctx.getText()]
         return super().exitBuiltinType(ctx)
+
+    def _funParams2pv(self, ctx: Any, anon: bool = False):
+        params = {
+            False: lambda types: zip(types, ctx.Identifier()),
+            True: lambda types: map(lambda p: (f'p{p[0]}', p[1]), enumerate(types)),
+        }
+        _funParam2pv = lambda param: f'{param[1]}: {param[0]}'
+        return ', '.join(map(_funParam2pv,
+                             params[anon](map(self._tree.get, ctx.typeName()))))
+
+    def exitFunctionParamsDefinition(self, ctx):
+        self._tree[ctx] = self._funParams2pv(ctx)
+        return super().exitFunctionParamsDefinition(ctx)
+
+    def exitFunctionParamsDeclaration(self, ctx):
+        self._tree[ctx] = self._tree.get(ctx.functionParamsDefinition(),
+                                         self._funParams2pv(ctx, True))
+        return super().exitFunctionParamsDeclaration(ctx)
+
+    def exitVoidFunctionDeclaration(self, ctx):
+        fname = str(ctx.Identifier())
+        params = self._tree.get(ctx.functionParamsDeclaration(), '')
+        self._functionsDeclarations[fname] = f'let {fname}({params}) = 0.'
+        return super().exitVoidFunctionDeclaration(ctx)
+
+    def exitNonVoidFunctionDeclaration(self, ctx):
+        fname = str(ctx.Identifier())
+        rtype = self._tree[ctx.typeName()]
+        params = self._tree.get(ctx.functionParamsDeclaration(), '')
+        self._functionsDeclarations[fname] = f'fun {fname}({params}): {rtype}.'
+        return super().exitNonVoidFunctionDeclaration(ctx)

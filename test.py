@@ -6,48 +6,56 @@ from typing import Tuple
 from translator import Translator
 
 class TranslatorTestCases(unittest.TestCase):
+    IDENTIFIERS = [ 'T', 'asdfadsfsdf', '____', 'Mtypes', '_', 'A', 'asdfkljdsfn',
+        '_tmp8', 'message', 'client', 'server', 'ASF', 'Q', 'WFD2', 'x', 'port',
+        'addr', 'field', 'PP9', '__qwerty__' ]
+
     def test_empty_stream(self):
-        translator = Translator.from_line('')
-        model = translator.translate()
+        model = Translator.from_line('').translate()
         self.assertTrue(not model.functions, 'No functions should be parsed')
         self.assertTrue(not model.preamble, 'No preamble should be generated')
 
+    def _enum_declaration_subtest(self, name: str):
+        model = Translator.from_line(f'enum {name};').translate()
+        self.assertTrue(not model.functions, 'No functions should be parsed')
+        self.assertEqual(model.preamble, f'type {name}.\n')
+
     def test_enum_declaration(self):
-        enum_names = [ 'T', 'asdfadsfsdf', '____', 'Mtypes', ]
-        for enum_name in enum_names:
-            translator = Translator.from_line(f'enum {enum_name};')
-            model = translator.translate()
-            self.assertTrue(not model.functions, 'No functions should be parsed')
-            self.assertEqual(model.preamble, f'type {enum_name}.\n')
+        for name in self.IDENTIFIERS:
+            with self.subTest(name):
+                self._enum_declaration_subtest(name)
+
+    def _enum_definition_subtest(self, name: str, consts: list[Tuple[str, str]]):
+        lines = [f'enum {name}', '{']
+        expected = [f'type {name}.']
+        for ec_name, ec_value in consts:
+            if ec_value != '':
+                ec_value = f' = {ec_value}'
+            lines.append(f'\t{ec_name}{ec_value},')
+            expected.append(f'const {ec_name}: {name}.')
+        lines.append('};')
+        expected.append('\n')
+
+        model = Translator.from_lines(lines).translate()
+        self.assertTrue(not model.functions)
+        self.assertEqual(model.preamble, '\n'.join(expected))
 
     def test_enum_definition(self):
-        enums = [
-            ('T', ('A', 'b', 'C')),
-            ('asdfasdf', ('asdff', 'aslkdnf')),
-            ('________', ('__')),
-            ('Mtypes', ('SEND', 'RECV', 'ACK', 'NACK'))
+        const_sets = [
+            [ ('A', ''), ('b', ''), ('C', '') ],
+            [ ('adsff', '42'), ('aslkdnf', '')],
+            [ ('__', '0xDEADBEEF') ],
+            [ ('SEND', ''), ('RECV', '0b101'), ('ACK', ''), ('NACK', '0777') ]
         ]
-        for (enum_name, enum_consts) in enums:
-            lines = [f'enum {enum_name}', '{' ]
-            expected = [f'type {enum_name}.']
-            for enum_const in enum_consts:
-                lines.append(f'\t{enum_const},')
-                expected.append(f'const {enum_const}: {enum_name}.')
-            lines.append('};')
-            expected.append('\n')
-            translator = Translator.from_lines(lines)
-            model = translator.translate()
-            self.assertTrue(not model.functions)
-            self.assertEqual(model.preamble, '\n'.join(expected))
+        for name in self.IDENTIFIERS:
+            for consts in const_sets:
+                with self.subTest(f'{name}: {consts}'):
+                    self._enum_definition_subtest(name, consts)
 
-    def test_struct_and_union_declarations(self):
-        names = [ '_', 'A', 'asdfkljdsfn', '_tmp8', 'message' ]
-        for name in names:
-            for ttype in ('struct', 'union'):
-                translator = Translator.from_line(f'{ttype} {name};')
-                model = translator.translate()
-                self.assertTrue(not model.functions)
-                self.assertEqual(model.preamble, f'type {name}.\n')
+    def _fielded_declaration_subtest(self, name: str, ttype: str):
+        model = Translator.from_line(f'{ttype} {name};').translate()
+        self.assertTrue(not model.functions)
+        self.assertEqual(model.preamble, f'type {name}.\n')
 
     def _dict2fielded_def(self, name: str, fields: Tuple[str, str] = [],
                           ttype: str = 'struct') -> str:
@@ -57,75 +65,90 @@ class TranslatorTestCases(unittest.TestCase):
         lines.append('};')
         return '\n'.join(lines)
 
-    def test_empty_struct_and_union_definitions(self):
-        names = [ '_', 'A', 'asdfkljdsfn', '_tmp8', 'message' ]
-        for name in names:
-            for ttype in ('struct', 'union'):
-                translator = Translator.from_line(
-                    self._dict2fielded_def(name, ttype=ttype))
-                model = translator.translate()
-                self.assertTrue(not model.functions)
-                expected = '\n'.join([f'type {name}.', '',
-                                      f'fun _{name}_init(): {name}.'])
-                self.assertEqual(model.preamble, expected)
+    def _fielded_empty_definition_subtest(self, name: str, ttype: str):
+        model = Translator.from_line(
+            self._dict2fielded_def(name, ttype=ttype)).translate()
+        self.assertTrue(not model.functions)
+        expected = '\n'.join([f'type {name}.', '',
+                                f'fun _{name}_init(): {name}.'])
+        self.assertEqual(model.preamble, expected)
 
-    def test_struct_and_union_with_single_enum_definition(self):
-        names = [ '_', 'A', 'asdfkljdsfn', '_tmp8', 'message' ]
-        for name in names:
-            for ttype in ('struct', 'union'):
-                translator = Translator.from_line(
-                    self._dict2fielded_def(name, [('x', 'enum A')], ttype))
-                model = translator.translate()
-                self.assertTrue(not model.functions)
-                expected = '\n'.join([
-                    f'type {name}.', '', f'fun _{name}_get_x(self: {name}): A.',
-                    f'fun _{name}_set_x(self: {name}, x: A): {name}.',
-                    f'fun _{name}_init(x: A): {name}.'])
-                self.assertEqual(model.preamble, expected)
+    def _fielded_with_single_enum_definition_subtest(self, name: str, ttype: str):
+        model = Translator.from_line(
+            self._dict2fielded_def(name, [('x', 'enum A')], ttype)).translate()
+        self.assertTrue(not model.functions)
+        expected = '\n'.join([
+            f'type {name}.', '', f'fun _{name}_get_x(self: {name}): A.',
+            f'fun _{name}_set_x(self: {name}, x: A): {name}.',
+            f'fun _{name}_init(x: A): {name}.'])
+        self.assertEqual(model.preamble, expected)
 
-    def test_structs_single_integer(self):
-        structs = [
-            ('_', ('x', 'int')),
-            ('A', ('x', 'char')),
-            ('client', ('port', 'short')),
-            ('server', ('addr', 'long')),
-            ('asf', ('field', '__m128')),
-            ('Q', ('PP9', '__m128d')),
-            ('WFD2', ('_qwerty_', '__m128i')),
-        ]
+    def _fielded_single_integer_helper(self, name: str, ttype: str, fname: str,
+                                       ftype: str):
+        fielded_definition = self._dict2fielded_def(name, [(fname, ftype)], ttype)
+        translator = Translator.from_line(fielded_definition)
+        model = translator.translate()
+        self.assertTrue(not model.functions)
+        expected = '\n'.join([
+            f'type {name}.', '', f'fun _{name}_get_{fname}(self: {name}): nat.',
+            f'fun _{name}_set_{fname}(self: {name}, {fname}: nat): {name}.',
+            f'fun _{name}_init({fname}: nat): {name}.'])
+        self.assertEqual(model.preamble, expected)
 
-        for sname, sfield in structs:
-            translator = Translator.from_line(self._dict2fielded_def(sname, [sfield]))
-            model = translator.translate()
+    def _fielded_single_integer_subtest(self, name: str, ttype: str):
+        ftypes = ['char', 'short', 'int', 'long', '__m128', '__m128d', '__m128i']
+        for fname in self.IDENTIFIERS:
+            for ftype in ftypes:
+                self._fielded_single_integer_helper(name, ttype, fname, ftype)
+
+    def _fielded_single_bool_subtest(self, name: str, ttype: str):
+        for fname in self.IDENTIFIERS:
+            fielded_definition = self._dict2fielded_def(name, [(fname, '_Bool')],
+                                                        ttype)
+            model = Translator.from_line(fielded_definition).translate()
             self.assertTrue(not model.functions)
-            fname, _ = sfield
             expected = '\n'.join([
-                f'type {sname}.', '', f'fun _{sname}_get_{fname}(self: {sname}): nat.',
-                f'fun _{sname}_set_{fname}(self: {sname}, {fname}: nat): {sname}.',
-                f'fun _{sname}_init({fname}: nat): {sname}.'])
+                f'type {name}.', '', f'fun _{name}_get_{fname}(self: {name}): bool.',
+                f'fun _{name}_set_{fname}(self: {name}, {fname}: bool): {name}.',
+                f'fun _{name}_init({fname}: bool): {name}.'])
             self.assertEqual(model.preamble, expected)
 
-    def test_structs_single_bool(self):
-        structs = [
-            ('_', ('x', '_Bool')),
-            ('A', ('x', '_Bool')),
-            ('client', ('port', '_Bool')),
-            ('server', ('addr', '_Bool')),
-            ('asf', ('field', '_Bool')),
-            ('Q', ('PP9', '_Bool')),
-            ('WFD2', ('_qwerty_', '_Bool')),
-        ]
+    def test_fielded(self):
+        def at_subtest(name: str, ttype: str, subtest: str, fun):
+            with self.subTest(f'{subtest}:{ttype}:{name}'):
+                fun(name, ttype)
+        for ttype in ('struct', 'union'):
+            for name in self.IDENTIFIERS:
+                at_subtest(name, ttype, 'declaration',
+                           self._fielded_declaration_subtest)
+                at_subtest(name, ttype, 'empty-definition',
+                           self._fielded_empty_definition_subtest)
+                at_subtest(name, ttype, 'single-enum-definition',
+                           self._fielded_with_single_enum_definition_subtest)
+                at_subtest(name, ttype, 'single-integer-definition',
+                           self._fielded_single_integer_subtest)
+                at_subtest(name, ttype, 'single-bool-definition',
+                           self._fielded_single_bool_subtest)
 
-        for sname, sfield in structs:
-            translator = Translator.from_line(self._dict2fielded_def(sname, [sfield]))
-            model = translator.translate()
-            self.assertTrue(not model.functions)
-            fname, _ = sfield
-            expected = '\n'.join([
-                f'type {sname}.', '', f'fun _{sname}_get_{fname}(self: {sname}): bool.',
-                f'fun _{sname}_set_{fname}(self: {sname}, {fname}: bool): {sname}.',
-                f'fun _{sname}_init({fname}: bool): {sname}.'])
-            self.assertEqual(model.preamble, expected)
+    def _function_void_declaration_subtest(self, name: str):
+        model = Translator.from_line(f'static _Noreturn inline void {name}(void);').translate()
+        self.assertTrue(not model.preamble)
+        self.assertEqual((name, f'let {name}() = 0.'), model.functions[0])
+
+    def _function_bool_declaration_subtest(self, name: str):
+        model = Translator.from_line(f'extern __stdcall __inline__ _Bool {name}();').translate()
+        self.assertTrue(not model.preamble)
+        self.assertEqual((name, f'fun {name}(): bool.'), model.functions[0])
+
+    def test_single_non_void_function_declaration(self):
+        def at_subtest(name: str, subtest: str, fun):
+            with self.subTest(f'{subtest}:{name}'):
+                fun(name)
+        for name in self.IDENTIFIERS:
+            at_subtest(name, 'function-void-declaration',
+                       self._function_void_declaration_subtest)
+            at_subtest(name, 'function-declaration-return-bool',
+                       self._function_bool_declaration_subtest)
 
 
 from lut import LookUpTable

@@ -10,6 +10,7 @@ declarationOrDefinition
     | enumDefinition
     | structOrUnionDeclaration
     | structOrUnionDefinition
+    | functionDeclaration
     ;
 
 enumDeclaration
@@ -66,6 +67,33 @@ builtinType
     | '__m128'
     | '__m128d'
     | '__m128i'
+    ;
+
+functionSpecifier
+    : 'inline'
+    | '_Noreturn'
+    | '__inline__' // GCC extension
+    | '__stdcall'
+    | '__declspec' '(' Identifier ')'
+    | 'extern'
+    | 'static'
+    ;
+
+functionParamsDefinition
+    : 'void'
+    | typeName Identifier (',' typeName Identifier)*
+    ;
+
+functionParamsDeclaration
+    : typeName (',' typeName)*
+    | functionParamsDefinition
+    ;
+
+functionDeclaration
+    : functionSpecifier* 'void' Identifier '('
+        functionParamsDeclaration? ')' ';' # voidFunctionDeclaration
+    | functionSpecifier* typeName Identifier '('
+        functionParamsDeclaration? ')' ';' # nonVoidFunctionDeclaration
     ;
 
 // Lexer rules
