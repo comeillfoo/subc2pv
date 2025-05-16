@@ -15,13 +15,8 @@ class Translator:
 
 
     def _listener2model(self, listener: SubC2PVListener) -> Model:
-        def _chain(*iterables):
-            for it in iterables:
-                for each in it:
-                    yield each
         return Model('\n'.join(listener._globals),
-                     list(_chain(listener._functionsDeclarations.items(),
-                                 listener._functionsDefinitions.items())))
+                     list(listener._functions.items()))
 
 
     def translate(self) -> Model:

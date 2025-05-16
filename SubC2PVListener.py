@@ -5,14 +5,22 @@ from libs.SubCListener import SubCListener
 from model import Model
 
 
+def protect_from_redeclaration(function):
+    def wrapper(self, ctx):
+        fname = str(ctx.Identifier())
+        if fname in self._functions:
+            raise Exception(f'Function {fname} already defined/declared')
+        function(self, ctx)
+    return wrapper
+
+
 class SubC2PVListener(SubCListener):
     def __init__(self):
         super().__init__()
         self._tree = {}
         self._types_id = -1
         self._globals = []
-        self._functionsDeclarations = {}
-        self._functionsDefinitions = {}
+        self._functions = {}
 
     def exitEnumDeclaration(self, ctx):
         self._globals.append(f'type {str(ctx.Identifier())}.\n')
@@ -110,15 +118,39 @@ class SubC2PVListener(SubCListener):
                                          self._funParams2pv(ctx, True))
         return super().exitFunctionParamsDeclaration(ctx)
 
-    def exitVoidFunctionDeclaration(self, ctx):
+    def _declare_function(self, ctx, is_void: bool = False) -> dict[str, str]:
         fname = str(ctx.Identifier())
         params = self._tree.get(ctx.functionParamsDeclaration(), '')
-        self._functionsDeclarations[fname] = f'let {fname}({params}) = 0.'
+        return { fname: ('let {}({}) = 0.' if is_void else 'fun {}({}):') \
+            .format(fname, params) }
+
+    @protect_from_redeclaration
+    def exitVoidFunctionDeclaration(self, ctx):
+        self._functions.update(self._declare_function(ctx, True))
         return super().exitVoidFunctionDeclaration(ctx)
 
+    protect_from_redeclaration
     def exitNonVoidFunctionDeclaration(self, ctx):
-        fname = str(ctx.Identifier())
-        rtype = self._tree[ctx.typeName()]
-        params = self._tree.get(ctx.functionParamsDeclaration(), '')
-        self._functionsDeclarations[fname] = f'fun {fname}({params}): {rtype}.'
+        name, body = self._declare_function(ctx).popitem()
+        self._functions[name] = body + f' {self._tree[ctx.typeName()]}.'
         return super().exitNonVoidFunctionDeclaration(ctx)
+
+    def _define_function(self, ctx, is_void: bool = False) -> dict[str, str]:
+        fname = str(ctx.Identifier())
+        params = self._tree.get(ctx.functionParamsDefinition(), '')
+        if not is_void:
+            params += f'{"" if not params else ", "}_ret_ch: channel'
+        body = self._tree.get(ctx.compoundStatement(), '0')
+        return { fname: ('let {}({}) = {}.').format(fname, params, body) }
+
+    def exitVoidFunctionDefinition(self, ctx):
+        self._functions.update(self._define_function(ctx, True))
+        return super().exitVoidFunctionDefinition(ctx)
+
+    def exitNonVoidFunctionDefinition(self, ctx):
+        self._functions.update(self._define_function(ctx))
+        return super().exitNonVoidFunctionDefinition(ctx)
+
+    def exitCompoundStatement(self, ctx):
+        self._tree[ctx] = '0' # TODO: translate statements
+        return super().exitCompoundStatement(ctx)

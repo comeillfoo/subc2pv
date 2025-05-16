@@ -11,6 +11,7 @@ declarationOrDefinition
     | structOrUnionDeclaration
     | structOrUnionDefinition
     | functionDeclaration
+    | functionDefinition
     ;
 
 enumDeclaration
@@ -94,6 +95,17 @@ functionDeclaration
         functionParamsDeclaration? ')' ';' # voidFunctionDeclaration
     | functionSpecifier* typeName Identifier '('
         functionParamsDeclaration? ')' ';' # nonVoidFunctionDeclaration
+    ;
+
+functionDefinition
+    : functionSpecifier* 'void' Identifier '('
+        functionParamsDefinition? ')' compoundStatement # voidFunctionDefinition
+    | functionSpecifier* typeName Identifier '('
+        functionParamsDefinition? ')' compoundStatement # nonVoidFunctionDefinition
+    ;
+
+compoundStatement
+    : '{' '}'
     ;
 
 // Lexer rules
