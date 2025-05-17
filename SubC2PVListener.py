@@ -158,5 +158,25 @@ class SubC2PVListener(SubCListener):
         return super().exitNonVoidFunctionDefinition(ctx)
 
     def exitCompoundStatement(self, ctx):
-        self._tree[ctx] = '0' # TODO: translate statements
+        block_items = ctx.blockItem()
+        self._tree[ctx] = '0' if block_items is None or not block_items \
+            else ';\n'.join(map(self._tree.get, filter(self._tree.__contains__,
+                                                       block_items)))
         return super().exitCompoundStatement(ctx)
+
+    def exitBlockItem(self, ctx):
+        if ctx.statement() is not None:
+            self._tree[ctx] = self._tree[ctx.statement()]
+        elif ctx.variableDeclaration() is not None:
+            self._tree[ctx] = self._tree[ctx.declaration()]
+        return super().exitBlockItem(ctx)
+
+    def exitNoInitializerVariable(self, ctx):
+        var_name = str(ctx.Identifier())
+        var_type = self._tree[ctx.typeSpecifier()]
+        self._tree[ctx] = f'new {var_name}: {var_type}'
+        return super().exitNoInitializerVariable(ctx)
+
+    def exitStatement(self, ctx):
+        self._tree[ctx] = '0' # TODO: add and parse statements
+        return super().exitStatement(ctx)

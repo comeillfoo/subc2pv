@@ -115,7 +115,25 @@ functionDefinition
     ;
 
 compoundStatement
-    : '{' '}'
+    : '{' blockItem* '}'
+    ;
+
+blockItem
+    : statement
+    | variableDeclaration
+    | enumDeclaration
+    | structOrUnionDeclaration
+    | functionDeclaration
+    ;
+
+variableDeclaration
+    : typeSpecifier Identifier ';'                         # noInitializerVariable
+    // | typeSpecifier Identifier '=' compoundInitializer ';' # compoundInitializerVariable
+    // | typeSpecifier Identifier '=' primaryExpression ';'   # objectDeclaration
+    ;
+
+statement
+    : compoundStatement
     ;
 
 // Lexer rules
