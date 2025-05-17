@@ -59,6 +59,7 @@ builtinType
     | 'int'
     | 'long'
     | '_Bool'
+    | 'bool'
     | '__m128'
     | '__m128d'
     | '__m128i'

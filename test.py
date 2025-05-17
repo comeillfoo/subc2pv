@@ -12,6 +12,7 @@ class TranslatorTestCases(unittest.TestCase):
 
     TESTS_TYPES = {
         '_Bool': 'bool',
+        'bool': 'bool',
         'char': 'nat',
         'short': 'nat',
         'int': 'nat',

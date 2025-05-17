@@ -90,6 +90,7 @@ class SubC2PVListener(SubCListener):
             'int': 'nat',
             'long': 'nat',
             '_Bool': 'bool',
+            'bool': 'bool',
             '__m128': 'nat',
             '__m128d': 'nat',
             '__m128i': 'nat',
