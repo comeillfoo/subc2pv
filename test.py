@@ -21,7 +21,14 @@ class TranslatorTestCases(unittest.TestCase):
         '__m128i': 'nat',
         'enum _Enum': '_Enum',
         'struct _Struct': '_Struct',
-        'union _Union': '_Union'
+        'union _Union': '_Union',
+        'void*': 'bitstring',
+        'const long*': 'bitstring',
+        'int const*': 'bitstring',
+        '_Bool***********************': 'bitstring',
+        'enum _Enum* restrict': 'bitstring',
+        'const short * const': 'bitstring',
+        'struct _Struct const * const': 'bitstring',
     }
 
     def test_empty_stream(self):
@@ -203,13 +210,13 @@ class TranslatorTestCases(unittest.TestCase):
                        self._function_1_arity_declarations_subtest)
 
 
-    def _function_define_void_0_arity(self, name: str, use_void: bool = False):
+    def _function_define_empty_void_0_arity(self, name: str, use_void: bool = False):
         source = '_Noreturn void %s(%s) { }' % (name, 'void' if use_void else '')
         model = Translator.from_line(source).translate()
         self.assertTrue(not model.preamble)
         self.assertEqual((name, f'let {name}() = 0.'), model.functions[0])
 
-    def _function_define_nonvoid_0_arity(self, name: str, use_void: bool = False):
+    def _function_define_empty_nonvoid_0_arity(self, name: str, use_void: bool = False):
         for rtype, _ in self.TESTS_TYPES.items():
             tmplt = '__stdcall %s %s(%s) { }' % (rtype, name,
                                                  'void' if use_void else '')
@@ -218,18 +225,18 @@ class TranslatorTestCases(unittest.TestCase):
             self.assertEqual((name, f'let {name}(_ret_ch: channel) = 0.'),
                              model.functions[0])
 
-    def _function_0_arity_definitions_subtest(self, name: str):
+    def _function_0_arity_definitions_empty_subtest(self, name: str):
         for use_void in (False, True):
-            self._function_define_void_0_arity(name, use_void)
-            self._function_define_nonvoid_0_arity(name, use_void)
+            self._function_define_empty_void_0_arity(name, use_void)
+            self._function_define_empty_nonvoid_0_arity(name, use_void)
 
     def test_single_function_definition(self):
         def at_subtest(name: str, subtest: str, fun):
             with self.subTest(f'{subtest}:{name}'):
                 fun(name)
         for name in self.IDENTIFIERS:
-            at_subtest(name, 'function-0_arity_definition',
-                       self._function_0_arity_definitions_subtest)
+            at_subtest(name, 'function-0_arity_definitions-empty',
+                       self._function_0_arity_definitions_empty_subtest)
 
 
 from lut import LookUpTable

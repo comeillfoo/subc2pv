@@ -40,7 +40,7 @@ structOrUnionDefinition
     ;
 
 field
-    : typeName Identifier ';'
+    : typeSpecifier Identifier ';'
     ;
 
 enumType
@@ -53,12 +53,6 @@ structOrUnionType
     | structOrUnion Identifier
     ;
 
-typeName
-    : builtinType
-    | structOrUnionType
-    | enumType
-    ;
-
 builtinType
     : 'char'
     | 'short'
@@ -68,6 +62,22 @@ builtinType
     | '__m128'
     | '__m128d'
     | '__m128i'
+    ;
+
+typeName
+    : builtinType
+    | structOrUnionType
+    | enumType
+    ;
+
+typeSpecifier
+    : 'const' typeSpecifier '*' ('restrict' | 'const')?
+    | typeSpecifier 'const' '*' ('restrict' | 'const')?
+    | typeSpecifier '*' ('restrict' | 'const')?
+    | 'const' 'void' '*' ('restrict' | 'const')?
+    | 'void' 'const' '*' ('restrict' | 'const')?
+    | 'void' '*' ('restrict' | 'const')?
+    | typeName
     ;
 
 functionSpecifier
@@ -82,25 +92,25 @@ functionSpecifier
 
 functionParamsDefinition
     : 'void'
-    | typeName Identifier (',' typeName Identifier)*
+    | typeSpecifier Identifier (',' typeSpecifier Identifier)*
     ;
 
 functionParamsDeclaration
-    : typeName (',' typeName)*
+    : typeSpecifier (',' typeSpecifier)*
     | functionParamsDefinition
     ;
 
 functionDeclaration
     : functionSpecifier* 'void' Identifier '('
         functionParamsDeclaration? ')' ';' # voidFunctionDeclaration
-    | functionSpecifier* typeName Identifier '('
+    | functionSpecifier* typeSpecifier Identifier '('
         functionParamsDeclaration? ')' ';' # nonVoidFunctionDeclaration
     ;
 
 functionDefinition
     : functionSpecifier* 'void' Identifier '('
         functionParamsDefinition? ')' compoundStatement # voidFunctionDefinition
-    | functionSpecifier* typeName Identifier '('
+    | functionSpecifier* typeSpecifier Identifier '('
         functionParamsDefinition? ')' compoundStatement # nonVoidFunctionDefinition
     ;
 

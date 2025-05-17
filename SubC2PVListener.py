@@ -45,7 +45,7 @@ class SubC2PVListener(SubCListener):
 
     def _new_fielded_type(self, name: str, ctx) -> str:
         def _ctx2field(_ctx) -> Tuple[str, str]:
-            return (str(_ctx.Identifier()), self._tree[_ctx.typeName()])
+            return (str(_ctx.Identifier()), self._tree[_ctx.typeSpecifier()])
         lines = [f'type {name}.', '']
         getter = 'fun _{name}_get_{fname}(self: {name}): {ftype}.'
         setter = 'fun _{name}_set_{fname}(self: {name}, {fname}: {ftype}): {name}.'
@@ -62,9 +62,6 @@ class SubC2PVListener(SubCListener):
         self._globals.append(self._new_fielded_type(tname, ctx))
         return super().exitStructOrUnionDefinition(ctx)
 
-    def exitTypeName(self, ctx):
-        self._tree[ctx] = self._tree[ctx.getChild(0)]
-        return super().exitTypeName(ctx)
 
     def _next_type_name(self) -> str:
         self._types_id += 1
@@ -100,6 +97,15 @@ class SubC2PVListener(SubCListener):
         self._tree[ctx] = trans_table[ctx.getText()]
         return super().exitBuiltinType(ctx)
 
+    def exitTypeName(self, ctx):
+        self._tree[ctx] = self._tree[ctx.getChild(0)]
+        return super().exitTypeName(ctx)
+
+    def exitTypeSpecifier(self, ctx):
+        type_ctx = ctx.typeName()
+        self._tree[ctx] = 'bitstring' if type_ctx is None else self._tree[type_ctx]
+        return super().exitTypeSpecifier(ctx)
+
     def _funParams2pv(self, ctx: Any, anon: bool = False):
         params = {
             False: lambda types: zip(types, ctx.Identifier()),
@@ -107,7 +113,7 @@ class SubC2PVListener(SubCListener):
         }
         _funParam2pv = lambda param: f'{param[1]}: {param[0]}'
         return ', '.join(map(_funParam2pv,
-                             params[anon](map(self._tree.get, ctx.typeName()))))
+                             params[anon](map(self._tree.get, ctx.typeSpecifier()))))
 
     def exitFunctionParamsDefinition(self, ctx):
         self._tree[ctx] = self._funParams2pv(ctx)
@@ -132,7 +138,7 @@ class SubC2PVListener(SubCListener):
     protect_from_redeclaration
     def exitNonVoidFunctionDeclaration(self, ctx):
         name, body = self._declare_function(ctx).popitem()
-        self._functions[name] = body + f' {self._tree[ctx.typeName()]}.'
+        self._functions[name] = body + f' {self._tree[ctx.typeSpecifier()]}.'
         return super().exitNonVoidFunctionDeclaration(ctx)
 
     def _define_function(self, ctx, is_void: bool = False) -> dict[str, str]:
