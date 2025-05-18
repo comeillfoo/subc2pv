@@ -10,12 +10,26 @@ from model import Model, FunctionModel
 
 
 class Translator:
-    def __init__(self, stream: antlr4.InputStream):
-        self._stream = stream
+    AUXILARY_GLOBALS = [
+        'fun _addressof(any_type): bitstring.', # &a
+        'fun _deref(any_type): bitstring.',     # *a
+        'fun _sizeof(any_type): nat.',          # sizeof(a)
+    ]
 
+    def __init__(self, stream: antlr4.InputStream,
+                 predefine_helpers: bool = True):
+        self._stream = stream
+        self._predefine_helpers = predefine_helpers
+
+    def _preamble(self, listener: SubC2PVListener) -> str:
+        _globals = []
+        if self._predefine_helpers:
+            _globals.extend(self.AUXILARY_GLOBALS)
+        _globals.extend(listener._globals)
+        return '\n'.join(_globals)
 
     def _listener2model(self, listener: SubC2PVListener) -> Model:
-        return Model('\n'.join(listener._globals),
+        return Model(self._preamble(listener),
                      list(listener._functions.items()))
 
 
@@ -32,13 +46,15 @@ class Translator:
 
 
     @classmethod
-    def from_path(cls, implementation: pathlib.Path):
-        return cls(antlr4.FileStream(implementation, encoding='utf-8'))
+    def from_path(cls, implementation: pathlib.Path,
+                  predefine_helpers: bool = True):
+        return cls(antlr4.FileStream(implementation, encoding='utf-8'),
+                   predefine_helpers)
 
     @classmethod
-    def from_lines(cls, lines: list[str]):
-        return cls(antlr4.InputStream('\n'.join(lines)))
+    def from_lines(cls, lines: list[str], predefine_helpers: bool = True):
+        return cls(antlr4.InputStream('\n'.join(lines)), predefine_helpers)
 
     @classmethod
-    def from_line(cls, line: str):
-        return cls(antlr4.InputStream(line))
+    def from_line(cls, line: str, predefine_helpers: bool = True):
+        return cls(antlr4.InputStream(line), predefine_helpers)

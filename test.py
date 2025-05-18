@@ -33,12 +33,17 @@ class TranslatorTestCases(unittest.TestCase):
     }
 
     def test_empty_stream(self):
-        model = Translator.from_line('').translate()
+        model = Translator.from_line('', False).translate()
         self.assertTrue(not model.functions, 'No functions should be parsed')
         self.assertTrue(not model.preamble, 'No preamble should be generated')
 
+    def test_empty_stream_with_helpers(self):
+        model = Translator.from_line('').translate()
+        self.assertTrue(not model.functions, 'No functions should be parsed')
+        self.assertEqual(model.preamble, '\n'.join(Translator.AUXILARY_GLOBALS))
+
     def _enum_declaration_subtest(self, name: str):
-        model = Translator.from_line(f'enum {name};').translate()
+        model = Translator.from_line(f'enum {name};', False).translate()
         self.assertTrue(not model.functions, 'No functions should be parsed')
         self.assertEqual(model.preamble, f'type {name}.\n')
 
@@ -58,7 +63,7 @@ class TranslatorTestCases(unittest.TestCase):
         lines.append('};')
         expected.append('\n')
 
-        model = Translator.from_lines(lines).translate()
+        model = Translator.from_lines(lines, False).translate()
         self.assertTrue(not model.functions)
         self.assertEqual(model.preamble, '\n'.join(expected))
 
@@ -75,7 +80,7 @@ class TranslatorTestCases(unittest.TestCase):
                     self._enum_definition_subtest(name, consts)
 
     def _fielded_declaration_subtest(self, name: str, ttype: str):
-        model = Translator.from_line(f'{ttype} {name};').translate()
+        model = Translator.from_line(f'{ttype} {name};', False).translate()
         self.assertTrue(not model.functions)
         self.assertEqual(model.preamble, f'type {name}.\n')
 
@@ -89,7 +94,7 @@ class TranslatorTestCases(unittest.TestCase):
 
     def _fielded_empty_definition_subtest(self, name: str, ttype: str):
         model = Translator.from_line(
-            self._dict2fielded_def(name, ttype=ttype)).translate()
+            self._dict2fielded_def(name, ttype=ttype), False).translate()
         self.assertTrue(not model.functions)
         expected = '\n'.join([f'type {name}.', '',
                                 f'fun _{name}_init(): {name}.'])
@@ -97,7 +102,8 @@ class TranslatorTestCases(unittest.TestCase):
 
     def _fielded_with_single_enum_subtest(self, name: str, ttype: str):
         model = Translator.from_line(
-            self._dict2fielded_def(name, [('x', 'enum A')], ttype)).translate()
+            self._dict2fielded_def(name, [('x', 'enum A')], ttype),
+            False).translate()
         self.assertTrue(not model.functions)
         expected = '\n'.join([
             f'type {name}.', '', f'fun _{name}_get_x(self: {name}): A.',
@@ -108,7 +114,7 @@ class TranslatorTestCases(unittest.TestCase):
     def _fielded_single_integer_helper(self, name: str, ttype: str, fname: str,
                                        ftype: str):
         fielded_definition = self._dict2fielded_def(name, [(fname, ftype)], ttype)
-        translator = Translator.from_line(fielded_definition)
+        translator = Translator.from_line(fielded_definition, False)
         model = translator.translate()
         self.assertTrue(not model.functions)
         expected = '\n'.join([
@@ -127,7 +133,7 @@ class TranslatorTestCases(unittest.TestCase):
         for fname in self.IDENTIFIERS:
             fielded_definition = self._dict2fielded_def(name, [(fname, '_Bool')],
                                                         ttype)
-            model = Translator.from_line(fielded_definition).translate()
+            model = Translator.from_line(fielded_definition, False).translate()
             self.assertTrue(not model.functions)
             expected = '\n'.join([
                 f'type {name}.', '', f'fun _{name}_get_{fname}(self: {name}): bool.',
@@ -154,7 +160,7 @@ class TranslatorTestCases(unittest.TestCase):
 
     def _function_declare_void_0_arity(self, name: str, use_void: bool = False):
         source = f'static _Noreturn inline void {name}({"void" if use_void else ""});'
-        model = Translator.from_line(source).translate()
+        model = Translator.from_line(source, False).translate()
         self.assertTrue(not model.preamble)
         self.assertEqual((name, f'let {name}() = 0.'), model.functions[0])
 
@@ -162,7 +168,7 @@ class TranslatorTestCases(unittest.TestCase):
         tmplt = 'extern __stdcall __inline__ {} %s(%s);' \
             % (name, 'void' if use_void else '')
         for rtype, pvtype in self.TESTS_TYPES.items():
-            model = Translator.from_line(tmplt.format(rtype)).translate()
+            model = Translator.from_line(tmplt.format(rtype), False).translate()
             self.assertTrue(not model.preamble)
             self.assertEqual((name, f'fun {name}(): {pvtype}.'),
                              model.functions[0])
@@ -177,7 +183,8 @@ class TranslatorTestCases(unittest.TestCase):
         for ptype, pvtype in self.TESTS_TYPES.items():
             param_name = 'p0' if anon else f'arg_{name}'
             param = ptype + ('' if anon else f' {param_name}')
-            model = Translator.from_line(tmplt.format(name, param)).translate()
+            model = Translator.from_line(tmplt.format(name, param),
+                                         False).translate()
             self.assertTrue(not model.preamble)
             self.assertEqual((name, f'let {name}({param_name}: {pvtype}) = 0.'),
                              model.functions[0])
@@ -187,7 +194,8 @@ class TranslatorTestCases(unittest.TestCase):
         pname = 'p0' if anon else f'arg_{name}'
         def _test_single(rtype: str, rpvtype: str, ptype: str, ppvtype: str):
             param = ptype + ('' if anon else f' {pname}')
-            model = Translator.from_line(tmplt.format(rtype, param)).translate()
+            model = Translator.from_line(tmplt.format(rtype, param),
+                                         False).translate()
             self.assertTrue(not model.preamble)
             self.assertEqual((name, f'fun {name}({pname}: {ppvtype}): {rpvtype}.'),
                              model.functions[0])
@@ -213,7 +221,7 @@ class TranslatorTestCases(unittest.TestCase):
 
     def _function_define_empty_void_0_arity(self, name: str, use_void: bool = False):
         source = '_Noreturn void %s(%s) { }' % (name, 'void' if use_void else '')
-        model = Translator.from_line(source).translate()
+        model = Translator.from_line(source, False).translate()
         self.assertTrue(not model.preamble)
         self.assertEqual((name, f'let {name}() = 0.'), model.functions[0])
 
@@ -221,7 +229,7 @@ class TranslatorTestCases(unittest.TestCase):
         for rtype, _ in self.TESTS_TYPES.items():
             tmplt = '__stdcall %s %s(%s) { }' % (rtype, name,
                                                  'void' if use_void else '')
-            model = Translator.from_line(tmplt).translate()
+            model = Translator.from_line(tmplt, False).translate()
             self.assertTrue(not model.preamble)
             self.assertEqual((name, f'let {name}(_ret_ch: channel) = 0.'),
                              model.functions[0])
