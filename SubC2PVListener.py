@@ -25,6 +25,8 @@ class SubC2PVListener(SubCListener):
         self._string_lits: dict[str, str] = {}
         self._string_lits_id = -1
 
+        self._tmpvar_id = -1
+
     def exitEnumDeclaration(self, ctx):
         self._globals.append(f'type {str(ctx.Identifier())}.\n')
         return super().exitEnumDeclaration(ctx)
@@ -93,6 +95,7 @@ class SubC2PVListener(SubCListener):
             'long': 'nat',
             '_Bool': 'bool',
             'bool': 'bool',
+            'longlong': 'nat',
             '__m128': 'nat',
             '__m128d': 'nat',
             '__m128i': 'nat',
@@ -149,7 +152,9 @@ class SubC2PVListener(SubCListener):
         params = self._tree.get(ctx.functionParamsDefinition(), '')
         if not is_void:
             params += f'{"" if not params else ", "}_ret_ch: channel'
-        body = self._tree.get(ctx.compoundStatement(), '0')
+        body: str = self._tree.get(ctx.compoundStatement(), '0').rstrip(';')
+        if body.endswith(' in '):
+            body += '0'
         return { fname: ('let {}({}) = {}.').format(fname, params, body) }
 
     def exitVoidFunctionDefinition(self, ctx):
@@ -163,8 +168,8 @@ class SubC2PVListener(SubCListener):
     def exitCompoundStatement(self, ctx):
         block_items = ctx.blockItem()
         self._tree[ctx] = '0' if block_items is None or not block_items \
-            else ';\n'.join(map(self._tree.get, filter(self._tree.__contains__,
-                                                       block_items)))
+            else '\n'.join(map(self._tree.get, filter(self._tree.__contains__,
+                                                      block_items)))
         return super().exitCompoundStatement(ctx)
 
     def exitBlockItem(self, ctx):
@@ -177,30 +182,80 @@ class SubC2PVListener(SubCListener):
     def exitNoInitializerVariable(self, ctx):
         var_name = str(ctx.Identifier())
         var_type = self._tree[ctx.typeSpecifier()]
-        self._tree[ctx] = f'new {var_name}: {var_type}'
+        self._tree[ctx] = f'new {var_name}: {var_type};'
         return super().exitNoInitializerVariable(ctx)
 
     def exitObjectDeclarationVariable(self, ctx):
         var_name = str(ctx.Identifier())
         var_type = self._tree[ctx.typeSpecifier()]
-        self._tree[ctx] = f'new {var_name}: {var_type}'
+        self._tree[ctx] = f'new {var_name}: {var_type};'
         return super().exitObjectDeclarationVariable(ctx)
 
     def exitStatement(self, ctx):
-        self._tree[ctx] = '0' # TODO: add and parse statements
+        self._tree[ctx] = self._tree[ctx.getChild(0)]
         return super().exitStatement(ctx)
 
-    def _new_string_literal(self, string: str):
+    def _new_tmpvar(self) -> str:
+        self._tmpvar_id += 1
+        return f'_tmpvar{self._tmpvar_id}'
+
+    def exitAssignmentOperator(self, ctx):
+        op2tmplt = {
+            '': '',
+            '*': '_mul({}, {})',
+            '/': '_div({}, {})',
+            '%': '_mod({}, {})',
+            '+': '{} + {}',
+            '-': '{} - {}',
+            '<<': '_shl({}, {})',
+            '>>': '_shr({}, {})',
+            '&': '_and({}, {})',
+            '^': '_xor({}, {})',
+            '|': '_or({}, {})'
+        }
+        sign: str = ctx.getText().rstrip('=')
+        self._tree[ctx] = op2tmplt[sign]
+        return super().exitAssignmentOperator(ctx)
+
+    def exitAssignmentStatement(self, ctx):
+        ident = str(ctx.Identifier())
+        expr = self._tree[ctx.expression()]
+        tmplt = self._tree[ctx.assignmentOperator()]
+        lines = []
+        if tmplt:
+            tmpvar = self._new_tmpvar()
+            lines.append(f'let {tmpvar} = ' + tmplt.format(ident, expr) + ' in ')
+            expr = tmpvar
+        lines.append(f'let {ident} = {expr} in ')
+        self._tree[ctx] = '\n'.join(lines)
+        return super().exitAssignmentStatement(ctx)
+
+    def exitExpression(self, ctx):
+        self._tree[ctx] = self._tree[ctx.getChild(0)]
+        return super().exitExpression(ctx)
+
+    def _new_string_literal(self, string: str) -> str:
         if string not in self._string_lits:
             self._string_lits_id += 1
             _global_name = f'_strlit{self._string_lits_id}'
             self._string_lits[string] = _global_name
-            self._globals.append(f'free {_global_name}: bitstring [private].')
+            self._globals.append('free %s: bitstring [private]. (* "%s" *)' %
+                                 (_global_name, string))
+        return self._string_lits[string]
 
-    def exitPrimaryExpression(self, ctx):
+    def exitPrimaryExprStringLits(self, ctx):
         # track string literals
         string_lits = ctx.StringLiteral()
-        if string_lits is not None and not string_lits:
-            for string_lit in map(str, string_lits):
-                self._new_string_literal(string_lit)
-        return super().exitPrimaryExpression(ctx)
+        for string_lit in map(str, string_lits):
+            self._new_string_literal(string_lit)
+        self._tree[ctx] = self._new_string_literal(''.join(string_lits))
+        return super().exitPrimaryExprStringLits(ctx)
+
+    def exitPrimaryExprIdentifier(self, ctx):
+        self._tree[ctx] = str(ctx.Identifier())
+        return super().exitPrimaryExprIdentifier(ctx)
+
+    def exitPrimaryExprConstant(self, ctx):
+        # TODO: handle chars
+        self._tree[ctx] = str(ctx.Constant())
+        return super().exitPrimaryExprConstant(ctx)

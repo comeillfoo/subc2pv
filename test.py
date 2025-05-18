@@ -17,6 +17,7 @@ class TranslatorTestCases(unittest.TestCase):
         'short': 'nat',
         'int': 'nat',
         'long': 'nat',
+        'long long': 'nat',
         '__m128': 'nat',
         '__m128d': 'nat',
         '__m128i': 'nat',
@@ -247,12 +248,27 @@ class TranslatorTestCases(unittest.TestCase):
                          model.functions[0])
 
     def _function_variable_primitive_init_subtest(self, name: str):
-        source = 'int %s(short a) { int b = a; }' % (name)
+        for ttype, pvtype in self.TESTS_TYPES.items():
+            source = 'void %s(%s a) { %s b = a; }' % (name, ttype, ttype)
+            model = Translator.from_line(source, False).translate()
+            self.assertTrue(not model.preamble)
+            expected = f'let {name}(a: {pvtype}) = new b: {pvtype}.'
+            self.assertEqual((name, expected), model.functions[0])
+
+    def _function_variable_assign_to_constant_subtest(self, name: str):
+        source = 'void %s() { int a; a = 42; }' % (name)
         model = Translator.from_line(source, False).translate()
         self.assertTrue(not model.preamble)
-        expected = f'let {name}(a: nat, _ret_ch: channel) = new b: nat.'
+        expected = f'let {name}() = new a: nat;\nlet a = 42 in 0.'
         self.assertEqual((name, expected), model.functions[0])
 
+    def _function_variable_assign_to_identifier_subtest(self, name: str):
+        for ttype, pvtype in self.TESTS_TYPES.items():
+            source = 'void %s(%s a) { %s b; b = a; }' % (name, ttype, ttype)
+            model = Translator.from_line(source, False).translate()
+            self.assertTrue(not model.preamble)
+            expected = f'let {name}(a: {pvtype}) = new b: {pvtype};\nlet b = a in 0.'
+            self.assertEqual((name, expected), model.functions[0])
 
     def test_single_function_definition(self):
         def at_subtest(name: str, subtest: str, fun):
@@ -265,6 +281,10 @@ class TranslatorTestCases(unittest.TestCase):
                        self._function_variable_no_init_subtest)
             at_subtest(name, 'function-variable-primitive-init-value',
                        self._function_variable_primitive_init_subtest)
+            at_subtest(name, 'function-variable-assign-to-constant',
+                       self._function_variable_assign_to_constant_subtest)
+            at_subtest(name, 'function-variable-assign-to-identifier',
+                       self._function_variable_assign_to_identifier_subtest)
 
 
 from lut import LookUpTable

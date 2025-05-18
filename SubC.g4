@@ -57,6 +57,7 @@ builtinType
     : 'char'
     | 'short'
     | 'int'
+    | 'long' 'long'
     | 'long'
     | '_Bool'
     | 'bool'
@@ -161,9 +162,9 @@ expression
     ;
 
 primaryExpression
-    : Identifier
-    | Constant
-    | StringLiteral+
+    : Identifier     # primaryExprIdentifier
+    | Constant       # primaryExprConstant
+    | StringLiteral+ # primaryExprStringLits
     ;
 
 // Lexer rules
@@ -241,7 +242,7 @@ fragment HexadecimalEscapeSequence
 
 Constant
     : IntegerConstant
-    | FloatingConstant
+    //| FloatingConstant
     //|   EnumerationConstant
     | CharacterConstant
     ;
