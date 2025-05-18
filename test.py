@@ -239,6 +239,21 @@ class TranslatorTestCases(unittest.TestCase):
             self._function_define_empty_void_0_arity(name, use_void)
             self._function_define_empty_nonvoid_0_arity(name, use_void)
 
+    def _function_variable_no_init_subtest(self, name: str):
+        source = 'void %s() { int a; }' % (name)
+        model = Translator.from_line(source, False).translate()
+        self.assertTrue(not model.preamble)
+        self.assertEqual((name, f'let {name}() = new a: nat.'),
+                         model.functions[0])
+
+    def _function_variable_primitive_init_subtest(self, name: str):
+        source = 'int %s(short a) { int b = a; }' % (name)
+        model = Translator.from_line(source, False).translate()
+        self.assertTrue(not model.preamble)
+        expected = f'let {name}(a: nat, _ret_ch: channel) = new b: nat.'
+        self.assertEqual((name, expected), model.functions[0])
+
+
     def test_single_function_definition(self):
         def at_subtest(name: str, subtest: str, fun):
             with self.subTest(f'{subtest}:{name}'):
@@ -246,6 +261,10 @@ class TranslatorTestCases(unittest.TestCase):
         for name in self.IDENTIFIERS:
             at_subtest(name, 'function-0_arity_definitions-empty',
                        self._function_0_arity_definitions_empty_subtest)
+            at_subtest(name, 'function-variable-declaration-no-init-value',
+                       self._function_variable_no_init_subtest)
+            at_subtest(name, 'function-variable-primitive-init-value',
+                       self._function_variable_primitive_init_subtest)
 
 
 from lut import LookUpTable

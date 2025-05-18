@@ -19,8 +19,11 @@ class SubC2PVListener(SubCListener):
         super().__init__()
         self._tree = {}
         self._types_id = -1
-        self._globals = []
-        self._functions = {}
+        self._globals: list[str] = []
+        self._functions: dict[str, str] = {}
+
+        self._string_lits: dict[str, str] = {}
+        self._string_lits_id = -1
 
     def exitEnumDeclaration(self, ctx):
         self._globals.append(f'type {str(ctx.Identifier())}.\n')
@@ -61,7 +64,6 @@ class SubC2PVListener(SubCListener):
         tname = str(ctx.Identifier())
         self._globals.append(self._new_fielded_type(tname, ctx))
         return super().exitStructOrUnionDefinition(ctx)
-
 
     def _next_type_name(self) -> str:
         self._types_id += 1
@@ -169,7 +171,7 @@ class SubC2PVListener(SubCListener):
         if ctx.statement() is not None:
             self._tree[ctx] = self._tree[ctx.statement()]
         elif ctx.variableDeclaration() is not None:
-            self._tree[ctx] = self._tree[ctx.declaration()]
+            self._tree[ctx] = self._tree[ctx.variableDeclaration()]
         return super().exitBlockItem(ctx)
 
     def exitNoInitializerVariable(self, ctx):
@@ -178,6 +180,27 @@ class SubC2PVListener(SubCListener):
         self._tree[ctx] = f'new {var_name}: {var_type}'
         return super().exitNoInitializerVariable(ctx)
 
+    def exitObjectDeclarationVariable(self, ctx):
+        var_name = str(ctx.Identifier())
+        var_type = self._tree[ctx.typeSpecifier()]
+        self._tree[ctx] = f'new {var_name}: {var_type}'
+        return super().exitObjectDeclarationVariable(ctx)
+
     def exitStatement(self, ctx):
         self._tree[ctx] = '0' # TODO: add and parse statements
         return super().exitStatement(ctx)
+
+    def _new_string_literal(self, string: str):
+        if string not in self._string_lits:
+            self._string_lits_id += 1
+            _global_name = f'_strlit{self._string_lits_id}'
+            self._string_lits[string] = _global_name
+            self._globals.append(f'free {_global_name}: bitstring [private].')
+
+    def exitPrimaryExpression(self, ctx):
+        # track string literals
+        string_lits = ctx.StringLiteral()
+        if string_lits is not None and not string_lits:
+            for string_lit in map(str, string_lits):
+                self._new_string_literal(string_lit)
+        return super().exitPrimaryExpression(ctx)

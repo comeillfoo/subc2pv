@@ -130,11 +130,40 @@ blockItem
 variableDeclaration
     : typeSpecifier Identifier ';'                         # noInitializerVariable
     // | typeSpecifier Identifier '=' compoundInitializer ';' # compoundInitializerVariable
-    // | typeSpecifier Identifier '=' primaryExpression ';'   # objectDeclaration
+    | typeSpecifier Identifier '=' primaryExpression ';'   # objectDeclarationVariable
     ;
 
 statement
     : compoundStatement
+    | assignmentStatement
+    ;
+
+assignmentStatement
+    : Identifier assignmentOperator expression ';'
+    ;
+
+assignmentOperator
+    : '='
+    | '*='
+    | '/='
+    | '%='
+    | '+='
+    | '-='
+    | '<<='
+    | '>>='
+    | '&='
+    | '^='
+    | '|='
+    ;
+
+expression
+    : primaryExpression
+    ;
+
+primaryExpression
+    : Identifier
+    | Constant
+    | StringLiteral+
     ;
 
 // Lexer rules
