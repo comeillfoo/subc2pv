@@ -270,6 +270,25 @@ class TranslatorTestCases(unittest.TestCase):
             expected = f'let {name}(a: {pvtype}) = new b: {pvtype};\nlet b = a in 0.'
             self.assertEqual((name, expected), model.functions[0])
 
+    def _function_variable_assign_to_strings_subtest(self, name: str):
+        strings_cases = [
+            [''],
+            ['', ''],
+            ['A', 'B'],
+            ['alsdf'],
+            ['__', '---', 'lorem ipsum']
+        ]
+        for strings_case in strings_cases:
+            joined = ''.join(strings_case)
+            unique = set([*strings_case, joined])
+            _id = len(unique) - 1
+            expr = ''.join(map(lambda s: f'"{s}"', strings_case))
+            source = 'void %s() { char *a; a = %s; }' % (name, expr)
+            model = Translator.from_line(source, False).translate()
+            expected = f'let {name}() = new a: bitstring;\nlet a = _strlit{_id} in 0.'
+            self.assertEqual((name, expected), model.functions[0],
+                             f'functions differs with {strings_case}')
+
     def test_single_function_definition(self):
         def at_subtest(name: str, subtest: str, fun):
             with self.subTest(f'{subtest}:{name}'):
@@ -285,6 +304,8 @@ class TranslatorTestCases(unittest.TestCase):
                        self._function_variable_assign_to_constant_subtest)
             at_subtest(name, 'function-variable-assign-to-identifier',
                        self._function_variable_assign_to_identifier_subtest)
+            at_subtest(name, 'function-variable-assign-to-strings',
+                       self._function_variable_assign_to_strings_subtest)
 
 
 from lut import LookUpTable

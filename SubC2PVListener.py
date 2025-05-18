@@ -245,8 +245,11 @@ class SubC2PVListener(SubCListener):
 
     def exitPrimaryExprStringLits(self, ctx):
         # track string literals
-        string_lits = ctx.StringLiteral()
-        for string_lit in map(str, string_lits):
+        def _to_string(node: Any) -> str:
+            return str(node).removeprefix('u8').removeprefix('u').removeprefix('U') \
+                .removeprefix('L').removeprefix('"').removesuffix('"')
+        string_lits = list(map(_to_string, ctx.StringLiteral()))
+        for string_lit in string_lits:
             self._new_string_literal(string_lit)
         self._tree[ctx] = self._new_string_literal(''.join(string_lits))
         return super().exitPrimaryExprStringLits(ctx)
