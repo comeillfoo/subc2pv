@@ -234,6 +234,13 @@ class SubC2PVListener(SubCListener):
         self._tree[ctx] = self._tree[ctx.getChild(0)]
         return super().exitExpression(ctx)
 
+    def exitParenthesisExpression(self, ctx):
+        if ctx.expression() is not None:
+            self._tree[ctx] = self._tree[ctx.expression()]
+        elif ctx.primaryExpression() is not None:
+            self._tree[ctx] = self._tree[ctx.primaryExpression()]
+        return super().exitParenthesisExpression(ctx)
+
     def _new_string_literal(self, string: str) -> str:
         if string not in self._string_lits:
             self._string_lits_id += 1

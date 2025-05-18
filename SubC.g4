@@ -158,7 +158,12 @@ assignmentOperator
     ;
 
 expression
-    : primaryExpression
+    : parenthesisExpression
+    ;
+
+parenthesisExpression
+    : '(' expression ')'
+    | primaryExpression
     ;
 
 primaryExpression

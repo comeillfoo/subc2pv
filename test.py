@@ -307,6 +307,18 @@ class TranslatorTestCases(unittest.TestCase):
             at_subtest(name, 'function-variable-assign-to-strings',
                        self._function_variable_assign_to_strings_subtest)
 
+    def _expression_parenthesis_subtest(self, subc_tmplt: str, pv_tmplt: str):
+        model = Translator.from_line(subc_tmplt % ('(42)'), False).translate()
+        self.assertEqual(('foo', pv_tmplt % ('42')), model.functions[0])
+
+    def test_expressions_with_integers(self):
+        subc_tmplt = 'void foo(int a) { a = %s; }'
+        pv_tmplt = 'let foo(a: nat) = let a = %s in 0.'
+        def at_subtest(subtest: str, fun):
+            with self.subTest(subtest):
+                fun(subc_tmplt, pv_tmplt)
+        at_subtest('parenthesis-expression', self._expression_parenthesis_subtest)
+
 
 from lut import LookUpTable
 
