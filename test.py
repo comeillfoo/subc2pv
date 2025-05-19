@@ -307,17 +307,49 @@ class TranslatorTestCases(unittest.TestCase):
             at_subtest(name, 'function-variable-assign-to-strings',
                        self._function_variable_assign_to_strings_subtest)
 
-    def _expression_parenthesis_subtest(self, subc_tmplt: str, pv_tmplt: str):
-        model = Translator.from_line(subc_tmplt % ('(42)'), False).translate()
-        self.assertEqual(('foo', pv_tmplt % ('42')), model.functions[0])
+    def _expression_parenthesis_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('(42)'), pv_tmplt % ('42'))
+
+    def _expression_post_inc_subtest(self, subc_tmplt: str,
+                                     pv_tmplt: str) -> Tuple[str, str]:
+        pv_src = 'let foo(a: nat) = let _tmpvar0 = 6 + 1 in \n' \
+        'let a = _tmpvar0 in 0.'
+        return (subc_tmplt % ('6++'), pv_src)
+
+    def _expression_post_dec_subtest(self, subc_tmplt: str,
+                                     pv_tmplt: str) -> Tuple[str, str]:
+        pv_src = 'let foo(a: nat) = let _tmpvar0 = 42 - 1 in \n' \
+        'let a = _tmpvar0 in 0.'
+        return (subc_tmplt % ('42--'), pv_src)
+
+    def _expression_no_args_funcall_subtest(self, subc_tmplt: str,
+                                                  pv_tmplt: str) -> Tuple[str, str]:
+        pv_src = 'let foo(a: nat) = let _tmpvar0 = baz() in \n' \
+        'let a = _tmpvar0 in 0.'
+        return (subc_tmplt % ('baz()'), pv_src)
+
+    def _expression_single_arg_funcall_subtest(self, subc_tmplt: str,
+                                               pv_tmplt: str) -> Tuple[str, str]:
+        pv_src = 'let foo(a: nat) = let _tmpvar0 = baz(42) in \n' \
+        'let a = _tmpvar0 in 0.'
+        return (subc_tmplt % ('baz(42)'), pv_src)
 
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
         pv_tmplt = 'let foo(a: nat) = let a = %s in 0.'
         def at_subtest(subtest: str, fun):
             with self.subTest(subtest):
-                fun(subc_tmplt, pv_tmplt)
+                subc_src, pv_src = fun(subc_tmplt, pv_tmplt)
+                model = Translator.from_line(subc_src, False).translate()
+                self.assertEqual(('foo', pv_src), model.functions[0])
         at_subtest('parenthesis-expression', self._expression_parenthesis_subtest)
+        at_subtest('post-increment-expression', self._expression_post_inc_subtest)
+        at_subtest('post-decrement-expression', self._expression_post_dec_subtest)
+        at_subtest('no-args-funcall-expression',
+                   self._expression_no_args_funcall_subtest)
+        at_subtest('single-arg-funcall-expression',
+                   self._expression_single_arg_funcall_subtest)
 
 
 from lut import LookUpTable

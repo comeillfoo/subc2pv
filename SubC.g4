@@ -158,7 +158,17 @@ assignmentOperator
     ;
 
 expression
-    : parenthesisExpression
+    : postfixExpression
+    ;
+
+postfixExpression
+    // | postfixExpression '[' expression ']' # arrayIndexingExpression
+    // | postfixExpression '.' Identifier     # memberAccessExpression
+    // | postfixExpression '->' Identifier    # memberAccessFromPointerExpression
+    : postfixExpression '++'                # postIncrementExpression
+    | postfixExpression '--'                # postDecrementExpression
+    | Identifier '(' expression* ')'        # functionCallExpression
+    | parenthesisExpression                 # basePostfixExpression
     ;
 
 parenthesisExpression

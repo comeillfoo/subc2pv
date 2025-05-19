@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from typing import Tuple, Optional, Any
+import functools
 
 from libs.SubCListener import SubCListener
 from model import Model
@@ -14,10 +15,14 @@ def protect_from_redeclaration(function):
     return wrapper
 
 
+def prepend_non_empty(line: str, cur: str) -> str:
+    return ('' if not line else (line + '\n')) + cur
+
 class SubC2PVListener(SubCListener):
     def __init__(self):
         super().__init__()
-        self._tree = {}
+        self._tree: dict[Any, str] = {}
+        self._exprs: dict[Any, str] = {}
         self._types_id = -1
         self._globals: list[str] = []
         self._functions: dict[str, str] = {}
@@ -213,13 +218,12 @@ class SubC2PVListener(SubCListener):
             '^': '_xor({}, {})',
             '|': '_or({}, {})'
         }
-        sign: str = ctx.getText().rstrip('=')
-        self._tree[ctx] = op2tmplt[sign]
+        self._tree[ctx] = op2tmplt[ctx.getText().rstrip('=')]
         return super().exitAssignmentOperator(ctx)
 
     def exitAssignmentStatement(self, ctx):
+        expr = self._exprs[ctx.expression()]
         ident = str(ctx.Identifier())
-        expr = self._tree[ctx.expression()]
         tmplt = self._tree[ctx.assignmentOperator()]
         lines = []
         if tmplt:
@@ -227,7 +231,8 @@ class SubC2PVListener(SubCListener):
             lines.append(f'let {tmpvar} = ' + tmplt.format(ident, expr) + ' in ')
             expr = tmpvar
         lines.append(f'let {ident} = {expr} in ')
-        self._tree[ctx] = '\n'.join(lines)
+        self._tree[ctx] = prepend_non_empty(self._tree.get(ctx.expression(), ''),
+                                            '\n'.join(lines))
         return super().exitAssignmentStatement(ctx)
 
     def _new_string_literal(self, string: str) -> str:
@@ -247,25 +252,64 @@ class SubC2PVListener(SubCListener):
         string_lits = list(map(_to_string, ctx.StringLiteral()))
         for string_lit in string_lits:
             self._new_string_literal(string_lit)
-        self._tree[ctx] = self._new_string_literal(''.join(string_lits))
+        self._exprs[ctx] = self._new_string_literal(''.join(string_lits))
         return super().exitPrimaryExprStringLits(ctx)
 
     def exitPrimaryExprIdentifier(self, ctx):
-        self._tree[ctx] = str(ctx.Identifier())
+        self._exprs[ctx] = str(ctx.Identifier())
         return super().exitPrimaryExprIdentifier(ctx)
 
     def exitPrimaryExprConstant(self, ctx):
         # TODO: handle chars
-        self._tree[ctx] = str(ctx.Constant())
+        self._exprs[ctx] = str(ctx.Constant())
         return super().exitPrimaryExprConstant(ctx)
+
+    def _pass2parent(self, ctx: Any, child_ctx: Any):
+        self._exprs[ctx] = self._exprs[child_ctx]
+        self._tree[ctx] = self._tree.get(child_ctx, '')
 
     def exitParenthesisExpression(self, ctx):
         if ctx.expression() is not None:
-            self._tree[ctx] = self._tree[ctx.expression()]
-        elif ctx.primaryExpression() is not None:
-            self._tree[ctx] = self._tree[ctx.primaryExpression()]
+            self._pass2parent(ctx, ctx.expression())
+        if ctx.primaryExpression() is not None:
+            self._pass2parent(ctx, ctx.primaryExpression())
         return super().exitParenthesisExpression(ctx)
 
+    def exitBasePostfixExpression(self, ctx):
+        self._pass2parent(ctx, ctx.parenthesisExpression())
+        return super().exitBasePostfixExpression(ctx)
+
+    def exitPostIncrementExpression(self, ctx):
+        tmpvar = self._new_tmpvar()
+        child_ctx = ctx.postfixExpression()
+        expr = self._exprs[child_ctx]
+        self._tree[ctx] = prepend_non_empty(self._tree.get(child_ctx, ''),
+                                            f'let {tmpvar} = {expr} + 1 in ')
+        self._exprs[ctx] = tmpvar
+        return super().exitPostIncrementExpression(ctx)
+
+    def exitPostDecrementExpression(self, ctx):
+        tmpvar = self._new_tmpvar()
+        child_ctx = ctx.postfixExpression()
+        expr = self._exprs[child_ctx]
+        self._tree[ctx] = prepend_non_empty(self._tree.get(child_ctx, ''),
+                                            f'let {tmpvar} = {expr} - 1 in ')
+        self._exprs[ctx] = tmpvar
+        return super().exitPostDecrementExpression(ctx)
+
+    def exitFunctionCallExpression(self, ctx):
+        tmpvar = self._new_tmpvar()
+        expressions = ctx.expression() or []
+        prev = functools.reduce(prepend_non_empty,
+                                map(lambda expr: self._tree.get(expr, ''),
+                                    expressions), '')
+        fun = str(ctx.Identifier())
+        params = ', '.join(map(self._exprs.get, expressions))
+        self._tree[ctx] = prepend_non_empty(prev,
+            f'let {tmpvar} = {fun}({params}) in ')
+        self._exprs[ctx] = tmpvar
+        return super().exitFunctionCallExpression(ctx)
+
     def exitExpression(self, ctx):
-        self._tree[ctx] = self._tree[ctx.getChild(0)]
+        self._pass2parent(ctx, ctx.getChild(0))
         return super().exitExpression(ctx)
