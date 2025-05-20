@@ -161,6 +161,17 @@ expression
     : postfixExpression
     ;
 
+unaryExpression
+    : '&' unaryExpression              # addressOfExpression
+    | '*' unaryExpression              # dereferenceExpression
+    | '+' unaryExpression              # unaryPlusExpression
+    | '-' unaryExpression              # unaryMinusExpression
+    | '~' unaryExpression              # bitwiseNotExpression
+    | '!' unaryExpression              # logicalNotExpression
+    | 'sizeof' '(' unaryExpression ')' # sizeofExpression
+    | postfixExpression                # baseUnaryExpression
+    ;
+
 postfixExpression
     // | postfixExpression '[' expression ']' # arrayIndexingExpression
     // | postfixExpression '.' Identifier     # memberAccessExpression

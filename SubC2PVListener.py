@@ -279,22 +279,21 @@ class SubC2PVListener(SubCListener):
         self._pass2parent(ctx, ctx.parenthesisExpression())
         return super().exitBasePostfixExpression(ctx)
 
-    def exitPostIncrementExpression(self, ctx):
+    def _new_simple_expr(self, parent: Any, child: Any, tmplt: str):
         tmpvar = self._new_tmpvar()
-        child_ctx = ctx.postfixExpression()
-        expr = self._exprs[child_ctx]
-        self._tree[ctx] = prepend_non_empty(self._tree.get(child_ctx, ''),
-                                            f'let {tmpvar} = {expr} + 1 in ')
-        self._exprs[ctx] = tmpvar
+        expr = self._exprs[child]
+        self._tree[parent] = prepend_non_empty(self._tree.get(child, ''),
+                                               tmplt % (tmpvar, expr))
+        self._exprs[parent] = tmpvar
+
+    def exitPostIncrementExpression(self, ctx):
+        self._new_simple_expr(ctx, ctx.postfixExpression(),
+                              'let %s: nat = %s + 1 in ')
         return super().exitPostIncrementExpression(ctx)
 
     def exitPostDecrementExpression(self, ctx):
-        tmpvar = self._new_tmpvar()
-        child_ctx = ctx.postfixExpression()
-        expr = self._exprs[child_ctx]
-        self._tree[ctx] = prepend_non_empty(self._tree.get(child_ctx, ''),
-                                            f'let {tmpvar} = {expr} - 1 in ')
-        self._exprs[ctx] = tmpvar
+        self._new_simple_expr(ctx, ctx.postfixExpression(),
+                              'let %s: nat = %s - 1 in ')
         return super().exitPostDecrementExpression(ctx)
 
     def exitFunctionCallExpression(self, ctx):
@@ -304,11 +303,51 @@ class SubC2PVListener(SubCListener):
                                 map(lambda expr: self._tree.get(expr, ''),
                                     expressions), '')
         fun = str(ctx.Identifier())
+        # TODO: handle functions with definitions
         params = ', '.join(map(self._exprs.get, expressions))
         self._tree[ctx] = prepend_non_empty(prev,
             f'let {tmpvar} = {fun}({params}) in ')
         self._exprs[ctx] = tmpvar
         return super().exitFunctionCallExpression(ctx)
+
+    def exitBaseUnaryExpression(self, ctx):
+        self._pass2parent(ctx, ctx.postfixExpression())
+        return super().exitBaseUnaryExpression(ctx)
+
+    def exitSizeofExpression(self, ctx):
+        self._new_simple_expr(ctx, ctx.unaryExpression(),
+                              'let %s: nat = _sizeof(%s) in ')
+        return super().exitSizeofExpression(ctx)
+
+    def exitLogicalNotExpression(self, ctx):
+        self._new_simple_expr(ctx, ctx.unaryExpression(),
+                              'let %s: bool = not(%s) in ')
+        return super().exitLogicalNotExpression(ctx)
+
+    def exitBitwiseNotExpression(self, ctx):
+        self._new_simple_expr(ctx, ctx.unaryExpression(),
+                              'let %s: nat = _not(%s) in ')
+        return super().exitBitwiseNotExpression(ctx)
+
+    def exitUnaryMinusExpression(self, ctx):
+        self._new_simple_expr(ctx, ctx.unaryExpression(),
+                              'let %s: nat = 0 - %s in ')
+        return super().exitUnaryMinusExpression(ctx)
+
+    def exitUnaryPlusExpression(self, ctx):
+        self._new_simple_expr(ctx, ctx.unaryExpression(),
+                              'let %s: nat = 0 + %s in ')
+        return super().exitUnaryPlusExpression(ctx)
+
+    def exitDereferenceExpression(self, ctx):
+        self._new_simple_expr(ctx, ctx.unaryExpression(),
+                              'let %s: bitstring = _deref(%s)')
+        return super().exitDereferenceExpression(ctx)
+
+    def exitAddressOfExpression(self, ctx):
+        self._new_simple_expr(ctx, ctx.unaryExpression(),
+                              'let %s: bitstring = _addressof(%s)')
+        return super().exitAddressOfExpression(ctx)
 
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))

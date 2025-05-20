@@ -11,9 +11,20 @@ from model import Model, FunctionModel
 
 class Translator:
     AUXILARY_GLOBALS = [
+        'const NULL: bitstring.',               # NULL
         'fun _addressof(any_type): bitstring.', # &a
-        'fun _deref(any_type): bitstring.',     # *a
+        'fun _deref(bitstring): bitstring\n' \
+        '\treduc forall _deref(NULL) = fail.',  # *a
         'fun _sizeof(any_type): nat.',          # sizeof(a)
+        'fun _mul(nat, nat): nat.',             # a * b
+        'fun _div(nat, nat): nat.',             # a / b
+        'fun _mod(nat, nat): nat.',             # a % b
+        'fun _shl(nat, nat): nat.',             # a << b
+        'fun _shr(nat, nat): nat.',             # a >> b
+        'fun _and(nat, nat): nat.',             # a & b
+        'fun _xor(nat, nat): nat.',             # a ^ b
+        'fun _or(nat, nat): nat.',              # a | b
+        'fun _not(nat): nat.'                   # ~a
     ]
 
     def __init__(self, stream: antlr4.InputStream,

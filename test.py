@@ -313,13 +313,13 @@ class TranslatorTestCases(unittest.TestCase):
 
     def _expression_post_inc_subtest(self, subc_tmplt: str,
                                      pv_tmplt: str) -> Tuple[str, str]:
-        pv_src = 'let foo(a: nat) = let _tmpvar0 = 6 + 1 in \n' \
+        pv_src = 'let foo(a: nat) = let _tmpvar0: nat = 6 + 1 in \n' \
         'let a = _tmpvar0 in 0.'
         return (subc_tmplt % ('6++'), pv_src)
 
     def _expression_post_dec_subtest(self, subc_tmplt: str,
                                      pv_tmplt: str) -> Tuple[str, str]:
-        pv_src = 'let foo(a: nat) = let _tmpvar0 = 42 - 1 in \n' \
+        pv_src = 'let foo(a: nat) = let _tmpvar0: nat = 42 - 1 in \n' \
         'let a = _tmpvar0 in 0.'
         return (subc_tmplt % ('42--'), pv_src)
 
