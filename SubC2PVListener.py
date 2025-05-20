@@ -349,6 +349,17 @@ class SubC2PVListener(SubCListener):
                               'let %s: bitstring = _addressof(%s) in ')
         return super().exitAddressOfExpression(ctx)
 
+    def exitBaseCastExpression(self, ctx):
+        self._pass2parent(ctx, ctx.unaryExpression())
+        return super().exitBaseCastExpression(ctx)
+
+    def exitCast2TypeExpression(self, ctx):
+        _type = self._tree[ctx.typeSpecifier()]
+        self._globals.append(f'fun _cast2{_type}(any_type): {_type}.')
+        self._new_simple_expr(ctx, ctx.castExpression(),
+                              f'let %s: {_type} = _cast2{_type}(%s) in ')
+        return super().exitCast2TypeExpression(ctx)
+
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))
         return super().exitExpression(ctx)

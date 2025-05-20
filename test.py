@@ -347,12 +347,12 @@ class TranslatorTestCases(unittest.TestCase):
                 pv_tmplt % ('let _tmpvar0: nat = _not(1) in \n', '_tmpvar0'))
 
     def _expression_unary_plus_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+                                       pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('+11'),
                 pv_tmplt % ('let _tmpvar0: nat = 0 + 11 in \n', '_tmpvar0'))
 
     def _expression_negation_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+                                     pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('-3'),
                 pv_tmplt % ('let _tmpvar0: nat = 0 - 3 in \n', '_tmpvar0'))
 
@@ -363,9 +363,15 @@ class TranslatorTestCases(unittest.TestCase):
                             '_tmpvar0'))
 
     def _expression_addressof_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+                                      pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('&a'),
                 pv_tmplt % ('let _tmpvar0: bitstring = _addressof(a) in \n',
+                            '_tmpvar0'))
+
+    def _expression_cast_subtest(self, subc_tmplt: str,
+                                pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('(bool) a'),
+                pv_tmplt % ('let _tmpvar0: bool = _cast2bool(a) in \n',
                             '_tmpvar0'))
 
     def test_expressions_with_integers(self):
@@ -391,6 +397,7 @@ class TranslatorTestCases(unittest.TestCase):
         at_subtest('negation-expression', self._expression_negation_subtest)
         at_subtest('dereference-expression', self._expression_dereference_subtest)
         at_subtest('addressof-expression', self._expression_addressof_subtest)
+        at_subtest('cast-expression', self._expression_cast_subtest)
 
 
 from lut import LookUpTable

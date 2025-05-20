@@ -158,7 +158,12 @@ assignmentOperator
     ;
 
 expression
-    : unaryExpression
+    : castExpression
+    ;
+
+castExpression
+    : '(' typeSpecifier ')' castExpression # cast2TypeExpression
+    | unaryExpression                      # baseCastExpression
     ;
 
 unaryExpression
