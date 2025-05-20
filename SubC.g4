@@ -158,7 +158,14 @@ assignmentOperator
     ;
 
 expression
-    : castExpression
+    : multiplicativeExpression
+    ;
+
+multiplicativeExpression
+    : castExpression '*' multiplicativeExpression # multiplyExpression
+    | castExpression '/' multiplicativeExpression # divisionExpression
+    | castExpression '%' multiplicativeExpression # moduloExpression
+    | castExpression                              # baseMultiplicativeExpression
     ;
 
 castExpression

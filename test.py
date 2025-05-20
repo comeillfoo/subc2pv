@@ -374,6 +374,24 @@ class TranslatorTestCases(unittest.TestCase):
                 pv_tmplt % ('let _tmpvar0: bool = _cast2bool(a) in \n',
                             '_tmpvar0'))
 
+    def _expression_modulo_subtest(self, subc_tmplt: str,
+                                   pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('a % 2'),
+                pv_tmplt % ('let _tmpvar0: nat = _mod(a, 2) in \n',
+                            '_tmpvar0'))
+
+    def _expression_division_subtest(self, subc_tmplt: str,
+                                     pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('a / a'),
+                pv_tmplt % ('let _tmpvar0: nat = _div(a, a) in \n',
+                            '_tmpvar0'))
+
+    def _expression_multiply_subtest(self, subc_tmplt: str,
+                                     pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('a * a'),
+                pv_tmplt % ('let _tmpvar0: nat = _mul(a, a) in \n',
+                            '_tmpvar0'))
+
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
         pv_tmplt = 'let foo(a: nat) = %slet a = %s in 0.'
@@ -398,6 +416,9 @@ class TranslatorTestCases(unittest.TestCase):
         at_subtest('dereference-expression', self._expression_dereference_subtest)
         at_subtest('addressof-expression', self._expression_addressof_subtest)
         at_subtest('cast-expression', self._expression_cast_subtest)
+        at_subtest('modulo-expression', self._expression_modulo_subtest)
+        at_subtest('division-expression', self._expression_division_subtest)
+        at_subtest('cast-expression', self._expression_multiply_subtest)
 
 
 from lut import LookUpTable
