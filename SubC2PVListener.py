@@ -341,12 +341,12 @@ class SubC2PVListener(SubCListener):
 
     def exitDereferenceExpression(self, ctx):
         self._new_simple_expr(ctx, ctx.unaryExpression(),
-                              'let %s: bitstring = _deref(%s)')
+                              'let %s: bitstring = _deref(%s) in ')
         return super().exitDereferenceExpression(ctx)
 
     def exitAddressOfExpression(self, ctx):
         self._new_simple_expr(ctx, ctx.unaryExpression(),
-                              'let %s: bitstring = _addressof(%s)')
+                              'let %s: bitstring = _addressof(%s) in ')
         return super().exitAddressOfExpression(ctx)
 
     def exitExpression(self, ctx):

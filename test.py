@@ -309,35 +309,68 @@ class TranslatorTestCases(unittest.TestCase):
 
     def _expression_parenthesis_subtest(self, subc_tmplt: str,
                                         pv_tmplt: str) -> Tuple[str, str]:
-        return (subc_tmplt % ('(42)'), pv_tmplt % ('42'))
+        return (subc_tmplt % ('(42)'), pv_tmplt % ('', '42'))
 
     def _expression_post_inc_subtest(self, subc_tmplt: str,
                                      pv_tmplt: str) -> Tuple[str, str]:
-        pv_src = 'let foo(a: nat) = let _tmpvar0: nat = 6 + 1 in \n' \
-        'let a = _tmpvar0 in 0.'
-        return (subc_tmplt % ('6++'), pv_src)
+        return (subc_tmplt % ('6++'),
+                pv_tmplt % ('let _tmpvar0: nat = 6 + 1 in \n', '_tmpvar0'))
 
     def _expression_post_dec_subtest(self, subc_tmplt: str,
                                      pv_tmplt: str) -> Tuple[str, str]:
-        pv_src = 'let foo(a: nat) = let _tmpvar0: nat = 42 - 1 in \n' \
-        'let a = _tmpvar0 in 0.'
-        return (subc_tmplt % ('42--'), pv_src)
+        return (subc_tmplt % ('42--'),
+                pv_tmplt % ('let _tmpvar0: nat = 42 - 1 in \n', '_tmpvar0'))
 
     def _expression_no_args_funcall_subtest(self, subc_tmplt: str,
                                                   pv_tmplt: str) -> Tuple[str, str]:
-        pv_src = 'let foo(a: nat) = let _tmpvar0 = baz() in \n' \
-        'let a = _tmpvar0 in 0.'
-        return (subc_tmplt % ('baz()'), pv_src)
+        return (subc_tmplt % ('baz()'),
+                pv_tmplt % ('let _tmpvar0 = baz() in \n', '_tmpvar0'))
 
     def _expression_single_arg_funcall_subtest(self, subc_tmplt: str,
                                                pv_tmplt: str) -> Tuple[str, str]:
-        pv_src = 'let foo(a: nat) = let _tmpvar0 = baz(42) in \n' \
-        'let a = _tmpvar0 in 0.'
-        return (subc_tmplt % ('baz(42)'), pv_src)
+        return (subc_tmplt % ('baz(42)'),
+                pv_tmplt % ('let _tmpvar0 = baz(42) in \n', '_tmpvar0'))
+
+    def _expression_sizeof_subtest(self, subc_tmplt: str,
+                                   pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('sizeof(a)'),
+                pv_tmplt % ('let _tmpvar0: nat = _sizeof(a) in \n', '_tmpvar0'))
+
+    def _expression_logic_not_subtest(self, subc_tmplt: str,
+                                      pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('!0'),
+                pv_tmplt % ('let _tmpvar0: bool = not(0) in \n', '_tmpvar0'))
+
+    def _expression_bitwise_not_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('~1'),
+                pv_tmplt % ('let _tmpvar0: nat = _not(1) in \n', '_tmpvar0'))
+
+    def _expression_unary_plus_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('+11'),
+                pv_tmplt % ('let _tmpvar0: nat = 0 + 11 in \n', '_tmpvar0'))
+
+    def _expression_negation_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('-3'),
+                pv_tmplt % ('let _tmpvar0: nat = 0 - 3 in \n', '_tmpvar0'))
+
+    def _expression_dereference_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('*NULL'),
+                pv_tmplt % ('let _tmpvar0: bitstring = _deref(NULL) in \n',
+                            '_tmpvar0'))
+
+    def _expression_addressof_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('&a'),
+                pv_tmplt % ('let _tmpvar0: bitstring = _addressof(a) in \n',
+                            '_tmpvar0'))
 
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
-        pv_tmplt = 'let foo(a: nat) = let a = %s in 0.'
+        pv_tmplt = 'let foo(a: nat) = %slet a = %s in 0.'
         def at_subtest(subtest: str, fun):
             with self.subTest(subtest):
                 subc_src, pv_src = fun(subc_tmplt, pv_tmplt)
@@ -350,6 +383,14 @@ class TranslatorTestCases(unittest.TestCase):
                    self._expression_no_args_funcall_subtest)
         at_subtest('single-arg-funcall-expression',
                    self._expression_single_arg_funcall_subtest)
+        at_subtest('sizeof-expression', self._expression_sizeof_subtest)
+        at_subtest('logical-not-expression', self._expression_logic_not_subtest)
+        at_subtest('bitwise-not-expression',
+                   self._expression_bitwise_not_subtest)
+        at_subtest('unary-plus-expression', self._expression_unary_plus_subtest)
+        at_subtest('negation-expression', self._expression_negation_subtest)
+        at_subtest('dereference-expression', self._expression_dereference_subtest)
+        at_subtest('addressof-expression', self._expression_addressof_subtest)
 
 
 from lut import LookUpTable

@@ -158,7 +158,7 @@ assignmentOperator
     ;
 
 expression
-    : postfixExpression
+    : unaryExpression
     ;
 
 unaryExpression
