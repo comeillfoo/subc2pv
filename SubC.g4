@@ -158,7 +158,13 @@ assignmentOperator
     ;
 
 expression
-    : multiplicativeExpression
+    : additiveExpression
+    ;
+
+additiveExpression
+    : multiplicativeExpression '+' additiveExpression # additionExpression
+    | multiplicativeExpression '-' additiveExpression # subtractionExpression
+    | multiplicativeExpression                        # baseAdditiveExpression
     ;
 
 multiplicativeExpression

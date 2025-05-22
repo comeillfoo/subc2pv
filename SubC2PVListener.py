@@ -396,6 +396,22 @@ class SubC2PVListener(SubCListener):
                                     'let {}: nat = _mul({}, {}) in ')
         return super().exitMultiplyExpression(ctx)
 
+    def exitBaseAdditiveExpression(self, ctx):
+        self._pass2parent(ctx, ctx.multiplicativeExpression())
+        return super().exitBaseAdditiveExpression(ctx)
+
+    def exitSubtractionExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.multiplicativeExpression(),
+                                    ctx.additiveExpression(),
+                                    'let {}: nat = {} - {} in ')
+        return super().exitSubtractionExpression(ctx)
+
+    def exitAdditionExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.multiplicativeExpression(),
+                                    ctx.additiveExpression(),
+                                    'let {}: nat = {} + {} in ')
+        return super().exitAdditionExpression(ctx)
+
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))
         return super().exitExpression(ctx)
