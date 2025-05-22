@@ -158,7 +158,13 @@ assignmentOperator
     ;
 
 expression
-    : additiveExpression
+    : shiftExpression
+    ;
+
+shiftExpression
+    : additiveExpression '<<' shiftExpression # leftShiftExpression
+    | additiveExpression '>>' shiftExpression # rightShiftExpression
+    | additiveExpression                      # baseShiftExpression
     ;
 
 additiveExpression

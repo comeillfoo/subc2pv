@@ -383,14 +383,12 @@ class TranslatorTestCases(unittest.TestCase):
     def _expression_division_subtest(self, subc_tmplt: str,
                                      pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a / a'),
-                pv_tmplt % ('let _tmpvar0: nat = _div(a, a) in \n',
-                            '_tmpvar0'))
+                pv_tmplt % ('let _tmpvar0: nat = _div(a, a) in \n', '_tmpvar0'))
 
     def _expression_multiply_subtest(self, subc_tmplt: str,
                                      pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a * a'),
-                pv_tmplt % ('let _tmpvar0: nat = _mul(a, a) in \n',
-                            '_tmpvar0'))
+                pv_tmplt % ('let _tmpvar0: nat = _mul(a, a) in \n', '_tmpvar0'))
 
     def _expression_subtraction_subtest(self, subc_tmplt: str,
                                         pv_tmplt: str) -> Tuple[str, str]:
@@ -400,8 +398,17 @@ class TranslatorTestCases(unittest.TestCase):
     def _expression_addition_subtest(self, subc_tmplt: str,
                                      pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('42 + a'),
-                pv_tmplt % ('let _tmpvar0: nat = 42 + a in \n',
-                            '_tmpvar0'))
+                pv_tmplt % ('let _tmpvar0: nat = 42 + a in \n', '_tmpvar0'))
+
+    def _expression_right_shift_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('a >> 32'),
+                pv_tmplt % ('let _tmpvar0: nat = _shr(a, 32) in \n', '_tmpvar0'))
+
+    def _expression_left_shift_subtest(self, subc_tmplt: str,
+                                       pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('1 << a'),
+                pv_tmplt % ('let _tmpvar0: nat = _shl(1, a) in \n', '_tmpvar0'))
 
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
@@ -434,6 +441,8 @@ class TranslatorTestCases(unittest.TestCase):
         at_subtest('subtraction-expression',
                    self._expression_subtraction_subtest)
         at_subtest('addition-expression', self._expression_addition_subtest)
+        at_subtest('right-shift-expression', self._expression_right_shift_subtest)
+        at_subtest('left-shift-expression', self._expression_left_shift_subtest)
 
 
 from lut import LookUpTable

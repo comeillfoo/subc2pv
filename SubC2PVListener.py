@@ -412,6 +412,22 @@ class SubC2PVListener(SubCListener):
                                     'let {}: nat = {} + {} in ')
         return super().exitAdditionExpression(ctx)
 
+    def exitBaseShiftExpression(self, ctx):
+        self._pass2parent(ctx, ctx.additiveExpression())
+        return super().exitBaseShiftExpression(ctx)
+
+    def exitRightShiftExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.additiveExpression(),
+                                    ctx.shiftExpression(),
+                                    'let {}: nat = _shr({}, {}) in ')
+        return super().exitRightShiftExpression(ctx)
+
+    def exitLeftShiftExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.additiveExpression(),
+                                    ctx.shiftExpression(),
+                                    'let {}: nat = _shl({}, {}) in ')
+        return super().exitLeftShiftExpression(ctx)
+
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))
         return super().exitExpression(ctx)
