@@ -158,7 +158,15 @@ assignmentOperator
     ;
 
 expression
-    : shiftExpression
+    : relationalExpression
+    ;
+
+relationalExpression
+    : shiftExpression '<' relationalExpression  # lessThanExpression
+    | shiftExpression '>' relationalExpression  # greaterThanExpression
+    | shiftExpression '<=' relationalExpression # lessOrEqualsExpression
+    | shiftExpression '>=' relationalExpression # greaterOrEqualsExpression
+    | shiftExpression                           # baseRelationalExpression
     ;
 
 shiftExpression

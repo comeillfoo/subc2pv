@@ -410,6 +410,26 @@ class TranslatorTestCases(unittest.TestCase):
         return (subc_tmplt % ('1 << a'),
                 pv_tmplt % ('let _tmpvar0: nat = _shl(1, a) in \n', '_tmpvar0'))
 
+    def _expression_greater_or_equals_subtest(self, subc_tmplt: str,
+                                              pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('1 >= 0'),
+                pv_tmplt % ('let _tmpvar0: bool = 1 >= 0 in \n', '_tmpvar0'))
+
+    def _expression_less_or_equals_subtest(self, subc_tmplt: str,
+                                           pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('42 <= a'),
+                pv_tmplt % ('let _tmpvar0: bool = 42 <= a in \n', '_tmpvar0'))
+
+    def _expression_greater_subtest(self, subc_tmplt: str,
+                                    pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('a > a'),
+                pv_tmplt % ('let _tmpvar0: bool = a > a in \n', '_tmpvar0'))
+
+    def _expression_less_subtest(self, subc_tmplt: str,
+                                 pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('a < 0'),
+                pv_tmplt % ('let _tmpvar0: bool = a < 0 in \n', '_tmpvar0'))
+
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
         pv_tmplt = 'let foo(a: nat) = %slet a = %s in 0.'
@@ -443,6 +463,12 @@ class TranslatorTestCases(unittest.TestCase):
         at_subtest('addition-expression', self._expression_addition_subtest)
         at_subtest('right-shift-expression', self._expression_right_shift_subtest)
         at_subtest('left-shift-expression', self._expression_left_shift_subtest)
+        at_subtest('greater-or-equals-expression',
+                   self._expression_greater_or_equals_subtest)
+        at_subtest('less-or-equals-expression',
+                   self._expression_less_or_equals_subtest)
+        at_subtest('greater-than-expression', self._expression_greater_subtest)
+        at_subtest('less-than-expression', self._expression_less_subtest)
 
 
 from lut import LookUpTable

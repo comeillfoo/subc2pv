@@ -428,6 +428,34 @@ class SubC2PVListener(SubCListener):
                                     'let {}: nat = _shl({}, {}) in ')
         return super().exitLeftShiftExpression(ctx)
 
+    def exitBaseRelationalExpression(self, ctx):
+        self._pass2parent(ctx, ctx.shiftExpression())
+        return super().exitBaseRelationalExpression(ctx)
+
+    def exitGreaterOrEqualsExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.shiftExpression(),
+                                    ctx.relationalExpression(),
+                                    'let {}: bool = {} >= {} in ')
+        return super().exitGreaterOrEqualsExpression(ctx)
+
+    def exitLessOrEqualsExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.shiftExpression(),
+                                    ctx.relationalExpression(),
+                                    'let {}: bool = {} <= {} in ')
+        return super().exitLessOrEqualsExpression(ctx)
+
+    def exitGreaterThanExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.shiftExpression(),
+                                    ctx.relationalExpression(),
+                                    'let {}: bool = {} > {} in ')
+        return super().exitGreaterThanExpression(ctx)
+
+    def exitLessThanExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.shiftExpression(),
+                                    ctx.relationalExpression(),
+                                    'let {}: bool = {} < {} in ')
+        return super().exitLessThanExpression(ctx)
+
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))
         return super().exitExpression(ctx)
