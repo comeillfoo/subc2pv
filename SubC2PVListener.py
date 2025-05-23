@@ -472,6 +472,28 @@ class SubC2PVListener(SubCListener):
                                     'let {}: bool = {} = {} in ')
         return super().exitEqualExpression(ctx)
 
+    def exitBaseBitwiseExpression(self, ctx):
+        self._pass2parent(ctx, ctx.equalityExpression())
+        return super().exitBaseBitwiseExpression(ctx)
+
+    def exitAndExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.equalityExpression(),
+                                    ctx.bitwiseExpression(),
+                                    'let {}: nat = _and({}, {}) in ')
+        return super().exitAndExpression(ctx)
+
+    def exitExclusiveOrExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.equalityExpression(),
+                                    ctx.bitwiseExpression(),
+                                    'let {}: nat = _xor({}, {}) in ')
+        return super().exitExclusiveOrExpression(ctx)
+
+    def exitInclusiveOrExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.equalityExpression(),
+                                    ctx.bitwiseExpression(),
+                                    'let {}: nat = _or({}, {}) in ')
+        return super().exitInclusiveOrExpression(ctx)
+
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))
         return super().exitExpression(ctx)

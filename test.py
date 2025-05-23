@@ -440,6 +440,21 @@ class TranslatorTestCases(unittest.TestCase):
         return (subc_tmplt % ('4 == 8'),
                 pv_tmplt % ('let _tmpvar0: bool = 4 = 8 in \n', '_tmpvar0'))
 
+    def _expression_bitwise_and_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('a & a'),
+                pv_tmplt % ('let _tmpvar0: nat = _and(a, a) in \n', '_tmpvar0'))
+
+    def _expression_bitwise_xor_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('0 ^ a'),
+                pv_tmplt % ('let _tmpvar0: nat = _xor(0, a) in \n', '_tmpvar0'))
+
+    def _expression_bitwise_or_subtest(self, subc_tmplt: str,
+                                       pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('8 | 4'),
+                pv_tmplt % ('let _tmpvar0: nat = _or(8, 4) in \n', '_tmpvar0'))
+
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
         pv_tmplt = 'let foo(a: nat) = %slet a = %s in 0.'
@@ -481,6 +496,9 @@ class TranslatorTestCases(unittest.TestCase):
         at_subtest('less-than-expression', self._expression_less_subtest)
         at_subtest('unequal-expression', self._expression_unequal_subtest)
         at_subtest('equal-expression', self._expression_equal_subtest)
+        at_subtest('bitwise-and-expression', self._expression_bitwise_and_subtest)
+        at_subtest('bitwise-or-expression', self._expression_bitwise_or_subtest)
+        at_subtest('bitwise-xor-expression', self._expression_bitwise_xor_subtest)
 
 
 from lut import LookUpTable

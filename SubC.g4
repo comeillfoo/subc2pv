@@ -158,7 +158,14 @@ assignmentOperator
     ;
 
 expression
-    : equalityExpression
+    : bitwiseExpression
+    ;
+
+bitwiseExpression
+    : equalityExpression '|' bitwiseExpression # inclusiveOrExpression
+    | equalityExpression '^' bitwiseExpression # exclusiveOrExpression
+    | equalityExpression '&' bitwiseExpression # andExpression
+    | equalityExpression                       # baseBitwiseExpression
     ;
 
 equalityExpression
