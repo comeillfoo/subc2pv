@@ -430,6 +430,16 @@ class TranslatorTestCases(unittest.TestCase):
         return (subc_tmplt % ('a < 0'),
                 pv_tmplt % ('let _tmpvar0: bool = a < 0 in \n', '_tmpvar0'))
 
+    def _expression_unequal_subtest(self, subc_tmplt: str,
+                                    pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('a != a'),
+                pv_tmplt % ('let _tmpvar0: bool = a <> a in \n', '_tmpvar0'))
+
+    def _expression_equal_subtest(self, subc_tmplt: str,
+                                  pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('4 == 8'),
+                pv_tmplt % ('let _tmpvar0: bool = 4 = 8 in \n', '_tmpvar0'))
+
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
         pv_tmplt = 'let foo(a: nat) = %slet a = %s in 0.'
@@ -469,6 +479,8 @@ class TranslatorTestCases(unittest.TestCase):
                    self._expression_less_or_equals_subtest)
         at_subtest('greater-than-expression', self._expression_greater_subtest)
         at_subtest('less-than-expression', self._expression_less_subtest)
+        at_subtest('unequal-expression', self._expression_unequal_subtest)
+        at_subtest('equal-expression', self._expression_equal_subtest)
 
 
 from lut import LookUpTable

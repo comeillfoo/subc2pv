@@ -456,6 +456,22 @@ class SubC2PVListener(SubCListener):
                                     'let {}: bool = {} < {} in ')
         return super().exitLessThanExpression(ctx)
 
+    def exitBaseEqualityExpression(self, ctx):
+        self._pass2parent(ctx, ctx.relationalExpression())
+        return super().exitBaseEqualityExpression(ctx)
+
+    def exitUnequalExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.relationalExpression(),
+                                    ctx.equalityExpression(),
+                                    'let {}: bool = {} <> {} in ')
+        return super().exitUnequalExpression(ctx)
+
+    def exitEqualExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.relationalExpression(),
+                                    ctx.equalityExpression(),
+                                    'let {}: bool = {} = {} in ')
+        return super().exitEqualExpression(ctx)
+
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))
         return super().exitExpression(ctx)

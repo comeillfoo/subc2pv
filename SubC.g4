@@ -158,7 +158,13 @@ assignmentOperator
     ;
 
 expression
-    : relationalExpression
+    : equalityExpression
+    ;
+
+equalityExpression
+    : relationalExpression '==' equalityExpression # equalExpression
+    | relationalExpression '!=' equalityExpression # unequalExpression
+    | relationalExpression                         # baseEqualityExpression
     ;
 
 relationalExpression
