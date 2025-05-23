@@ -158,7 +158,17 @@ assignmentOperator
     ;
 
 expression
-    : bitwiseExpression
+    : logicalOrExpression
+    ;
+
+logicalOrExpression
+    : logicalAndExpression '||' logicalOrExpression # disjunctionExpression
+    | logicalAndExpression                          # baseLogicalOrExpression
+    ;
+
+logicalAndExpression
+    : bitwiseExpression '&&' logicalAndExpression # conjuctionExpression
+    | bitwiseExpression                           # baseLogicalAndExpression
     ;
 
 bitwiseExpression

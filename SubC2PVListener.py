@@ -494,6 +494,26 @@ class SubC2PVListener(SubCListener):
                                     'let {}: nat = _or({}, {}) in ')
         return super().exitInclusiveOrExpression(ctx)
 
+    def exitBaseLogicalAndExpression(self, ctx):
+        self._pass2parent(ctx, ctx.bitwiseExpression())
+        return super().exitBaseLogicalAndExpression(ctx)
+
+    def exitConjuctionExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.bitwiseExpression(),
+                                    ctx.logicalAndExpression(),
+                                    'let {}: bool = {} && {} in ')
+        return super().exitConjuctionExpression(ctx)
+
+    def exitBaseLogicalOrExpression(self, ctx):
+        self._pass2parent(ctx, ctx.logicalAndExpression())
+        return super().exitBaseLogicalOrExpression(ctx)
+
+    def exitDisjunctionExpression(self, ctx):
+        self._new_binary_expression(ctx, ctx.logicalAndExpression(),
+                                    ctx.logicalOrExpression(),
+                                    'let {}: bool = {} || {} in ')
+        return super().exitDisjunctionExpression(ctx)
+
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))
         return super().exitExpression(ctx)

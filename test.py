@@ -455,6 +455,16 @@ class TranslatorTestCases(unittest.TestCase):
         return (subc_tmplt % ('8 | 4'),
                 pv_tmplt % ('let _tmpvar0: nat = _or(8, 4) in \n', '_tmpvar0'))
 
+    def _expression_conjuction_subtest(self, subc_tmplt: str,
+                                       pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('1 && 1'),
+                pv_tmplt % ('let _tmpvar0: bool = 1 && 1 in \n', '_tmpvar0'))
+
+    def _expression_disjunction_subtest(self, subc_tmplt: str,
+                                        pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('0 || 0'),
+                pv_tmplt % ('let _tmpvar0: bool = 0 || 0 in \n', '_tmpvar0'))
+
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
         pv_tmplt = 'let foo(a: nat) = %slet a = %s in 0.'
@@ -499,6 +509,8 @@ class TranslatorTestCases(unittest.TestCase):
         at_subtest('bitwise-and-expression', self._expression_bitwise_and_subtest)
         at_subtest('bitwise-or-expression', self._expression_bitwise_or_subtest)
         at_subtest('bitwise-xor-expression', self._expression_bitwise_xor_subtest)
+        at_subtest('disjunction-expression', self._expression_disjunction_subtest)
+        at_subtest('conjunction-expression', self._expression_conjuction_subtest)
 
 
 from lut import LookUpTable
