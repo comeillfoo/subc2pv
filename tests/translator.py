@@ -5,34 +5,37 @@ from typing import Tuple
 from translator import Translator
 
 
+IDENTIFIERS = [ 'T', 'asdfadsfsdf', '____', 'Mtypes', '_', 'A', 'asdfkljdsfn',
+    '_tmp8', 'message', 'client', 'server', 'ASF', 'Q', 'WFD2', 'x', 'port',
+    'addr', 'field', 'PP9', '__qwerty__' ]
+
+TESTS_TYPES = {
+    '_Bool': 'bool',
+    'bool': 'bool',
+    'char': 'nat',
+    'short': 'nat',
+    'int': 'nat',
+    'long': 'nat',
+    'long long': 'nat',
+    '__m128': 'nat',
+    '__m128d': 'nat',
+    '__m128i': 'nat',
+    'enum _Enum': '_Enum',
+    'struct _Struct': '_Struct',
+    'union _Union': '_Union',
+    'void*': 'bitstring',
+    'const long*': 'bitstring',
+    'int const*': 'bitstring',
+    '_Bool***********************': 'bitstring',
+    'enum _Enum* restrict': 'bitstring',
+    'const short * const': 'bitstring',
+    'struct _Struct const * const': 'bitstring',
+}
+
+SOME_IDENTIFIER = 's0m4__1DENT'
+
+
 class TranslatorBasicTestCase(unittest.TestCase):
-    IDENTIFIERS = [ 'T', 'asdfadsfsdf', '____', 'Mtypes', '_', 'A', 'asdfkljdsfn',
-        '_tmp8', 'message', 'client', 'server', 'ASF', 'Q', 'WFD2', 'x', 'port',
-        'addr', 'field', 'PP9', '__qwerty__' ]
-
-    TESTS_TYPES = {
-        '_Bool': 'bool',
-        'bool': 'bool',
-        'char': 'nat',
-        'short': 'nat',
-        'int': 'nat',
-        'long': 'nat',
-        'long long': 'nat',
-        '__m128': 'nat',
-        '__m128d': 'nat',
-        '__m128i': 'nat',
-        'enum _Enum': '_Enum',
-        'struct _Struct': '_Struct',
-        'union _Union': '_Union',
-        'void*': 'bitstring',
-        'const long*': 'bitstring',
-        'int const*': 'bitstring',
-        '_Bool***********************': 'bitstring',
-        'enum _Enum* restrict': 'bitstring',
-        'const short * const': 'bitstring',
-        'struct _Struct const * const': 'bitstring',
-    }
-
     def test_empty_stream(self):
         model = Translator.from_line('', False).translate()
         self.assertTrue(not model.functions, 'No functions should be parsed')
@@ -43,13 +46,15 @@ class TranslatorBasicTestCase(unittest.TestCase):
         self.assertTrue(not model.functions, 'No functions should be parsed')
         self.assertEqual(model.preamble, '\n'.join(Translator.AUXILARY_GLOBALS))
 
+
+class EnumsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
     def _enum_declaration_subtest(self, name: str):
         model = Translator.from_line(f'enum {name};', False).translate()
         self.assertTrue(not model.functions, 'No functions should be parsed')
         self.assertEqual(model.preamble, f'type {name}.\n')
 
     def test_enum_declaration(self):
-        for name in self.IDENTIFIERS:
+        for name in IDENTIFIERS:
             with self.subTest(name):
                 self._enum_declaration_subtest(name)
 
@@ -75,11 +80,13 @@ class TranslatorBasicTestCase(unittest.TestCase):
             [ ('__', '0xDEADBEEF') ],
             [ ('SEND', ''), ('RECV', '0b101'), ('ACK', ''), ('NACK', '0777') ]
         ]
-        for name in self.IDENTIFIERS:
+        for name in IDENTIFIERS:
             for consts in const_sets:
-                with self.subTest(f'{name}: {consts}'):
+                with self.subTest(f'{name}:{consts}'):
                     self._enum_definition_subtest(name, consts)
 
+
+class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
     def _fielded_declaration_subtest(self, name: str, ttype: str):
         model = Translator.from_line(f'{ttype} {name};', False).translate()
         self.assertTrue(not model.functions)
@@ -126,12 +133,12 @@ class TranslatorBasicTestCase(unittest.TestCase):
 
     def _fielded_single_integer_subtest(self, name: str, ttype: str):
         ftypes = ['char', 'short', 'int', 'long', '__m128', '__m128d', '__m128i']
-        for fname in self.IDENTIFIERS:
+        for fname in IDENTIFIERS:
             for ftype in ftypes:
                 self._fielded_single_integer_helper(name, ttype, fname, ftype)
 
     def _fielded_single_bool_subtest(self, name: str, ttype: str):
-        for fname in self.IDENTIFIERS:
+        for fname in IDENTIFIERS:
             fielded_definition = self._dict2fielded_def(name, [(fname, '_Bool')],
                                                         ttype)
             model = Translator.from_line(fielded_definition, False).translate()
@@ -143,22 +150,22 @@ class TranslatorBasicTestCase(unittest.TestCase):
             self.assertEqual(model.preamble, expected)
 
     def test_fielded(self):
-        def at_subtest(name: str, ttype: str, subtest: str, fun):
-            with self.subTest(f'{subtest}:{ttype}:{name}'):
-                fun(name, ttype)
+        def at_subtest(ttype: str, subtest: str, fun):
+            with self.subTest(f'{subtest}:{ttype}'):
+                fun(SOME_IDENTIFIER, ttype)
         for ttype in ('struct', 'union'):
-            for name in self.IDENTIFIERS:
-                at_subtest(name, ttype, 'declaration',
-                           self._fielded_declaration_subtest)
-                at_subtest(name, ttype, 'empty-definition',
-                           self._fielded_empty_definition_subtest)
-                at_subtest(name, ttype, 'single-enum-definition',
-                           self._fielded_with_single_enum_subtest)
-                at_subtest(name, ttype, 'single-integer-definition',
-                           self._fielded_single_integer_subtest)
-                at_subtest(name, ttype, 'single-bool-definition',
-                           self._fielded_single_bool_subtest)
+            at_subtest(ttype, 'declaration', self._fielded_declaration_subtest)
+            at_subtest(ttype, 'empty-definition',
+                       self._fielded_empty_definition_subtest)
+            at_subtest(ttype, 'single-enum-definition',
+                       self._fielded_with_single_enum_subtest)
+            at_subtest(ttype, 'single-integer-definition',
+                       self._fielded_single_integer_subtest)
+            at_subtest(ttype, 'single-bool-definition',
+                       self._fielded_single_bool_subtest)
 
+
+class FunctionsDeclarationsTestCase(unittest.TestCase):
     def _function_declare_void_0_arity(self, name: str, use_void: bool = False):
         source = f'static _Noreturn inline void {name}({"void" if use_void else ""});'
         model = Translator.from_line(source, False).translate()
@@ -168,7 +175,7 @@ class TranslatorBasicTestCase(unittest.TestCase):
     def _function_declare_nonvoid_0_arity(self, name: str, use_void: bool = False):
         tmplt = 'extern __stdcall __inline__ {} %s(%s);' \
             % (name, 'void' if use_void else '')
-        for rtype, pvtype in self.TESTS_TYPES.items():
+        for rtype, pvtype in TESTS_TYPES.items():
             model = Translator.from_line(tmplt.format(rtype), False).translate()
             self.assertTrue(not model.preamble)
             self.assertEqual((name, f'fun {name}(): {pvtype}.'),
@@ -181,7 +188,7 @@ class TranslatorBasicTestCase(unittest.TestCase):
 
     def _function_declare_void_1_arity(self, name: str, anon: bool):
         tmplt = 'void {}({});'
-        for ptype, pvtype in self.TESTS_TYPES.items():
+        for ptype, pvtype in TESTS_TYPES.items():
             param_name = 'p0' if anon else f'arg_{name}'
             param = ptype + ('' if anon else f' {param_name}')
             model = Translator.from_line(tmplt.format(name, param),
@@ -200,8 +207,8 @@ class TranslatorBasicTestCase(unittest.TestCase):
             self.assertTrue(not model.preamble)
             self.assertEqual((name, f'fun {name}({pname}: {ppvtype}): {rpvtype}.'),
                              model.functions[0])
-        for rtype, rpvtype in self.TESTS_TYPES.items():
-            for ptype, ppvtype in self.TESTS_TYPES.items():
+        for rtype, rpvtype in TESTS_TYPES.items():
+            for ptype, ppvtype in TESTS_TYPES.items():
                 _test_single(rtype, rpvtype, ptype, ppvtype)
 
     def _function_1_arity_declarations_subtest(self, name: str):
@@ -210,16 +217,19 @@ class TranslatorBasicTestCase(unittest.TestCase):
             self._function_declare_nonvoid_1_arity(name, anon)
 
     def test_single_function_declaration(self):
-        def at_subtest(name: str, subtest: str, fun):
-            with self.subTest(f'{subtest}:{name}'):
-                fun(name)
-        for name in self.IDENTIFIERS:
-            at_subtest(name, 'function-0_arity-declaration',
-                       self._function_0_arity_declarations_subtest)
-            at_subtest(name, 'function-1_arity-declaration',
-                       self._function_1_arity_declarations_subtest)
+        def at_subtest(subtest: str, fun, *args):
+            with self.subTest(f'{subtest}'):
+                fun(*args)
+        for name in IDENTIFIERS:
+            at_subtest('function-0_arity-declaration',
+                       self._function_0_arity_declarations_subtest,
+                       name)
+        at_subtest('function-1_arity-declaration',
+                   self._function_1_arity_declarations_subtest,
+                   SOME_IDENTIFIER)
 
 
+class FunctionDefinitionsTestCase(unittest.TestCase):
     def _function_define_empty_void_0_arity(self, name: str, use_void: bool = False):
         source = '_Noreturn void %s(%s) { }' % (name, 'void' if use_void else '')
         model = Translator.from_line(source, False).translate()
@@ -227,7 +237,7 @@ class TranslatorBasicTestCase(unittest.TestCase):
         self.assertEqual((name, f'let {name}() = 0.'), model.functions[0])
 
     def _function_define_empty_nonvoid_0_arity(self, name: str, use_void: bool = False):
-        for rtype, _ in self.TESTS_TYPES.items():
+        for rtype, _ in TESTS_TYPES.items():
             tmplt = '__stdcall %s %s(%s) { }' % (rtype, name,
                                                  'void' if use_void else '')
             model = Translator.from_line(tmplt, False).translate()
@@ -240,6 +250,15 @@ class TranslatorBasicTestCase(unittest.TestCase):
             self._function_define_empty_void_0_arity(name, use_void)
             self._function_define_empty_nonvoid_0_arity(name, use_void)
 
+    def test_no_body_function_definition(self):
+        def at_subtest(subtest: str, fun):
+            with self.subTest(f'{subtest}'):
+                fun(SOME_IDENTIFIER)
+        at_subtest('function-0_arity_definitions-empty',
+                   self._function_0_arity_definitions_empty_subtest)
+
+
+class AssignmentsTestCase(unittest.TestCase):
     def _function_variable_no_init_subtest(self, name: str):
         source = 'void %s() { int a; }' % (name)
         model = Translator.from_line(source, False).translate()
@@ -248,7 +267,7 @@ class TranslatorBasicTestCase(unittest.TestCase):
                          model.functions[0])
 
     def _function_variable_primitive_init_subtest(self, name: str):
-        for ttype, pvtype in self.TESTS_TYPES.items():
+        for ttype, pvtype in TESTS_TYPES.items():
             source = 'void %s(%s a) { %s b = a; }' % (name, ttype, ttype)
             model = Translator.from_line(source, False).translate()
             self.assertTrue(not model.preamble)
@@ -263,7 +282,7 @@ class TranslatorBasicTestCase(unittest.TestCase):
         self.assertEqual((name, expected), model.functions[0])
 
     def _function_variable_assign_to_identifier_subtest(self, name: str):
-        for ttype, pvtype in self.TESTS_TYPES.items():
+        for ttype, pvtype in TESTS_TYPES.items():
             source = 'void %s(%s a) { %s b; b = a; }' % (name, ttype, ttype)
             model = Translator.from_line(source, False).translate()
             self.assertTrue(not model.preamble)
@@ -290,23 +309,22 @@ class TranslatorBasicTestCase(unittest.TestCase):
                              f'functions differs with {strings_case}')
 
     def test_single_function_definition(self):
-        def at_subtest(name: str, subtest: str, fun):
-            with self.subTest(f'{subtest}:{name}'):
-                fun(name)
-        for name in self.IDENTIFIERS:
-            at_subtest(name, 'function-0_arity_definitions-empty',
-                       self._function_0_arity_definitions_empty_subtest)
-            at_subtest(name, 'function-variable-declaration-no-init-value',
-                       self._function_variable_no_init_subtest)
-            at_subtest(name, 'function-variable-primitive-init-value',
-                       self._function_variable_primitive_init_subtest)
-            at_subtest(name, 'function-variable-assign-to-constant',
-                       self._function_variable_assign_to_constant_subtest)
-            at_subtest(name, 'function-variable-assign-to-identifier',
-                       self._function_variable_assign_to_identifier_subtest)
-            at_subtest(name, 'function-variable-assign-to-strings',
-                       self._function_variable_assign_to_strings_subtest)
+        def at_subtest(subtest: str, fun):
+            with self.subTest(f'{subtest}'):
+                fun(SOME_IDENTIFIER)
+        at_subtest('function-variable-declaration-no-init-value',
+                    self._function_variable_no_init_subtest)
+        at_subtest('function-variable-primitive-init-value',
+                    self._function_variable_primitive_init_subtest)
+        at_subtest('function-variable-assign-to-constant',
+                    self._function_variable_assign_to_constant_subtest)
+        at_subtest('function-variable-assign-to-identifier',
+                    self._function_variable_assign_to_identifier_subtest)
+        at_subtest('function-variable-assign-to-strings',
+                    self._function_variable_assign_to_strings_subtest)
 
+
+class ExpressionsTestCase(unittest.TestCase):
     def _expression_parenthesis_subtest(self, subc_tmplt: str,
                                         pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('(42)'), pv_tmplt % ('', '42'))
@@ -521,4 +539,12 @@ class TranslatorBasicTestCase(unittest.TestCase):
 
 
 def suite() -> list:
-    return [TranslatorBasicTestCase]
+    return [
+        TranslatorBasicTestCase,
+        EnumsDeclarationsAndDefinitionsTestCase,
+        UnionsOrStructsDeclarationsAndDefinitionsTestCase,
+        FunctionsDeclarationsTestCase,
+        FunctionDefinitionsTestCase,
+        AssignmentsTestCase,
+        ExpressionsTestCase
+    ]

@@ -5,7 +5,7 @@ import pathlib
 from lut import LookUpTable
 
 
-class LUTBasicTestCase(unittest.TestCase):
+class LUTBasicDirectivesTestCase(unittest.TestCase):
     def _assert_empty_lut(self, lut: LookUpTable):
         self.assertIsNone(lut.file(), 'No path should be processed')
         self.assertEqual(lut.extracts(), set(), 'No functions should be extracted')
@@ -106,4 +106,4 @@ process
 
 
 def suite() -> list:
-    return [LUTBasicTestCase]
+    return [LUTBasicDirectivesTestCase]
