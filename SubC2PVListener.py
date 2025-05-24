@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-from typing import Tuple, Optional, Any
+from typing import Tuple, Any
 import functools
 
 from libs.SubCListener import SubCListener
-from model import Model
 
 
 def protect_from_redeclaration(function):
@@ -17,6 +16,13 @@ def protect_from_redeclaration(function):
 
 def prepend_non_empty(line: str, cur: str) -> str:
     return ('' if not line else (line + '\n')) + cur
+
+
+class ExpressionNode:
+    def __init__(self, ctx, tracker):
+        self.ctx = ctx
+        self.expr = tracker._exprs[ctx]
+        self.tree = tracker._tree.get(ctx, '')
 
 class SubC2PVListener(SubCListener):
     def __init__(self):
@@ -513,6 +519,26 @@ class SubC2PVListener(SubCListener):
                                     ctx.logicalOrExpression(),
                                     'let {}: bool = {} || {} in ')
         return super().exitDisjunctionExpression(ctx)
+
+    def exitBaseConditionalExpression(self, ctx):
+        self._pass2parent(ctx, ctx.logicalOrExpression())
+        return super().exitBaseConditionalExpression(ctx)
+
+    def exitTernaryExpression(self, ctx):
+        cond = ExpressionNode(ctx.logicalOrExpression(), self)
+        left = ExpressionNode(ctx.expression(), self)
+        right = ExpressionNode(ctx.conditionalExpression(), self)
+
+        tmpvar = self._new_tmpvar()
+        self._exprs[ctx] = tmpvar
+
+        code = f'let {tmpvar} = _ternary({cond.expr}, {left.expr}, {right.expr}) in '
+        # TODO: consider order of prepends
+        code = prepend_non_empty(cond.tree, code)
+        code = prepend_non_empty(left.tree, code)
+        code = prepend_non_empty(right.tree, code)
+        self._tree[ctx] = code
+        return super().exitTernaryExpression(ctx)
 
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))

@@ -24,7 +24,10 @@ class Translator:
         'fun _and(nat, nat): nat.',             # a & b
         'fun _xor(nat, nat): nat.',             # a ^ b
         'fun _or(nat, nat): nat.',              # a | b
-        'fun _not(nat): nat.'                   # ~a
+        'fun _not(nat): nat.',                  # ~a
+        'fun _ternary(bool, any_type, any_type): any_type\n' \
+        '\treduc forall a: any_type, b: any_type; _ternary(true, a, b) = a\n' \
+        '\t\totherwise forall a: any_type, b: any_type; _ternary(false, a, b) = b', # cond ? a : b
     ]
 
     def __init__(self, stream: antlr4.InputStream,

@@ -158,7 +158,12 @@ assignmentOperator
     ;
 
 expression
-    : logicalOrExpression
+    : conditionalExpression
+    ;
+
+conditionalExpression
+    : logicalOrExpression '?' expression ':' conditionalExpression # ternaryExpression
+    | logicalOrExpression # baseConditionalExpression
     ;
 
 logicalOrExpression
