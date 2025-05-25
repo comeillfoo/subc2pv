@@ -324,6 +324,16 @@ class AssignmentsTestCase(unittest.TestCase):
                     self._function_variable_assign_to_strings_subtest)
 
 
+class IfStatementTestCase(unittest.TestCase):
+    def test_no_else_branch(self):
+        source = 'void main() { if (false) { int a = 8; } }'
+        expected = '''let main() = if false then
+\tnew a: nat;
+else
+\t0.'''
+        model = Translator.from_line(source, False).translate()
+        self.assertEqual(('main', expected), model.functions[0])
+
 class ExpressionsTestCase(unittest.TestCase):
     def _expression_parenthesis_subtest(self, subc_tmplt: str,
                                         pv_tmplt: str) -> Tuple[str, str]:
@@ -546,5 +556,6 @@ def suite() -> list:
         FunctionsDeclarationsTestCase,
         FunctionDefinitionsTestCase,
         AssignmentsTestCase,
+        IfStatementTestCase,
         ExpressionsTestCase
     ]

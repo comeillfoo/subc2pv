@@ -543,3 +543,16 @@ class SubC2PVListener(SubCListener):
     def exitExpression(self, ctx):
         self._pass2parent(ctx, ctx.getChild(0))
         return super().exitExpression(ctx)
+
+    def exitIfStatement(self, ctx):
+        branches = ctx.statement()
+        then_br = self._tree[branches[0]]
+        else_br = self._tree[branches[1]] if len(branches) > 1 else '0'
+        self._tree[ctx] = prepend_non_empty(self._tree.get(ctx.expression(), ''),
+                                            '\n'.join([
+            f'if {self._exprs[ctx.expression()]} then',
+            f'\t{then_br}',
+            'else',
+            f'\t{else_br}'
+        ]))
+        return super().exitIfStatement(ctx)

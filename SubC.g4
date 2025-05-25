@@ -137,10 +137,15 @@ variableDeclaration
 statement
     : compoundStatement
     | assignmentStatement
+    | ifStatement
     ;
 
 assignmentStatement
     : Identifier assignmentOperator expression ';'
+    ;
+
+ifStatement
+    : 'if' '(' expression ')' statement ('else' statement)?
     ;
 
 assignmentOperator
