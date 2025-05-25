@@ -1,10 +1,11 @@
 # subc2pv
 
-Network protocol implementations on C programming language translator. Translates into network protocol specifications.
+Network protocol implementations on C programming language translator.
+Translates into network protocol specifications.
 
-## Mapping Model Subset of C to Applied Pi Calculus. MMSC2APC
+## Mapping Model Subset of SubC to Applied Pi Calculus. MMSC2APC
 
-| C                                       | Applied Pi Calculus               |
+| SubC                                    | Applied Pi Calculus               |
 | :-------------------------------------- | :-------------------------------- |
 | `static int foo(...);`                  | `fun foo(ident1,...)/n`           |
 | `extern int foo(...);`                  | `fun foo(...)/n`                  |
@@ -19,3 +20,146 @@ Network protocol implementations on C programming language translator. Translate
 | `enum foo { BOO = 0 };`                 | `type foo. const BOO: foo.`       |
 | `static void foo(...) { ... }`          | `let foo(...) = ....`             |
 | `int main(void) { ... }`                | `process ...`                     |
+
+## Declarations
+
+TODO: fill in
+
+## Definitions
+
+TODO: fill in
+
+## Statements
+
+### If statements
+
+#### w/ else
+
+```c
+/* statements-before */
+if (/* condition */)
+    /* then-branch */
+else
+    /* else-branch */
+/* statements-after */
+```
+---
+```ocaml
+new if_cond0: channel;
+new if_end0: channel;
+(
+    (<statements-before>; out(if_cond0, <condition>))
+    | (in(if_cond0, _cond0: bool);
+       if _cond then
+         <then-branch>; out(if_end0, true)
+       else
+         <else_branch>; out(if_end0, true))
+    | (in(if_end0: _tmpvar0: bool); <statements-after>)
+)
+```
+
+#### w/o else
+
+```c
+/* statements-before */
+if (/* condition */)
+    /* then-branch */
+/* statements-after */
+```
+---
+```ocaml
+new if_cond0: channel;
+new if_end0: channel;
+(
+    (<statements-before>; out(if_cond0, <condition>))
+    | (in(if_cond0, _cond0: bool);
+       if _cond then
+         <then-branch>; out(if_end0, true)
+       else
+         out(if_end0, true))
+    | (in(if_end0: _tmpvar0: bool); <statements-after>)
+)
+```
+
+### Loops
+
+#### While loops
+
+```c
+<операторы до цикла>
+while (<условие>) {
+  <тело цикла> }
+<операторы после цикла>
+```
+---
+```ocaml
+new _while0_begin: channel;
+new _while0_end: channel;
+new _while0_cond: channel;
+((<операторы до цикла>;
+  out(_while0_cond, <условие>))
+ |!(in(_while0_cond, _cond0: bool);
+    if _cond0 then
+      out(_while0_begin, true)
+    else
+      out(_while0_end, true))
+ |!(in(_while0_begin, _tmp0: bool);
+    <тело цикла>
+    out(_while0_cond, <условие>))
+ |(in(_while0_end, _tmp1: bool);
+   <операторы после цикла>))
+```
+
+#### Do-while loops
+
+```c
+// операторы до цикла>
+do {
+    /* тело цикла */
+} while (/* условие */)
+/* операторы после цикла */
+```
+---
+```ocaml
+new _dowhile0_begin: channel;
+new _dowhile0_end: channel;
+new _dowhile0_cond: channel;
+((<операторы до цикла>;
+  out(_dowhile0_cond, true))
+ |!(in(_dowhile0_cond, _cond0: bool);
+    if _cond0 then
+      out(_dowhile0_begin, true)
+    else
+      out(_dowhile0_end, true))
+ |!(in(_dowhile0_begin, _tmp0: bool);
+    <тело цикла>
+    out(_dowhile0_cond, <условие>))
+ |(in(_dowhile0_end, _tmp1: bool);
+   <операторы после цикла>))
+```
+
+#### For-loops
+
+```c
+/* операторы до цикла */
+for (/* инициализация */; /* условие */; /* выражение */)
+    /* тело цикла */
+/* операторы после цикла */
+```
+---
+```ocaml
+new _for0_begin: channel;
+new _for0_end: channel;
+new _for0_cond: channel;
+((<операторы до цикла> <инициализация> out(_for0_cond, <условие>))
+ |!(in(_for0_cond, _cond0: bool);
+    if _cond0 then
+      out(_for0_begin, true)
+    else
+      out(_for0_end, true))
+ |!(in(_for0_begin, _tmp0: bool);
+    <тело цикла>
+    <выражение>
+    out(_for0_cond, <условие>))
+ |(in(_for0_end, _tmp1: bool); <операторы после цикла>))
+```
