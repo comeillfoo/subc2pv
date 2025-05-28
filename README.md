@@ -54,7 +54,7 @@ new if_end0: channel;
          <then-branch>; out(if_end0, true)
        else
          <else_branch>; out(if_end0, true))
-    | (in(if_end0: _tmpvar0: bool); <statements-after>)
+    | (in(if_end0, _tmpvar0: bool); <statements-after>)
 )
 ```
 

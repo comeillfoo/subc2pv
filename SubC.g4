@@ -117,7 +117,15 @@ functionDefinition
     ;
 
 compoundStatement
-    : '{' blockItem* '}'
+    : '{' ifBlockItems? '}'
+    ;
+
+ifBlockItems
+    : ifBlockItems ifStatement ifBlockItems # ifBothItemsAround
+    | ifBlockItems ifStatement              # ifNoSubsequentItems
+    | ifStatement ifBlockItems              # ifNoPrecedingItems
+    | ifStatement                           # ifNoItemsAround
+    | blockItem ifBlockItems?               # justIfBlockItems
     ;
 
 blockItem
@@ -140,12 +148,12 @@ statement
     | ifStatement
     ;
 
-assignmentStatement
-    : Identifier assignmentOperator expression ';'
-    ;
-
 ifStatement
     : 'if' '(' expression ')' statement ('else' statement)?
+    ;
+
+assignmentStatement
+    : Identifier assignmentOperator expression ';'
     ;
 
 assignmentOperator
