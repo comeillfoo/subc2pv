@@ -325,13 +325,25 @@ class AssignmentsTestCase(unittest.TestCase):
 
 
 class IfStatementTestCase(unittest.TestCase):
-    def test_no_else_branch(self):
+    def test_without_else_branch(self):
         source = 'void main() { if (false) { int a = 8; } }'
         expected = '''let main() = new if_cond0: channel;
 new if_end0: channel;
 ((
 out(if_cond0, false))
 | (in(if_cond0, _cond0: bool); if _cond0 then new a: nat; out(if_end0, true) else out(if_end0, true))
+| (in(if_end0, _tmpvar0: bool);
+)).'''
+        model = Translator.from_line(source, False).translate()
+        self.assertEqual(('main', expected), model.functions[0])
+
+    def test_with_else_branch(self):
+        source = 'void main() { if (false) { int a = 8; } else { short b; } }'
+        expected = '''let main() = new if_cond0: channel;
+new if_end0: channel;
+((
+out(if_cond0, false))
+| (in(if_cond0, _cond0: bool); if _cond0 then new a: nat; out(if_end0, true) else new b: nat; out(if_end0, true))
 | (in(if_end0, _tmpvar0: bool);
 )).'''
         model = Translator.from_line(source, False).translate()
