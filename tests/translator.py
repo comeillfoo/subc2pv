@@ -104,8 +104,7 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
         model = Translator.from_line(
             self._dict2fielded_def(name, ttype=ttype), False).translate()
         self.assertTrue(not model.functions)
-        expected = '\n'.join([f'type {name}.', '',
-                                f'fun _{name}_init(): {name}.'])
+        expected = '\n'.join([f'type {name}.', f'fun _{name}_init(): {name}.'])
         self.assertEqual(model.preamble, expected)
 
     def _fielded_with_single_enum_subtest(self, name: str, ttype: str):
@@ -114,9 +113,9 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
             False).translate()
         self.assertTrue(not model.functions)
         expected = '\n'.join([
-            f'type {name}.', '', f'fun _{name}_get_x(self: {name}): A.',
-            f'fun _{name}_set_x(self: {name}, x: A): {name}.',
-            f'fun _{name}_init(x: A): {name}.'])
+            f'type {name}.', f'fun _{name}_get_x({name}): A.',
+            f'fun _{name}_set_x({name}, A): {name}.',
+            f'fun _{name}_init(A): {name}.'])
         self.assertEqual(model.preamble, expected)
 
     def _fielded_single_integer_helper(self, name: str, ttype: str, fname: str,
@@ -126,9 +125,9 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
         model = translator.translate()
         self.assertTrue(not model.functions)
         expected = '\n'.join([
-            f'type {name}.', '', f'fun _{name}_get_{fname}(self: {name}): nat.',
-            f'fun _{name}_set_{fname}(self: {name}, {fname}: nat): {name}.',
-            f'fun _{name}_init({fname}: nat): {name}.'])
+            f'type {name}.', f'fun _{name}_get_{fname}({name}): nat.',
+            f'fun _{name}_set_{fname}({name}, nat): {name}.',
+            f'fun _{name}_init(nat): {name}.'])
         self.assertEqual(model.preamble, expected)
 
     def _fielded_single_integer_subtest(self, name: str, ttype: str):
@@ -144,9 +143,9 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
             model = Translator.from_line(fielded_definition, False).translate()
             self.assertTrue(not model.functions)
             expected = '\n'.join([
-                f'type {name}.', '', f'fun _{name}_get_{fname}(self: {name}): bool.',
-                f'fun _{name}_set_{fname}(self: {name}, {fname}: bool): {name}.',
-                f'fun _{name}_init({fname}: bool): {name}.'])
+                f'type {name}.', f'fun _{name}_get_{fname}({name}): bool.',
+                f'fun _{name}_set_{fname}({name}, bool): {name}.',
+                f'fun _{name}_init(bool): {name}.'])
             self.assertEqual(model.preamble, expected)
 
     def test_fielded(self):
@@ -199,7 +198,7 @@ class FunctionsDeclarationsTestCase(unittest.TestCase):
 
     def _function_declare_nonvoid_1_arity(self, name: str, anon: bool):
         tmplt = 'static {} %s({});' % (name)
-        pname = 'p0' if anon else f'arg_{name}'
+        pname = '_p0' if anon else f'arg_{name}'
         def _test_single(rtype: str, rpvtype: str, ptype: str, ppvtype: str):
             param = ptype + ('' if anon else f' {pname}')
             model = Translator.from_line(tmplt.format(rtype, param),
