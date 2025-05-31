@@ -51,7 +51,7 @@ class EnumsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
     def _enum_declaration_subtest(self, name: str):
         model = Translator.from_line(f'enum {name};', False).translate()
         self.assertTrue(not model.functions, 'No functions should be parsed')
-        self.assertEqual(model.preamble, f'type {name}.\n')
+        self.assertEqual(model.preamble, f'type {name}.')
 
     def test_enum_declaration(self):
         for name in IDENTIFIERS:
@@ -67,7 +67,6 @@ class EnumsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
             lines.append(f'\t{ec_name}{ec_value},')
             expected.append(f'const {ec_name}: {name}.')
         lines.append('};')
-        expected.append('\n')
 
         model = Translator.from_lines(lines, False).translate()
         self.assertTrue(not model.functions)
@@ -90,7 +89,7 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
     def _fielded_declaration_subtest(self, name: str, ttype: str):
         model = Translator.from_line(f'{ttype} {name};', False).translate()
         self.assertTrue(not model.functions)
-        self.assertEqual(model.preamble, f'type {name}.\n')
+        self.assertEqual(model.preamble, f'type {name}.')
 
     def _dict2fielded_def(self, name: str, fields: Tuple[str, str] = [],
                           ttype: str = 'struct') -> str:
@@ -188,7 +187,7 @@ class FunctionsDeclarationsTestCase(unittest.TestCase):
     def _function_declare_void_1_arity(self, name: str, anon: bool):
         tmplt = 'void {}({});'
         for ptype, pvtype in TESTS_TYPES.items():
-            param_name = 'p0' if anon else f'arg_{name}'
+            param_name = '_p0' if anon else f'arg_{name}'
             param = ptype + ('' if anon else f' {param_name}')
             model = Translator.from_line(tmplt.format(name, param),
                                          False).translate()
@@ -204,7 +203,7 @@ class FunctionsDeclarationsTestCase(unittest.TestCase):
             model = Translator.from_line(tmplt.format(rtype, param),
                                          False).translate()
             self.assertTrue(not model.preamble)
-            self.assertEqual((name, f'fun {name}({pname}: {ppvtype}): {rpvtype}.'),
+            self.assertEqual((name, f'fun {name}({ppvtype}): {rpvtype}.'),
                              model.functions[0])
         for rtype, rpvtype in TESTS_TYPES.items():
             for ptype, ppvtype in TESTS_TYPES.items():

@@ -5,15 +5,6 @@ import functools
 from listeners.FunctionsListener import FunctionsListener
 
 
-def protect_from_redeclaration(function):
-    def wrapper(self, ctx):
-        fname = str(ctx.Identifier())
-        if fname in self._functions:
-            raise Exception(f'Function {fname} already defined/declared')
-        function(self, ctx)
-    return wrapper
-
-
 def prepend_non_empty(line: str, cur: str) -> str:
     return ('' if not line else (line + '\n')) + cur
 
@@ -28,7 +19,6 @@ class SubC2PVListener(FunctionsListener):
     def __init__(self):
         super().__init__()
         self._exprs: dict[Any, str] = {}
-        self._functions: dict[str, str] = {}
 
         self._string_lits: dict[str, str] = {}
         self._string_lits_id = -1
@@ -36,23 +26,6 @@ class SubC2PVListener(FunctionsListener):
         self._tmpvar_id = -1
         self._if_id = -1
         self._loops_id = -1
-
-    def _declare_function(self, ctx, is_void: bool = False) -> dict[str, str]:
-        fname = str(ctx.Identifier())
-        params = self._tree.get(ctx.functionParamsDeclaration(), '')
-        return { fname: ('let {}({}) = 0.' if is_void else 'fun {}({}):') \
-            .format(fname, params) }
-
-    @protect_from_redeclaration
-    def exitVoidFunctionDeclaration(self, ctx):
-        self._functions.update(self._declare_function(ctx, True))
-        return super().exitVoidFunctionDeclaration(ctx)
-
-    protect_from_redeclaration
-    def exitNonVoidFunctionDeclaration(self, ctx):
-        name, body = self._declare_function(ctx).popitem()
-        self._functions[name] = body + f' {self._tree[ctx.typeSpecifier()]}.'
-        return super().exitNonVoidFunctionDeclaration(ctx)
 
     def _define_function(self, ctx, is_void: bool = False) -> dict[str, str]:
         fname = str(ctx.Identifier())

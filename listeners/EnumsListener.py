@@ -6,15 +6,16 @@ from libs.SubCParser import SubCParser
 from ObjectsCounter import ObjectsCounter
 
 
-def enumerator2const(enumeration: str,
-                     ctx: SubCParser.EnumeratorContext) -> str:
-    return f'const {str(ctx.Identifier())}: {enumeration}.'
+def enumerators2consts(enumeration: str):
+    def enumerator2const(ctx: SubCParser.EnumeratorContext) -> str:
+        return f'const {str(ctx.Identifier())}: {enumeration}.'
+    return enumerator2const
 
 
 def define_enumeration(name: str,
                        ctx: SubCParser.EnumDefinitionContext) -> list[str]:
     lines = [f'type {name}.']
-    lines.extend(map(enumerator2const, ctx.enumerator()))
+    lines.extend(map(enumerators2consts(name), ctx.enumerator()))
     return lines
 
 
