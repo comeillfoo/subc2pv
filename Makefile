@@ -7,7 +7,11 @@ PARSER_FILES=SubC.interp SubC.tokens SubCLexer.interp subclexer.rs SubCLexer.tok
 	subclistener.rs subcparser.rs SubCLexer.py SubCListener.py SubCParser.py
 
 TESTSDIR=tests
-TESTS=lut translator
+TESTS=LUTBasicDirectivesTestCase TranslatorBasicTestCase \
+	EnumsDeclarationsAndDefinitionsTestCase \
+	UnionsOrStructsDeclarationsAndDefinitionsTestCase \
+	FunctionsDeclarationsTestCase FunctionDefinitionsTestCase \
+	AssignmentsTestCase IfStatementTestCase ExpressionsTestCase
 
 all: SubC.g4
 	$(ANTLR4) -o $(PARSERDIR) -Dlanguage=Python3 $<

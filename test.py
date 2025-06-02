@@ -2,16 +2,38 @@
 import unittest
 import itertools
 
-import tests.lut
-import tests.translator
+from tests.LUTBasicDirectivesTestCase import LUTBasicDirectivesTestCase
+from tests.TranslatorBasicTestCase import TranslatorBasicTestCase
+from tests.EnumsDeclarationsAndDefinitionsTestCase import EnumsDeclarationsAndDefinitionsTestCase
+from tests.UnionsOrStructsDeclarationsAndDefinitionsTestCase import UnionsOrStructsDeclarationsAndDefinitionsTestCase
+from tests.FunctionsDeclarationsTestCase import FunctionsDeclarationsTestCase
+from tests.FunctionDefinitionsTestCase import FunctionDefinitionsTestCase
+from tests.AssignmentsTestCase import AssignmentsTestCase
+from tests.IfStatementTestCase import IfStatementTestCase
+from tests.ExpressionsTestCase import ExpressionsTestCase
+
+
+def lut_suite() -> list:
+    return [LUTBasicDirectivesTestCase]
+
+def translator_suite() -> list:
+    return [
+        TranslatorBasicTestCase,
+        EnumsDeclarationsAndDefinitionsTestCase,
+        UnionsOrStructsDeclarationsAndDefinitionsTestCase,
+        FunctionsDeclarationsTestCase,
+        FunctionDefinitionsTestCase,
+        AssignmentsTestCase,
+        IfStatementTestCase,
+        ExpressionsTestCase,
+    ]
 
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
     suites = unittest.TestSuite(
         map(loader.loadTestsFromTestCase,
-            itertools.chain(tests.lut.suite(),
-                            tests.translator.suite()))
+            itertools.chain(lut_suite(), translator_suite()))
     )
     runner = unittest.TextTestRunner()
     _ = runner.run(suites)
