@@ -2,7 +2,7 @@
 from typing import Any
 import functools
 
-from listeners.FunctionsListener import FunctionsListener
+from listeners.StatementsListener import StatementsListener
 
 
 def prepend_non_empty(line: str, cur: str) -> str:
@@ -15,7 +15,7 @@ class ExpressionNode:
         self.expr = tracker._exprs[ctx]
         self.tree = tracker._tree.get(ctx, '')
 
-class SubC2PVListener(FunctionsListener):
+class SubC2PVListener(StatementsListener):
     def __init__(self):
         super().__init__()
         self._exprs: dict[Any, str] = {}
@@ -23,67 +23,8 @@ class SubC2PVListener(FunctionsListener):
         self._string_lits: dict[str, str] = {}
         self._string_lits_id = -1
 
-        self._tmpvar_id = -1
         self._if_id = -1
         self._loops_id = -1
-
-    def exitBlockItem(self, ctx):
-        if ctx.statement() is not None:
-            self._tree[ctx] = self._tree[ctx.statement()]
-        elif ctx.variableDeclaration() is not None:
-            self._tree[ctx] = self._tree[ctx.variableDeclaration()]
-        return super().exitBlockItem(ctx)
-
-    def exitNoInitializerVariable(self, ctx):
-        var_name = str(ctx.Identifier())
-        var_type = self._tree[ctx.typeSpecifier()]
-        self._tree[ctx] = f'new {var_name}: {var_type};'
-        return super().exitNoInitializerVariable(ctx)
-
-    def exitObjectDeclarationVariable(self, ctx):
-        var_name = str(ctx.Identifier())
-        var_type = self._tree[ctx.typeSpecifier()]
-        self._tree[ctx] = f'new {var_name}: {var_type};'
-        return super().exitObjectDeclarationVariable(ctx)
-
-    def exitStatement(self, ctx):
-        self._tree[ctx] = self._tree[ctx.getChild(0)]
-        return super().exitStatement(ctx)
-
-    def _new_tmpvar(self) -> str:
-        self._tmpvar_id += 1
-        return f'_tmpvar{self._tmpvar_id}'
-
-    def exitAssignmentOperator(self, ctx):
-        op2tmplt = {
-            '': '',
-            '*': '_mul({}, {})',
-            '/': '_div({}, {})',
-            '%': '_mod({}, {})',
-            '+': '{} + {}',
-            '-': '{} - {}',
-            '<<': '_shl({}, {})',
-            '>>': '_shr({}, {})',
-            '&': '_and({}, {})',
-            '^': '_xor({}, {})',
-            '|': '_or({}, {})'
-        }
-        self._tree[ctx] = op2tmplt[ctx.getText().rstrip('=')]
-        return super().exitAssignmentOperator(ctx)
-
-    def exitAssignmentStatement(self, ctx):
-        expr = self._exprs[ctx.expression()]
-        ident = str(ctx.Identifier())
-        tmplt = self._tree[ctx.assignmentOperator()]
-        lines = []
-        if tmplt:
-            tmpvar = self._new_tmpvar()
-            lines.append(f'let {tmpvar} = ' + tmplt.format(ident, expr) + ' in ')
-            expr = tmpvar
-        lines.append(f'let {ident} = {expr} in ')
-        self._tree[ctx] = prepend_non_empty(self._tree.get(ctx.expression(), ''),
-                                            '\n'.join(lines))
-        return super().exitAssignmentStatement(ctx)
 
     def _new_string_literal(self, string: str) -> str:
         if string not in self._string_lits:
@@ -130,7 +71,7 @@ class SubC2PVListener(FunctionsListener):
         return super().exitBasePostfixExpression(ctx)
 
     def _new_unary_expr(self, parent: Any, child: Any, tmplt: str):
-        tmpvar = self._new_tmpvar()
+        tmpvar = self._tvars.next()
         expr = self._exprs[child]
         self._tree[parent] = prepend_non_empty(self._tree.get(child, ''),
                                                tmplt % (tmpvar, expr))
@@ -147,7 +88,7 @@ class SubC2PVListener(FunctionsListener):
         return super().exitPostDecrementExpression(ctx)
 
     def exitFunctionCallExpression(self, ctx):
-        tmpvar = self._new_tmpvar()
+        tmpvar = self._tvars.next()
         expressions = ctx.expression() or []
         prev = functools.reduce(prepend_non_empty,
                                 map(lambda expr: self._tree.get(expr, ''),
@@ -216,7 +157,7 @@ class SubC2PVListener(FunctionsListener):
 
     def _new_binary_expression(self, parent: Any, left: Any, right: Any,
                                tmplt: str):
-        tmpvar = self._new_tmpvar()
+        tmpvar = self._tvars.next()
         self._exprs[parent] = tmpvar
         lvar = self._exprs[left]
         rvar = self._exprs[right]
@@ -373,7 +314,7 @@ class SubC2PVListener(FunctionsListener):
         left = ExpressionNode(ctx.expression(), self)
         right = ExpressionNode(ctx.conditionalExpression(), self)
 
-        tmpvar = self._new_tmpvar()
+        tmpvar = self._tvars.next()
         self._exprs[ctx] = tmpvar
 
         code = f'let {tmpvar} = _ternary({cond.expr}, {left.expr}, {right.expr}) in '
@@ -414,7 +355,7 @@ class SubC2PVListener(FunctionsListener):
             f'| (in({if_cond}, {cond}: bool); if {cond} then {then_br} else {else_br})',
         ])
 
-        tmpvar = self._new_tmpvar()
+        tmpvar = self._tvars.next()
         lines.append(f'| (in({if_end}, {tmpvar}: bool);')
         lines.extend(subsequent)
         lines.append('))')

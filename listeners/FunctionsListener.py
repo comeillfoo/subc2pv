@@ -13,6 +13,10 @@ FunctionDefinitionContexts = Union[SubCParser.VoidFunctionDefinitionContext,
 FunctionArg = Tuple[str, str]
 
 
+FUN_TMPLT: str = 'fun {}({}): {}.'
+FUN_MACRO_TMPLT: str = 'let {}({}) = {}.'
+
+
 def anonymous_args(types: Iterable[str]) -> Iterable[FunctionArg]:
     return [(_type, f'_p{i}') for i, _type in enumerate(types)]
 
@@ -30,6 +34,7 @@ def protect_from_redeclaration(function):
 
 
 class FunctionsListener(TypesListener):
+
     def __init__(self):
         super().__init__()
         self._functions: dict[str, str] = {}
@@ -57,7 +62,7 @@ class FunctionsListener(TypesListener):
         params = ', '.join(map(arg2pv,
                                self._tree.get(ctx.functionParamsDeclaration(),
                                               [])))
-        self._functions[name] = f'let {name}({params}) = 0.'
+        self._functions[name] = FUN_MACRO_TMPLT.format(name, params, '0')
         return super().exitVoidFunctionDeclaration(ctx)
 
     @protect_from_redeclaration
@@ -68,7 +73,7 @@ class FunctionsListener(TypesListener):
                                self._tree.get(ctx.functionParamsDeclaration(),
                                               [])))
         rettype = self._tree[ctx.typeSpecifier()]
-        self._functions[name] = f'fun {name}({params}): {rettype}.'
+        self._functions[name] = FUN_TMPLT.format(name, params, rettype)
         return super().exitNonVoidFunctionDeclaration(ctx)
 
     def _define_function(self, ctx: FunctionDefinitionContexts,
@@ -81,7 +86,7 @@ class FunctionsListener(TypesListener):
         body: str = self._tree.get(ctx.compoundStatement(), '0').rstrip(';')
         if body.endswith(' in '):
             body += '0'
-        body = ('let {}({}) = {}.').format(name, params, body)
+        body = FUN_MACRO_TMPLT.format(name, params, body)
         self._functions[name] = body
 
     def exitVoidFunctionDefinition(self,
