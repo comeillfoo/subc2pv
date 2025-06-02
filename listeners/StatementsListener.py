@@ -7,7 +7,6 @@ from listeners.VariablesListener import VariablesListener
 
 
 ASSIGN_OPERATORS = {
-    '': '',
     '*': '_mul({}, {})',
     '/': '_div({}, {})',
     '%': '_mod({}, {})',
@@ -17,7 +16,7 @@ ASSIGN_OPERATORS = {
     '>>': '_shr({}, {})',
     '&': '_and({}, {})',
     '^': '_xor({}, {})',
-    '|': '_or({}, {})'
+    '|': '_or({}, {})',
 }
 
 
@@ -46,17 +45,21 @@ class StatementsListener(VariablesListener):
 
     def exitAssignmentStatement(self,
             ctx: SubCParser.AssignmentStatementContext):
-        source = self._exprs[ctx.expression()]
+        ectx = ctx.expression()
+        pre_statements = self._tree[ectx]
+        source = self._exprs[ectx]
         target = str(ctx.Identifier())
         op = ctx.assignmentOperator().getText().rstrip('=')
-        if not op:
-            self._tree[ctx] = self.LET_PAT_TMPLT.format(target, source)
-            return super().exitAssignmentStatement(ctx)
 
-        tmplt = ASSIGN_OPERATORS[op]
-        tmpvar = self._tvars.next()
-        self.tree[ctx] = '\n'.join([
-            self.LET_PAT_TMPLT.format(tmpvar, tmplt.format(target, source)),
-            self.LET_PAT_TMPLT.format(target, tmpvar)
-        ])
+        lines = [] if not pre_statements else [pre_statements]
+        if not op:
+            lines.append(self.LET_PAT_TMPLT.format(target, source))
+        else:
+            tmplt = ASSIGN_OPERATORS[op]
+            tmpvar = self._tvars.next()
+            lines.extend([
+                self.LET_PAT_TMPLT.format(tmpvar, tmplt.format(target, source)),
+                self.LET_PAT_TMPLT.format(target, tmpvar)
+            ])
+        self._tree[ctx] = '\n'.join(lines)
         return super().exitAssignmentStatement(ctx)
