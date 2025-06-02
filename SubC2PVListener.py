@@ -18,7 +18,6 @@ class ExpressionNode:
 class SubC2PVListener(StatementsListener):
     def __init__(self):
         super().__init__()
-        self._exprs: dict[Any, str] = {}
 
         self._string_lits: dict[str, str] = {}
         self._string_lits_id = -1
