@@ -27,24 +27,6 @@ class SubC2PVListener(FunctionsListener):
         self._if_id = -1
         self._loops_id = -1
 
-    def _define_function(self, ctx, is_void: bool = False) -> dict[str, str]:
-        fname = str(ctx.Identifier())
-        params = self._tree.get(ctx.functionParamsDefinition(), '')
-        if not is_void:
-            params += f'{"" if not params else ", "}_ret_ch: channel'
-        body: str = self._tree.get(ctx.compoundStatement(), '0').rstrip(';')
-        if body.endswith(' in '):
-            body += '0'
-        return { fname: ('let {}({}) = {}.').format(fname, params, body) }
-
-    def exitVoidFunctionDefinition(self, ctx):
-        self._functions.update(self._define_function(ctx, True))
-        return super().exitVoidFunctionDefinition(ctx)
-
-    def exitNonVoidFunctionDefinition(self, ctx):
-        self._functions.update(self._define_function(ctx))
-        return super().exitNonVoidFunctionDefinition(ctx)
-
     def exitBlockItem(self, ctx):
         if ctx.statement() is not None:
             self._tree[ctx] = self._tree[ctx.statement()]

@@ -8,14 +8,16 @@ FunctionParamsContexts = Union[SubCParser.FunctionParamsDefinitionContext,
                                SubCParser.FunctionParamsDeclarationContext]
 FunctionDeclarationContexts = Union[SubCParser.VoidFunctionDeclarationContext,
                                     SubCParser.NonVoidFunctionDeclarationContext]
+FunctionDefinitionContexts = Union[SubCParser.VoidFunctionDefinitionContext,
+                                   SubCParser.NonVoidFunctionDefinitionContext]
 FunctionArg = Tuple[str, str]
 
 
 def anonymous_args(types: Iterable[str]) -> Iterable[FunctionArg]:
-    return [(f'_p{i}', _type) for i, _type in enumerate(types)]
+    return [(_type, f'_p{i}') for i, _type in enumerate(types)]
 
 def arg2pv(param: Tuple[str, str]) -> str:
-    name, _type = param
+    _type, name = param
     return name + ': ' + _type
 
 def protect_from_redeclaration(function):
@@ -32,29 +34,29 @@ class FunctionsListener(TypesListener):
         super().__init__()
         self._functions: dict[str, str] = {}
 
-    def _args2pv(self, ctx: FunctionParamsContexts,
-                 is_anon: bool = True) -> str:
-        types = map(self._tree.get, ctx.typeSpecifier())
-        return ', '.join(map(arg2pv, anonymous_args(types) if is_anon \
-                             else zip(map(str, ctx.Identifier()), types)))
-
     def exitFunctionParamsDefinition(self,
             ctx: SubCParser.FunctionParamsDefinitionContext):
-        self._tree[ctx] = self._args2pv(ctx, False)
+        self._tree[ctx] = list(zip(map(self._tree.get, ctx.typeSpecifier()),
+                                   map(str, ctx.Identifier())))
         return super().exitFunctionParamsDefinition(ctx)
 
     def exitFunctionParamsDeclaration(self,
             ctx: SubCParser.FunctionParamsDeclarationContext):
         other_ctx = ctx.functionParamsDefinition()
-        self._tree[ctx] = self._args2pv(ctx) if other_ctx is None \
-            else self._tree[other_ctx]
+        if other_ctx is None:
+            self._tree[ctx] = anonymous_args(map(self._tree.get,
+                                                 ctx.typeSpecifier()))
+        else:
+            self._tree[ctx] = self._tree[other_ctx]
         return super().exitFunctionParamsDeclaration(ctx)
 
     @protect_from_redeclaration
     def exitVoidFunctionDeclaration(self,
             ctx: SubCParser.VoidFunctionDeclarationContext):
         name = str(ctx.Identifier())
-        params = self._tree.get(ctx.functionParamsDeclaration(), '')
+        params = ', '.join(map(arg2pv,
+                               self._tree.get(ctx.functionParamsDeclaration(),
+                                              [])))
         self._functions[name] = f'let {name}({params}) = 0.'
         return super().exitVoidFunctionDeclaration(ctx)
 
@@ -62,10 +64,32 @@ class FunctionsListener(TypesListener):
     def exitNonVoidFunctionDeclaration(self,
             ctx: SubCParser.NonVoidFunctionDeclarationContext):
         name = str(ctx.Identifier())
-        params = self._tree.get(ctx.functionParamsDeclaration(), '').strip()
-        if params:
-            params = ', '.join(map(lambda s: s.split(':')[1].strip(),
-                                   params.split(',')))
+        params = ', '.join(map(lambda p: p[0],
+                               self._tree.get(ctx.functionParamsDeclaration(),
+                                              [])))
         rettype = self._tree[ctx.typeSpecifier()]
         self._functions[name] = f'fun {name}({params}): {rettype}.'
         return super().exitNonVoidFunctionDeclaration(ctx)
+
+    def _define_function(self, ctx: FunctionDefinitionContexts,
+                         is_void: bool = False):
+        name = str(ctx.Identifier())
+        params = self._tree.get(ctx.functionParamsDefinition(), [])
+        if not is_void:
+            params.append(('channel', '_ret_ch'))
+        params = ', '.join(map(arg2pv, params))
+        body: str = self._tree.get(ctx.compoundStatement(), '0').rstrip(';')
+        if body.endswith(' in '):
+            body += '0'
+        body = ('let {}({}) = {}.').format(name, params, body)
+        self._functions[name] = body
+
+    def exitVoidFunctionDefinition(self,
+            ctx: SubCParser.VoidFunctionDefinitionContext):
+        self._define_function(ctx, True)
+        return super().exitVoidFunctionDefinition(ctx)
+
+    def exitNonVoidFunctionDefinition(self,
+            ctx: SubCParser.NonVoidFunctionDefinitionContext):
+        self._define_function(ctx)
+        return super().exitNonVoidFunctionDefinition(ctx)
