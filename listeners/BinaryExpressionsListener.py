@@ -16,9 +16,9 @@ class BinaryExpressionsListener(PostfixExpressionsListener):
         larg, prel = self._exprs[left], self._tree.get(left, '')
         rarg, prer = self._exprs[right], self._tree.get(right, '')
         # TODO: consider order of prepends
-        lines = [] if not prel else [prel]
-        if prer:
-            lines.append(prer)
+        lines = [] if not prer else [prer]
+        if prel:
+            lines.append(prel)
 
         target = self._tvars.next()
         lines.append(self.LET_PAT_TMPLT.format(
