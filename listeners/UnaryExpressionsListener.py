@@ -7,7 +7,6 @@ from listeners.StatementsListener import StatementsListener
 
 
 STRING_LIT_TMPLT: str = 'free {}: bitstring [private]. (* "{}" *)'
-TYPED_VAR_TMPLT: str = '{}: {}'
 CASTER_NAME_TMPLT: str = '_cast2{}'
 CASTER_TMPLT: str = 'fun {}(any_type): {}.'
 
@@ -22,6 +21,8 @@ StringLiterals = NamedTuple('StringLiterals', strings=dict[str, str],
 
 
 class UnaryExpressionsListener(StatementsListener):
+    TYPED_VAR_TMPLT: str = '{}: {}'
+
     def __init__(self):
         super().__init__()
         self._strlits = StringLiterals({}, ObjectsCounter('_strlit'))
@@ -83,8 +84,8 @@ class UnaryExpressionsListener(StatementsListener):
         pre_statements = self._tree.get(child, '')
 
         lines = [] if not pre_statements else [pre_statements]
-        lines.append(self.LET_PAT_TMPLT.format(TYPED_VAR_TMPLT.format(tvar, rtype),
-                                               tmplt.format(expr)))
+        lines.append(self.LET_PAT_TMPLT.format(
+            self.TYPED_VAR_TMPLT.format(tvar, rtype), tmplt.format(expr)))
         self._tree[parent] = '\n'.join(lines)
         self._exprs[parent] = tvar
 

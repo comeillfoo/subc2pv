@@ -2,7 +2,7 @@
 from typing import Any
 import functools
 
-from listeners.UnaryExpressionsListener import UnaryExpressionsListener
+from listeners.PostfixExpressionsListener import PostfixExpressionsListener
 
 
 def prepend_non_empty(line: str, cur: str) -> str:
@@ -16,7 +16,7 @@ class ExpressionNode:
         self.tree = tracker._tree.get(ctx, '')
 
 
-class SubC2PVListener(UnaryExpressionsListener):
+class SubC2PVListener(PostfixExpressionsListener):
     def __init__(self):
         super().__init__()
 
@@ -26,20 +26,6 @@ class SubC2PVListener(UnaryExpressionsListener):
     def _pass2parent(self, ctx: Any, child_ctx: Any):
         self._exprs[ctx] = self._exprs[child_ctx]
         self._tree[ctx] = self._tree.get(child_ctx, '')
-
-    def exitFunctionCallExpression(self, ctx):
-        tmpvar = self._tvars.next()
-        expressions = ctx.expression() or []
-        prev = functools.reduce(prepend_non_empty,
-                                map(lambda expr: self._tree.get(expr, ''),
-                                    expressions), '')
-        fun = str(ctx.Identifier())
-        # TODO: handle functions with definitions
-        params = ', '.join(map(self._exprs.get, expressions))
-        self._tree[ctx] = prepend_non_empty(prev,
-            f'let {tmpvar} = {fun}({params}) in ')
-        self._exprs[ctx] = tmpvar
-        return super().exitFunctionCallExpression(ctx)
 
     def exitBaseMultiplicativeExpression(self, ctx):
         self._pass2parent(ctx, ctx.castExpression())
