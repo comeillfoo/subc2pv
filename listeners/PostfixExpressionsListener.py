@@ -9,8 +9,11 @@ class PostfixExpressionsListener(UnaryExpressionsListener):
         target = self._tvars.next()
         func = str(ctx.Identifier())
         ctxes = ctx.expression() or []
-        args = ', '.join(map(self._exprs.get, ctxes)) # TODO: handle functions with definitions
-        lines = list(map(self._tree.get, ctxes)) # TODO: consider order or statements
+        # TODO: handle functions with definitions
+        args = ', '.join(map(self._exprs.get, ctxes))
+        # TODO: consider order or statements
+        lines = list(filter(lambda c: not (not c),
+                            map(lambda _ctx: self._tree.get(_ctx, ''), ctxes)))
         lines.append(self.LET_PAT_TMPLT.format(target, func + '(' + args + ')'))
         self._tree[ctx] = '\n'.join(lines)
         self._exprs[ctx] = target
