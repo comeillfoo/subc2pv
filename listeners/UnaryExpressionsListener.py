@@ -104,7 +104,7 @@ class UnaryExpressionsListener(StatementsListener):
         return super().exitBaseUnaryExpression(ctx)
 
     def exitSizeofExpression(self, ctx: SubCParser.SizeofExpressionContext):
-        self._unary_expr(ctx, ctx.unaryExpression(), 'nat', 'sizeof({})')
+        self._unary_expr(ctx, ctx.unaryExpression(), 'nat', '_sizeof({})')
         return super().exitSizeofExpression(ctx)
 
     def exitLogicalNotExpression(self,
