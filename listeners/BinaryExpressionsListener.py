@@ -5,17 +5,6 @@ from libs.SubCParser import SubCParser
 from listeners.PostfixExpressionsListener import PostfixExpressionsListener
 
 
-def prepend_non_empty(line: str, cur: str) -> str:
-    return ('' if not line else (line + '\n')) + cur
-
-
-class ExpressionNode:
-    def __init__(self, ctx, tracker):
-        self.ctx = ctx
-        self.expr = tracker._exprs[ctx]
-        self.tree = tracker._tree.get(ctx, '')
-
-
 class BinaryExpressionsListener(PostfixExpressionsListener):
     def exitBaseMultiplicativeExpression(self,
             ctx: SubCParser.BaseMultiplicativeExpressionContext):
