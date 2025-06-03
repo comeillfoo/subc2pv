@@ -26,7 +26,7 @@ class StatementsListener(VariablesListener):
     def __init__(self):
         super().__init__()
         self._exprs: dict[Any, str] = {}
-        self._tvars = ObjectsCounter('_tmpvar')
+        self._tvars = ObjectsCounter('_tvar')
 
     def exitStatement(self, ctx: SubCParser.StatementContext):
         self._tree[ctx] = self._tree[ctx.getChild(0)]

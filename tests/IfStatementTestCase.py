@@ -13,7 +13,7 @@ new if_end0: channel;
 ((
 out(if_cond0, false))
 | (in(if_cond0, _cond0: bool); if _cond0 then new a: nat; out(if_end0, true) else out(if_end0, true))
-| (in(if_end0, _tmpvar0: bool);
+| (in(if_end0, _tvar0: bool);
 )).'''
         model = Translator.from_line(source, False).translate()
         self.assertEqual(('main', expected), model.functions[0])
@@ -25,7 +25,7 @@ new if_end0: channel;
 ((
 out(if_cond0, false))
 | (in(if_cond0, _cond0: bool); if _cond0 then new a: nat; out(if_end0, true) else new b: nat; out(if_end0, true))
-| (in(if_end0, _tmpvar0: bool);
+| (in(if_end0, _tvar0: bool);
 )).'''
         model = Translator.from_line(source, False).translate()
         self.assertEqual(('main', expected), model.functions[0])
@@ -48,25 +48,25 @@ out(if_cond0, false))
 new if_cond1: channel;
 new if_end1: channel;
 ((
-let _tmpvar0: bool = a < 6 in
-out(if_cond1, _tmpvar0))
-| (in(if_cond1, _cond1: bool); if _cond1 then let _tmpvar1 = _mul(a, 4) in 
-let a = _tmpvar1 in  out(if_end1, true) else let _tmpvar2 = a + 28 in 
-let a = _tmpvar2 in  out(if_end1, true))
-| (in(if_end1, _tmpvar9: bool);
+let _tvar0: bool = a < 6 in
+out(if_cond1, _tvar0))
+| (in(if_cond1, _cond1: bool); if _cond1 then let _tvar1 = _mul(a, 4) in 
+let a = _tvar1 in  out(if_end1, true) else let _tvar2 = a + 28 in 
+let a = _tvar2 in  out(if_end1, true))
+| (in(if_end1, _tvar9: bool);
 new b: nat;
 new if_cond0: channel;
 new if_end0: channel;
 ((
-let _tmpvar4: nat = _mul(a, 2) in 
-let _tmpvar3: nat = a + b in 
-let _tmpvar5: bool = _tmpvar3 > _tmpvar4 in
-out(if_cond0, _tmpvar5))
-| (in(if_cond0, _cond0: bool); if _cond0 then let _tmpvar6 = b - 50 in 
-let b = _tmpvar6 in  out(if_end0, true) else out(if_end0, true))
-| (in(if_end0, _tmpvar8: bool);
-let _tmpvar7: nat = a + b in 
-let a = _tmpvar7 in 
+let _tvar4: nat = _mul(a, 2) in 
+let _tvar3: nat = a + b in 
+let _tvar5: bool = _tvar3 > _tvar4 in
+out(if_cond0, _tvar5))
+| (in(if_cond0, _cond0: bool); if _cond0 then let _tvar6 = b - 50 in 
+let b = _tvar6 in  out(if_end0, true) else out(if_end0, true))
+| (in(if_end0, _tvar8: bool);
+let _tvar7: nat = a + b in 
+let a = _tvar7 in 
 ))
 )).'''
         model = Translator.from_line(source, False).translate()

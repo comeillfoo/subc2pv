@@ -2,7 +2,7 @@
 from typing import Any
 import functools
 
-from listeners.StatementsListener import StatementsListener
+from listeners.UnaryExpressionsListener import UnaryExpressionsListener
 
 
 def prepend_non_empty(line: str, cur: str) -> str:
@@ -15,76 +15,17 @@ class ExpressionNode:
         self.expr = tracker._exprs[ctx]
         self.tree = tracker._tree.get(ctx, '')
 
-class SubC2PVListener(StatementsListener):
+
+class SubC2PVListener(UnaryExpressionsListener):
     def __init__(self):
         super().__init__()
-
-        self._string_lits: dict[str, str] = {}
-        self._string_lits_id = -1
 
         self._if_id = -1
         self._loops_id = -1
 
-    def _new_string_literal(self, string: str) -> str:
-        if string not in self._string_lits:
-            self._string_lits_id += 1
-            _global_name = f'_strlit{self._string_lits_id}'
-            self._string_lits[string] = _global_name
-            self._globals.append('free %s: bitstring [private]. (* "%s" *)' %
-                                 (_global_name, string))
-        return self._string_lits[string]
-
-    def exitPrimaryExprStringLits(self, ctx):
-        # track string literals
-        def _to_string(node: Any) -> str:
-            return str(node).removeprefix('u8').removeprefix('u').removeprefix('U') \
-                .removeprefix('L').removeprefix('"').removesuffix('"')
-        string_lits = list(map(_to_string, ctx.StringLiteral()))
-        for string_lit in string_lits:
-            self._new_string_literal(string_lit)
-        self._exprs[ctx] = self._new_string_literal(''.join(string_lits))
-        return super().exitPrimaryExprStringLits(ctx)
-
-    def exitPrimaryExprIdentifier(self, ctx):
-        self._exprs[ctx] = str(ctx.Identifier())
-        return super().exitPrimaryExprIdentifier(ctx)
-
-    def exitPrimaryExprConstant(self, ctx):
-        # TODO: handle chars
-        self._exprs[ctx] = str(ctx.Constant())
-        return super().exitPrimaryExprConstant(ctx)
-
     def _pass2parent(self, ctx: Any, child_ctx: Any):
         self._exprs[ctx] = self._exprs[child_ctx]
         self._tree[ctx] = self._tree.get(child_ctx, '')
-
-    def exitParenthesisExpression(self, ctx):
-        if ctx.expression() is not None:
-            self._pass2parent(ctx, ctx.expression())
-        if ctx.primaryExpression() is not None:
-            self._pass2parent(ctx, ctx.primaryExpression())
-        return super().exitParenthesisExpression(ctx)
-
-    def exitBasePostfixExpression(self, ctx):
-        self._pass2parent(ctx, ctx.parenthesisExpression())
-        return super().exitBasePostfixExpression(ctx)
-
-    def _new_unary_expr(self, parent: Any, child: Any, tmplt: str):
-        tmpvar = self._tvars.next()
-        expr = self._exprs[child]
-        self._tree[parent] = prepend_non_empty(self._tree.get(child, ''),
-                                               tmplt % (tmpvar, expr))
-        self._exprs[parent] = tmpvar
-
-    def exitPostIncrementExpression(self, ctx):
-        self._new_unary_expr(ctx, ctx.postfixExpression(),
-                             'let %s: nat = %s + 1 in ')
-        return super().exitPostIncrementExpression(ctx)
-
-    def exitPostDecrementExpression(self, ctx):
-        self._new_unary_expr(ctx, ctx.postfixExpression(),
-                             'let %s: nat = %s - 1 in ')
-        return super().exitPostDecrementExpression(ctx)
 
     def exitFunctionCallExpression(self, ctx):
         tmpvar = self._tvars.next()
@@ -99,56 +40,6 @@ class SubC2PVListener(StatementsListener):
             f'let {tmpvar} = {fun}({params}) in ')
         self._exprs[ctx] = tmpvar
         return super().exitFunctionCallExpression(ctx)
-
-    def exitBaseUnaryExpression(self, ctx):
-        self._pass2parent(ctx, ctx.postfixExpression())
-        return super().exitBaseUnaryExpression(ctx)
-
-    def exitSizeofExpression(self, ctx):
-        self._new_unary_expr(ctx, ctx.unaryExpression(),
-                             'let %s: nat = _sizeof(%s) in ')
-        return super().exitSizeofExpression(ctx)
-
-    def exitLogicalNotExpression(self, ctx):
-        self._new_unary_expr(ctx, ctx.unaryExpression(),
-                             'let %s: bool = not(%s) in ')
-        return super().exitLogicalNotExpression(ctx)
-
-    def exitBitwiseNotExpression(self, ctx):
-        self._new_unary_expr(ctx, ctx.unaryExpression(),
-                             'let %s: nat = _not(%s) in ')
-        return super().exitBitwiseNotExpression(ctx)
-
-    def exitUnaryMinusExpression(self, ctx):
-        self._new_unary_expr(ctx, ctx.unaryExpression(),
-                             'let %s: nat = 0 - %s in ')
-        return super().exitUnaryMinusExpression(ctx)
-
-    def exitUnaryPlusExpression(self, ctx):
-        self._new_unary_expr(ctx, ctx.unaryExpression(),
-                             'let %s: nat = 0 + %s in ')
-        return super().exitUnaryPlusExpression(ctx)
-
-    def exitDereferenceExpression(self, ctx):
-        self._new_unary_expr(ctx, ctx.unaryExpression(),
-                             'let %s: bitstring = _deref(%s) in ')
-        return super().exitDereferenceExpression(ctx)
-
-    def exitAddressOfExpression(self, ctx):
-        self._new_unary_expr(ctx, ctx.unaryExpression(),
-                             'let %s: bitstring = _addressof(%s) in ')
-        return super().exitAddressOfExpression(ctx)
-
-    def exitBaseCastExpression(self, ctx):
-        self._pass2parent(ctx, ctx.unaryExpression())
-        return super().exitBaseCastExpression(ctx)
-
-    def exitCast2TypeExpression(self, ctx):
-        _type = self._tree[ctx.typeSpecifier()]
-        self._globals.append(f'fun _cast2{_type}(any_type): {_type}.')
-        self._new_unary_expr(ctx, ctx.castExpression(),
-                             f'let %s: {_type} = _cast2{_type}(%s) in ')
-        return super().exitCast2TypeExpression(ctx)
 
     def exitBaseMultiplicativeExpression(self, ctx):
         self._pass2parent(ctx, ctx.castExpression())
