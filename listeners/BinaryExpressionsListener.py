@@ -13,8 +13,8 @@ class BinaryExpressionsListener(PostfixExpressionsListener):
 
     def _binary_expr(self, parent: Any, left: Any, right: Any, rtype: str,
                      tmplt: str):
-        larg, prel = self._exprs[left], self._tree.get(left, '')
-        rarg, prer = self._exprs[right], self._tree.get(right, '')
+        rarg, prer = self._exprs.pop(), self._tree.get(right, '')
+        larg, prel = self._exprs.pop(), self._tree.get(left, '')
         # TODO: consider order of prepends
         lines = [] if not prer else [prer]
         if prel:
@@ -25,7 +25,7 @@ class BinaryExpressionsListener(PostfixExpressionsListener):
             self.TYPED_VAR_TMPLT.format(target, rtype),
             tmplt.format(larg, rarg)))
         self._tree[parent] = '\n'.join(lines)
-        self._exprs[parent] = target
+        self._exprs.append(target)
 
     def exitModuloExpression(self, ctx: SubCParser.ModuloExpressionContext):
         self._binary_expr(ctx, ctx.castExpression(),
@@ -171,9 +171,9 @@ class BinaryExpressionsListener(PostfixExpressionsListener):
         cond = ctx.logicalOrExpression()
         left = ctx.expression()
         right = ctx.conditionalExpression()
-        carg, prec = self._exprs[cond], self._tree.get(cond, '')
-        larg, prel = self._exprs[left], self._tree.get(left, '')
-        rarg, prer = self._exprs[right], self._tree.get(right, '')
+        rarg, prer = self._exprs.pop(), self._tree.get(right, '')
+        larg, prel = self._exprs.pop(), self._tree.get(left, '')
+        carg, prec = self._exprs.pop(), self._tree.get(cond, '')
 
         # TODO: consider order of prepends
         lines = [] if not prec else [prec]
@@ -186,7 +186,7 @@ class BinaryExpressionsListener(PostfixExpressionsListener):
         lines.append(self.LET_PAT_TMPLT.format(
             target, f'_ternary({carg}, {larg}, {rarg})'))
         self._tree[ctx] = '\n'.join(lines)
-        self._exprs[ctx] = target
+        self._exprs.append(target)
         return super().exitTernaryExpression(ctx)
 
     def exitExpression(self, ctx):

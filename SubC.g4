@@ -2,7 +2,11 @@ grammar SubC;
 
 // Parser rules
 compilationUnit
-    : declarationOrDefinition* EOF
+    : translationUnit? EOF
+    ;
+
+translationUnit
+    : declarationOrDefinition+
     ;
 
 declarationOrDefinition
@@ -120,6 +124,14 @@ compoundStatement
     : '{' ifBlockItems? '}'
     ;
 
+// whileBlockItems
+//     : whileBlockItems whileStatement whileBlockItems # whileBothItemsAround
+//     | whileBlockItems whileStatement                 # whileNoSubsequentItems
+//     | whileStatement whileBlockItems                 # whileNoPrecedingItems
+//     | whileStatement                                 # whileNoItemsAround
+//     | ifBlockItems whileBlockItems?                  # justWhileBlockItems
+//     ;
+
 ifBlockItems
     : ifBlockItems ifStatement ifBlockItems # ifBothItemsAround
     | ifBlockItems ifStatement              # ifNoSubsequentItems
@@ -147,6 +159,10 @@ statement
     | assignmentStatement
     | ifStatement
     ;
+
+// whileStatement
+//     : 'while' '(' expression ')' compoundStatement
+//     ;
 
 ifStatement
     : 'if' '(' expression ')' statement ('else' statement)?
@@ -246,13 +262,13 @@ unaryExpression
     ;
 
 postfixExpression
-    // | postfixExpression '[' expression ']' # arrayIndexingExpression
-    // | postfixExpression '.' Identifier     # memberAccessExpression
-    // | postfixExpression '->' Identifier    # memberAccessFromPointerExpression
-    : postfixExpression '++'                # postIncrementExpression
-    | postfixExpression '--'                # postDecrementExpression
-    | Identifier '(' expression* ')'        # functionCallExpression
-    | parenthesisExpression                 # basePostfixExpression
+    // | postfixExpression '[' expression ']'               # arrayIndexingExpression
+    // | postfixExpression '.' Identifier                   # memberAccessExpression
+    // | postfixExpression '->' Identifier                  # memberAccessFromPointerExpression
+    : postfixExpression '++'                             # postIncrementExpression
+    | postfixExpression '--'                             # postDecrementExpression
+    | Identifier '(' (expression (',' expression)*)? ')' # functionCallExpression
+    | parenthesisExpression                              # basePostfixExpression
     ;
 
 parenthesisExpression

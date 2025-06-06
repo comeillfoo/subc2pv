@@ -25,7 +25,6 @@ class StatementsListener(VariablesListener):
 
     def __init__(self):
         super().__init__()
-        self._exprs: dict[Any, str] = {}
         self._tvars = ObjectsCounter('_tvar')
 
     def exitStatement(self, ctx: SubCParser.StatementContext):
@@ -47,7 +46,7 @@ class StatementsListener(VariablesListener):
             ctx: SubCParser.AssignmentStatementContext):
         ectx = ctx.expression()
         pre_statements = self._tree[ectx]
-        source = self._exprs[ectx]
+        source = self._exprs.pop()
         target = str(ctx.Identifier())
         op = ctx.assignmentOperator().getText().rstrip('=')
 

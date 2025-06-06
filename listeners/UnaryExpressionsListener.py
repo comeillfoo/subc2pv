@@ -43,22 +43,21 @@ class UnaryExpressionsListener(StatementsListener):
         for strlit in map(lit2str, ctx.StringLiteral()):
             _ = self._declare_single_strlit(strlit)
             merged_strlits += strlit
-        self._exprs[ctx] = self._declare_single_strlit(merged_strlits)
+        self._exprs.append(self._declare_single_strlit(merged_strlits))
         return super().exitPrimaryExprStringLits(ctx)
 
     def exitPrimaryExprIdentifier(self,
             ctx: SubCParser.PrimaryExprIdentifierContext):
-        self._exprs[ctx] = str(ctx.Identifier())
+        self._exprs.append(str(ctx.Identifier()))
         return super().exitPrimaryExprIdentifier(ctx)
 
     def exitPrimaryExprConstant(self,
             ctx: SubCParser.PrimaryExprConstantContext):
         # TODO: handle chars
-        self._exprs[ctx] = str(ctx.Constant())
+        self._exprs.append(str(ctx.Constant()))
         return super().exitPrimaryExprConstant(ctx)
 
     def _pass_state_to_parent(self, child: Any, parent: Any):
-        self._exprs[parent] = self._exprs[child]
         self._tree[parent] = self._tree.get(child, '')
 
     def exitParenthesisExpression(self,
@@ -80,14 +79,14 @@ class UnaryExpressionsListener(StatementsListener):
 
     def _unary_expr(self, parent: Any, child: Any, rtype: str, tmplt: str):
         tvar = self._tvars.next()
-        expr = self._exprs[child]
+        expr = self._exprs.pop()
         pre_statements = self._tree.get(child, '')
 
         lines = [] if not pre_statements else [pre_statements]
         lines.append(self.LET_PAT_TMPLT.format(
             self.TYPED_VAR_TMPLT.format(tvar, rtype), tmplt.format(expr)))
         self._tree[parent] = '\n'.join(lines)
-        self._exprs[parent] = tvar
+        self._exprs.append(tvar)
 
     def exitPostIncrementExpression(self,
             ctx: SubCParser.PostIncrementExpressionContext):

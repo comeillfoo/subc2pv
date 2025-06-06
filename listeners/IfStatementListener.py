@@ -39,7 +39,7 @@ class IfStatementListener(BinaryExpressionsListener):
         else_br = (self._tree[branches[1]] + ' ' if len(branches) > 1 else '') \
             + goto_if_end
         lines.extend([
-            f'out({if_cond}, {self._exprs[expr]}))',
+            f'out({if_cond}, {self._exprs.pop()}))',
             f'| (in({if_cond}, {cond}: bool); if {cond} then {then_br} else {else_br})',
         ])
 
