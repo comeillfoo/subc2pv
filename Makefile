@@ -11,7 +11,7 @@ TESTS=LUTBasicDirectivesTestCase TranslatorBasicTestCase \
 	EnumsDeclarationsAndDefinitionsTestCase \
 	UnionsOrStructsDeclarationsAndDefinitionsTestCase \
 	FunctionsDeclarationsTestCase FunctionDefinitionsTestCase \
-	AssignmentsTestCase IfStatementTestCase ExpressionsTestCase
+	AssignmentsTestCase BranchingTestCase ExpressionsTestCase
 
 all: SubC.g4
 	$(ANTLR4) -o $(PARSERDIR) -Dlanguage=Python3 $<
