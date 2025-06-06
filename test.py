@@ -9,7 +9,7 @@ from tests.UnionsOrStructsDeclarationsAndDefinitionsTestCase import UnionsOrStru
 from tests.FunctionsDeclarationsTestCase import FunctionsDeclarationsTestCase
 from tests.FunctionDefinitionsTestCase import FunctionDefinitionsTestCase
 from tests.AssignmentsTestCase import AssignmentsTestCase
-from tests.IfStatementTestCase import IfStatementTestCase
+from tests.BranchingTestCase import BranchingTestCase
 from tests.ExpressionsTestCase import ExpressionsTestCase
 
 
@@ -24,7 +24,7 @@ def translator_suite() -> list:
         FunctionsDeclarationsTestCase,
         FunctionDefinitionsTestCase,
         AssignmentsTestCase,
-        IfStatementTestCase,
+        BranchingTestCase,
         ExpressionsTestCase,
     ]
 

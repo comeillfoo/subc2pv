@@ -6,21 +6,23 @@ from libs.SubCParser import SubCParser
 from listeners.BinaryExpressionsListener import BinaryExpressionsListener
 
 
-GOTO_TMPLT: str = 'out({}, true)'
+IF_TMPLTS = ('_if_cond', '_if_end', '_if_var')
 
 
 def if_counters(counter: str) -> Tuple[str, str, str]:
-    return f'_if_cond{counter}', f'_if_end{counter}', f'_cond{counter}'
+    return tuple(map(lambda tmplt: tmplt + counter, IF_TMPLTS))
 
 
 class BranchingListener(BinaryExpressionsListener):
+    GOTO_TMPLT: str = 'out({}, true)'
+
     def __init__(self):
         super().__init__()
-        self._if_counter = ObjectsCounter('')
+        self._ifs = ObjectsCounter('')
 
     def _if(self, preceding: Optional[str], ctx: SubCParser.IfStatementContext,
             subsequent: Optional[str]) -> str:
-        if_cond, if_end, cond = if_counters(self._if_counter.next())
+        if_cond, if_end, cond = if_counters(self._ifs.next())
         expr = ctx.expression()
         lines = [
             self.NEW_VAR_TMPLT.format(if_cond, 'channel'),
@@ -33,7 +35,7 @@ class BranchingListener(BinaryExpressionsListener):
         if pre_statements:
             lines.append(pre_statements)
 
-        goto_if_end = GOTO_TMPLT.format(if_end)
+        goto_if_end = self.GOTO_TMPLT.format(if_end)
         branches = ctx.statement()
         then_br = self._tree[branches[0]] + ' ' + goto_if_end
         else_br = (self._tree[branches[1]] + ' ' if len(branches) > 1 else '') \
@@ -63,8 +65,8 @@ class BranchingListener(BinaryExpressionsListener):
 
     def exitIfBothItemsAround(self, ctx: SubCParser.IfBothItemsAroundContext):
         preceding, subsequent = ctx.ifBlockItems()
-        self._tree[ctx] = self._if(preceding, ctx.ifStatement(),
-                                   subsequent)
+        preceding, subsequent = self._tree[preceding], self._tree[subsequent]
+        self._tree[ctx] = self._if(preceding, ctx.ifStatement(), subsequent)
         return super().exitIfBothItemsAround(ctx)
 
     def exitIfNoItemsAround(self, ctx: SubCParser.IfNoItemsAroundContext):
