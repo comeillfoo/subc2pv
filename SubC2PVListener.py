@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 from typing import Any
 
-from listeners.IfStatementListener import IfStatementListener
+from listeners.BranchingListener import BranchingListener
 
 
-class SubC2PVListener(IfStatementListener):
+class SubC2PVListener(BranchingListener):
     def __init__(self):
         super().__init__()
         self._loops_id = -1

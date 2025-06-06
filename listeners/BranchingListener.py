@@ -13,7 +13,7 @@ def if_counters(counter: str) -> Tuple[str, str, str]:
     return f'_if_cond{counter}', f'_if_end{counter}', f'_cond{counter}'
 
 
-class IfStatementListener(BinaryExpressionsListener):
+class BranchingListener(BinaryExpressionsListener):
     def __init__(self):
         super().__init__()
         self._if_counter = ObjectsCounter('')

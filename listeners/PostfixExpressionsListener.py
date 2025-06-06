@@ -3,6 +3,12 @@ from libs.SubCParser import SubCParser
 from listeners.UnaryExpressionsListener import UnaryExpressionsListener
 
 
+def list_pop_n(lst: list, n: int) -> list:
+    ans = lst[-n:]
+    del lst[-n:]
+    return ans
+
+
 class PostfixExpressionsListener(UnaryExpressionsListener):
     def exitFunctionCallExpression(self,
             ctx: SubCParser.FunctionCallExpressionContext):
@@ -10,7 +16,7 @@ class PostfixExpressionsListener(UnaryExpressionsListener):
         func = str(ctx.Identifier())
         ctxes = ctx.expression() or []
         # TODO: handle functions with definitions
-        args = ', '.join([self._exprs.pop() for _ in range(len(ctxes))][::-1])
+        args = ', '.join(list_pop_n(self._exprs, len(ctxes)))
         # TODO: consider order or statements
         lines = list(filter(lambda c: not (not c),
                             map(lambda _ctx: self._tree.get(_ctx, ''), ctxes)))

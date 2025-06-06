@@ -29,6 +29,12 @@ class ExpressionsTestCase(unittest.TestCase):
         return (subc_tmplt % ('baz(42)'),
                 pv_tmplt % ('let _tvar0 = baz(42) in \n', '_tvar0'))
 
+    def _expression_multi_args_funcall_subtest(self, subc_tmplt: str,
+                                               pv_tmplt: str) -> Tuple[str, str]:
+        return (subc_tmplt % ('foo(42, true, "text")'),
+                pv_tmplt % ('let _tvar0 = foo(42, true, _strlit0) in \n',
+                            '_tvar0'))
+
     def _expression_sizeof_subtest(self, subc_tmplt: str,
                                    pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('sizeof(a)'),
@@ -184,6 +190,8 @@ class ExpressionsTestCase(unittest.TestCase):
                    self._expression_no_args_funcall_subtest)
         at_subtest('single-arg-funcall-expression',
                    self._expression_single_arg_funcall_subtest)
+        at_subtest('multi-args-funcall-expression',
+                   self._expression_multi_args_funcall_subtest)
         at_subtest('sizeof-expression', self._expression_sizeof_subtest)
         at_subtest('logical-not-expression', self._expression_logic_not_subtest)
         at_subtest('bitwise-not-expression',
