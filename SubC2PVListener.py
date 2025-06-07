@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 from typing import Any
 
-from listeners.BranchingListener import BranchingListener
+from libs.SubCParser import SubCParser
+from listeners.LoopsListener import LoopsListener
 
 
-class SubC2PVListener(BranchingListener):
+class SubC2PVListener(LoopsListener):
     def __init__(self):
         super().__init__()
         self._loops_id = -1
 
-    def exitCompoundStatement(self, ctx):
-        block_items = ctx.ifBlockItems()
+    def exitCompoundStatement(self, ctx: SubCParser.CompoundStatementContext):
+        block_items = ctx.loopBlockItems()
         self._tree[ctx] = '0' if block_items is None else self._tree[block_items]
         return super().exitCompoundStatement(ctx)

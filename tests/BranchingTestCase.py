@@ -70,5 +70,4 @@ let a = _tvar7 in
 ))
 )).'''
         model = Translator.from_line(source, False).translate()
-        self.maxDiff = None
         self.assertEqual(('main', expected), model.functions[0])

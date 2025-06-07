@@ -121,16 +121,16 @@ functionDefinition
     ;
 
 compoundStatement
-    : '{' ifBlockItems? '}'
+    : '{' loopBlockItems? '}'
     ;
 
-// whileBlockItems
-//     : whileBlockItems whileStatement whileBlockItems # whileBothItemsAround
-//     | whileBlockItems whileStatement                 # whileNoSubsequentItems
-//     | whileStatement whileBlockItems                 # whileNoPrecedingItems
-//     | whileStatement                                 # whileNoItemsAround
-//     | ifBlockItems whileBlockItems?                  # justWhileBlockItems
-//     ;
+loopBlockItems
+    : loopBlockItems loopStatement loopBlockItems # loopBothItemsAround
+    | loopBlockItems loopStatement                # loopNoSubsequentItems
+    | loopStatement loopBlockItems                # loopNoPrecedingItems
+    | loopStatement                               # loopNoItemsAround
+    | ifBlockItems loopBlockItems?                # justLoopBlockItems
+    ;
 
 ifBlockItems
     : ifBlockItems ifStatement ifBlockItems # ifBothItemsAround
@@ -158,11 +158,21 @@ statement
     : compoundStatement
     | assignmentStatement
     | ifStatement
+    | loopStatement
     ;
 
-// whileStatement
-//     : 'while' '(' expression ')' compoundStatement
-//     ;
+loopStatement
+    : doWhileStatement
+    | whileStatement
+    ;
+
+doWhileStatement
+    : 'do' statement 'while' '(' expression ')' ';'
+    ;
+
+whileStatement
+    : 'while' '(' expression ')' statement
+    ;
 
 ifStatement
     : 'if' '(' expression ')' statement ('else' statement)?
