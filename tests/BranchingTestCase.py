@@ -71,3 +71,29 @@ let a = _tvar7 in
 )).'''
         model = Translator.from_line(source, False).translate()
         self.assertEqual(('main', expected), model.functions[0])
+
+    def test_nested_ifs(self):
+        source = '''void main()
+{
+    int a = 7;
+    if (true)
+        if (false) a %= 4;
+}'''
+        expected = '''let main() = new a: nat;
+new _if_cond1: channel;
+new _if_end1: channel;
+((
+out(_if_cond1, true))
+| (in(_if_cond1, _if_var1: bool); if _if_var1 then new _if_cond0: channel;
+new _if_end0: channel;
+((
+out(_if_cond0, false))
+| (in(_if_cond0, _if_var0: bool); if _if_var0 then let _tvar0 = _mod(a, 4) in 
+let a = _tvar0 in  out(_if_end0, true) else out(_if_end0, true))
+| (in(_if_end0, _tvar1: bool);
+)) out(_if_end1, true) else out(_if_end1, true))
+| (in(_if_end1, _tvar2: bool);
+)).'''
+        model = Translator.from_line(source, False).translate()
+        _, actual = model.functions[0]
+        self.assertEqual(expected, actual)

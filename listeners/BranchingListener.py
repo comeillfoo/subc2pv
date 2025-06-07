@@ -80,3 +80,7 @@ class BranchingListener(BinaryExpressionsListener):
                                         filter(self._tree.__contains__,
                                                items)))
         return super().exitJustIfBlockItems(ctx)
+
+    def exitNestedIfStatement(self, ctx: SubCParser.NestedIfStatementContext):
+        self._tree[ctx] = self._if(None, ctx.ifStatement(), None)
+        return super().exitNestedIfStatement(ctx)

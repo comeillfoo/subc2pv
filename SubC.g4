@@ -157,8 +157,12 @@ variableDeclaration
 statement
     : compoundStatement
     | assignmentStatement
-    | ifStatement
-    | loopStatement
+    | nestedIfStatement
+    | nestedLoopStatement
+    ;
+
+nestedLoopStatement
+    : loopStatement
     ;
 
 loopStatement
@@ -172,6 +176,10 @@ doWhileStatement
 
 whileStatement
     : 'while' '(' expression ')' statement
+    ;
+
+nestedIfStatement
+    : ifStatement
     ;
 
 ifStatement

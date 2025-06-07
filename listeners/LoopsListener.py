@@ -132,3 +132,8 @@ class LoopsListener(BranchingListener):
                                         filter(self._tree.__contains__,
                                                items)))
         return super().exitJustLoopBlockItems(ctx)
+
+    def exitNestedLoopStatement(self,
+            ctx: SubCParser.NestedLoopStatementContext):
+        self._tree[ctx] = self._loop(None, ctx.loopStatement(), None)
+        return super().exitNestedLoopStatement(ctx)

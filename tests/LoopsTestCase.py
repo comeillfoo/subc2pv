@@ -44,3 +44,32 @@ out(_dowhile_cond0, true))
                 model = Translator.from_line(source, False).translate()
                 _, actual = model.functions[0]
                 self.assertEqual(expected, actual)
+
+    def test_nested_loops(self):
+        source = '''void main()
+{
+    char const* foo = "Hello, World!\\n";
+    while (true)
+        while (false) foo = "Hello, World!\\n";
+}'''
+        expected = '''let main() = new foo: bitstring;
+new _while_begin1: channel;
+new _while_end1: channel;
+new _while_cond1: channel;
+((
+out(_while_cond1, true))
+| !(in(_while_cond1, _while_var1: bool); if _while_var1 then out(_while_begin1, true) else out(_while_end1, true))
+| !(in(_while_begin1, _tvar2: bool); new _while_begin0: channel;
+new _while_end0: channel;
+new _while_cond0: channel;
+((
+out(_while_cond0, false))
+| !(in(_while_cond0, _while_var0: bool); if _while_var0 then out(_while_begin0, true) else out(_while_end0, true))
+| !(in(_while_begin0, _tvar0: bool); let foo = _strlit0 in  out(_while_cond0, false))
+| (in(_while_end0, _tvar1: bool);
+)) out(_while_cond1, true))
+| (in(_while_end1, _tvar3: bool);
+)).'''
+        model = Translator.from_line(source, False).translate()
+        _, actual = model.functions[0]
+        self.assertEqual(expected, actual)
