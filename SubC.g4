@@ -168,6 +168,7 @@ nestedLoopStatement
 loopStatement
     : doWhileStatement
     | whileStatement
+    | forStatement
     ;
 
 doWhileStatement
@@ -176,6 +177,10 @@ doWhileStatement
 
 whileStatement
     : 'while' '(' expression ')' statement
+    ;
+
+forStatement
+    : 'for' '(' (variableDeclaration | assignmentStatement | ';') expression? ';' assignmentExpression? ')' statement
     ;
 
 nestedIfStatement
@@ -187,7 +192,11 @@ ifStatement
     ;
 
 assignmentStatement
-    : Identifier assignmentOperator expression ';'
+    : assignmentExpression ';'
+    ;
+
+assignmentExpression
+    : Identifier assignmentOperator expression
     ;
 
 assignmentOperator

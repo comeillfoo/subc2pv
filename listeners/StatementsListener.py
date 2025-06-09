@@ -42,8 +42,8 @@ class StatementsListener(VariablesListener):
             self._tree[ctx] = self._tree[child_ctx]
         return super().exitBlockItem(ctx)
 
-    def exitAssignmentStatement(self,
-            ctx: SubCParser.AssignmentStatementContext):
+    def exitAssignmentExpression(self,
+            ctx: SubCParser.AssignmentExpressionContext):
         ectx = ctx.expression()
         pre_statements = self._tree[ectx]
         source = self._exprs.pop()
@@ -61,4 +61,11 @@ class StatementsListener(VariablesListener):
                 self.LET_PAT_TMPLT.format(target, tmpvar)
             ])
         self._tree[ctx] = '\n'.join(lines)
+        self._exprs.append(target)
+        return super().exitAssignmentExpression(ctx)
+
+    def exitAssignmentStatement(self,
+            ctx: SubCParser.AssignmentStatementContext):
+        self._exprs.pop()
+        self._tree[ctx] = self._tree[ctx.assignmentExpression()]
         return super().exitAssignmentStatement(ctx)
