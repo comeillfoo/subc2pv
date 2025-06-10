@@ -32,12 +32,7 @@ class StatementsListener(VariablesListener):
         return super().exitStatement(ctx)
 
     def exitBlockItem(self, ctx: SubCParser.BlockItemContext):
-        child_ctx = ctx.statement()
-        if child_ctx is not None:
-            self._tree[ctx] = self._tree[child_ctx]
-            return super().exitBlockItem(ctx)
-
-        child_ctx = ctx.variableDeclaration()
+        child_ctx = ctx.statement() or ctx.variableDeclaration()
         if child_ctx is not None:
             self._tree[ctx] = self._tree[child_ctx]
         return super().exitBlockItem(ctx)

@@ -39,8 +39,8 @@ out(_dowhile_cond0, true))
 new _for_begin0: channel;
 new _for_end0: channel;
 new _for_cond0: channel;
-new i: nat;
 ((
+new i: nat;
 let _tvar0: bool = i < 10 in  out(_for_cond0, _tvar0))
 | !(in(_for_cond0, _for_var0: bool); if _for_var0 then out(_for_begin0, true) else out(_for_end0, true))
 | !(in(_for_begin0, _tvar3: bool); let _tvar2: nat = _mul(2, i) in 
@@ -103,8 +103,8 @@ out(_while_cond0, false))
 new _for_begin0: channel;
 new _for_end0: channel;
 new _for_cond0: channel;
-new i: nat;
 ((
+new i: nat;
 out(_for_cond0, true))
 | !(in(_for_cond0, _for_var0: bool); if _for_var0 then out(_for_begin0, true) else out(_for_end0, true))
 | !(in(_for_begin0, _tvar2: bool); let _tvar1 = a + i in 
@@ -125,8 +125,8 @@ let i = _tvar0 in  out(_for_cond0, true))
 new _for_begin0: channel;
 new _for_end0: channel;
 new _for_cond0: channel;
-let a = 1 in 
 ((
+let a = 1 in 
 let _tvar0: bool = a <> 4 in  out(_for_cond0, _tvar0))
 | !(in(_for_cond0, _for_var0: bool); if _for_var0 then out(_for_begin0, true) else out(_for_end0, true))
 | !(in(_for_begin0, _tvar2: bool); let _tvar1: nat = _shl(a, 1) in 

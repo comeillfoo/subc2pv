@@ -62,12 +62,7 @@ class UnaryExpressionsListener(StatementsListener):
 
     def exitParenthesisExpression(self,
             ctx: SubCParser.ParenthesisExpressionContext):
-        child_ctx = ctx.primaryExpression()
-        if child_ctx is not None:
-            self._pass_state_to_parent(child_ctx, ctx)
-            return super().exitParenthesisExpression(ctx)
-
-        child_ctx = ctx.expression()
+        child_ctx = ctx.primaryExpression() or ctx.expression()
         if child_ctx is not None:
             self._pass_state_to_parent(child_ctx, ctx)
         return super().exitParenthesisExpression(ctx)

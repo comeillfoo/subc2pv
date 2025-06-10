@@ -24,7 +24,7 @@ def args_parser() -> argparse.ArgumentParser:
 
 
 def path_or_default(path: Optional[pathlib.Path], default: str) -> pathlib.Path:
-    return path if path is not None else pathlib.Path(default)
+    return path or pathlib.Path(default)
 
 
 def main() -> int:

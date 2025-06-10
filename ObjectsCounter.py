@@ -4,11 +4,11 @@
 class ObjectsCounter:
     def __init__(self, prefix: str):
         self._counter = -1
-        self.template = f'{prefix}%d'
+        self._template = prefix + '%d'
 
     def next(self) -> str:
         self._counter += 1
-        return self.template % self._counter
+        return self._template % self._counter
 
     def reset(self):
         self._counter = -1

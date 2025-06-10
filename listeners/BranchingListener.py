@@ -1,16 +1,9 @@
 #!/usr/bin/env python3
 from typing import Tuple, Optional
 
-from ObjectsCounter import ObjectsCounter
+from ObjectsGroupCounter import ObjectsGroupCounter
 from libs.SubCParser import SubCParser
 from listeners.BinaryExpressionsListener import BinaryExpressionsListener
-
-
-IF_TMPLTS = ('_if_cond', '_if_end', '_if_var')
-
-
-def if_counters(counter: str) -> Tuple[str, str, str]:
-    return tuple(map(lambda tmplt: tmplt + counter, IF_TMPLTS))
 
 
 class BranchingListener(BinaryExpressionsListener):
@@ -18,11 +11,11 @@ class BranchingListener(BinaryExpressionsListener):
 
     def __init__(self):
         super().__init__()
-        self._ifs = ObjectsCounter('')
+        self._ifs = ObjectsGroupCounter('_if', ['cond', 'end', 'var'])
 
     def _if(self, preceding: Optional[str], ctx: SubCParser.IfStatementContext,
             subsequent: Optional[str]) -> str:
-        cond, end, var = if_counters(self._ifs.next())
+        cond, end, var = self._ifs.next()
         goto_if_end = self.GOTO_TMPLT.format(end)
         branches = ctx.statement()
         then_br = self._tree[branches[0]] + ' ' + goto_if_end
@@ -72,10 +65,9 @@ class BranchingListener(BinaryExpressionsListener):
         return super().exitIfNoItemsAround(ctx)
 
     def exitJustIfBlockItems(self, ctx: SubCParser.JustIfBlockItemsContext):
-        items = [ctx.blockItem()]
+        block_item = ctx.blockItem()
         if_items = ctx.ifBlockItems()
-        if if_items is not None:
-            items.append(if_items)
+        items = [block_item] if if_items is None else [block_item, if_items]
         self._tree[ctx] = '\n'.join(map(self._tree.get,
                                         filter(self._tree.__contains__,
                                                items)))
