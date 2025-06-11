@@ -199,7 +199,7 @@ let baz(a: nat, _end: channel) = let x: nat = a + 1 in out(_end, true).
 new _fcall_begin0: channel;
 new _fcall_end0: channel;
 (
-  (<операторы до вызова> out(_fcall_begin0))
+  (<операторы до вызова> out(_fcall_begin0, true))
   | (in(_fcall_begin0, _tvar0: bool); baz(8, _fcall_end0))
   | (in(_fcall_end0, _tvar1: bool); <операторы после вызова>)
 )
@@ -226,7 +226,7 @@ new _fcall_begin0: channel;
 new _fcall_end0: channel;
 new _fcall_ret0: channel;
 (
-  (<операторы до вызова> out(_fcall_begin0))
+  (<операторы до вызова> out(_fcall_begin0, true))
   | (in(_fcall_begin0, _tvar1: bool); foo(8, _fcall_ret0, _fcall_end0))
   | (in(_fcall_end0, _tvar2: bool);
      in(_fcall_ret0, _tvar3: nat);
