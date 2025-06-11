@@ -163,3 +163,74 @@ new _for0_cond: channel;
     out(_for0_cond, <условие>))
  |(in(_for0_end, _tmp1: bool); <операторы после цикла>))
 ```
+
+## Expressions
+
+### Function calls
+
+#### ProVerif Functions
+
+It's enough just call as it is:
+
+```ocaml
+fun foo(nat): nat.
+...
+let ret: nat = foo(42) in ...
+```
+
+#### ProVerif Process macros
+
+If function returns nothing (`void`):
+
+```c
+void baz(int a)
+{
+  int x = a + 1;
+}
+...
+/* операторы до вызова */
+baz(8);
+/* операторы после вызова*/
+```
+
+```ocaml
+let baz(a: nat, _end: channel) = let x: nat = a + 1 in out(_end, true).
+...
+new _fcall_begin0: channel;
+new _fcall_end0: channel;
+(
+  (<операторы до вызова> out(_fcall_begin0))
+  | (in(_fcall_begin0, _tvar0: bool); baz(8, _fcall_end0))
+  | (in(_fcall_end0, _tvar1: bool); <операторы после вызова>)
+)
+```
+
+Another temporary channel should be defined if function returns any value.
+
+```c
+int foo(int a)
+{
+  return a + 1;
+}
+...
+/* операторы до вызова */
+int x = foo(8);
+/* операторы после вызова*/
+```
+
+```ocaml
+let foo(a: nat, _ret_ch: channel, _end: channel) =
+  let _tvar0: nat = a + 1 in out(_ret_ch, _tvar0); out(_end, true).
+...
+new _fcall_begin0: channel;
+new _fcall_end0: channel;
+new _fcall_ret0: channel;
+(
+  (<операторы до вызова> out(_fcall_begin0))
+  | (in(_fcall_begin0, _tvar1: bool); foo(8, _fcall_ret0, _fcall_end0))
+  | (in(_fcall_end0, _tvar2: bool);
+     in(_fcall_ret0, _tvar3: nat);
+     let x: nat = _tvar3 in
+     <операторы после вызова>)
+)
+```
