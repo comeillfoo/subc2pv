@@ -64,7 +64,7 @@ let _tvar4: nat = a + b in
 let _tvar6: bool = _tvar4 > _tvar5 in
 out(_if_cond1, _tvar6))
 | (in(_if_cond1, _if_var1: bool); if _if_var1 then let _tvar7 = b - 50 in
-let b = _tvar6 in out(_if_end1, true) else out(_if_end1, true))
+let b = _tvar7 in out(_if_end1, true) else out(_if_end1, true))
 | (in(_if_end1, _tvar8: bool);
 ))
 let _tvar9: nat = a + b in
