@@ -45,31 +45,32 @@ out(_if_cond0, false))
     a = a + b;
 }'''
         expected = '''let main(_end: channel) = new a: nat;
-new _if_cond1: channel;
-new _if_end1: channel;
-((
-let _tvar0: bool = a < 6 in
-out(_if_cond1, _tvar0))
-| (in(_if_cond1, _if_var1: bool); if _if_var1 then let _tvar1 = _mul(a, 4) in
-let a = _tvar1 in out(_if_end1, true) else let _tvar2 = a + 28 in
-let a = _tvar2 in out(_if_end1, true))
-| (in(_if_end1, _tvar9: bool);
-new b: nat;
 new _if_cond0: channel;
 new _if_end0: channel;
 ((
-let _tvar4: nat = _mul(a, 2) in
-let _tvar3: nat = a + b in
-let _tvar5: bool = _tvar3 > _tvar4 in
-out(_if_cond0, _tvar5))
-| (in(_if_cond0, _if_var0: bool); if _if_var0 then let _tvar6 = b - 50 in
-let b = _tvar6 in out(_if_end0, true) else out(_if_end0, true))
-| (in(_if_end0, _tvar8: bool);
-let _tvar7: nat = a + b in
-let a = _tvar7 in
+let _tvar0: bool = a < 6 in
+out(_if_cond0, _tvar0))
+| (in(_if_cond0, _if_var0: bool); if _if_var0 then let _tvar1 = _mul(a, 4) in
+let a = _tvar1 in out(_if_end0, true) else let _tvar2 = a + 28 in
+let a = _tvar2 in out(_if_end0, true))
+| (in(_if_end0, _tvar3: bool);
 ))
-)); out(_end, true).'''
+new b: nat;
+new _if_cond1: channel;
+new _if_end1: channel;
+((
+let _tvar5: nat = _mul(a, 2) in
+let _tvar4: nat = a + b in
+let _tvar6: bool = _tvar4 > _tvar5 in
+out(_if_cond1, _tvar6))
+| (in(_if_cond1, _if_var1: bool); if _if_var1 then let _tvar7 = b - 50 in
+let b = _tvar6 in out(_if_end1, true) else out(_if_end1, true))
+| (in(_if_end1, _tvar8: bool);
+))
+let _tvar9: nat = a + b in
+let a = _tvar9 in out(_end, true).'''
         model = Translator.from_line(source, False).translate()
+        self.maxDiff = None
         self.assertEqual(('main', expected), model.functions[0])
 
     def test_nested_ifs(self):
