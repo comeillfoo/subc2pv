@@ -177,7 +177,7 @@ class ExpressionsTestCase(unittest.TestCase):
 
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
-        pv_tmplt = 'let foo(a: nat) = %slet a = %s in 0.'
+        pv_tmplt = 'let foo(a: nat, _end: channel) = %slet a = %s in out(_end, true).'
         def at_subtest(subtest: str, fun):
             with self.subTest(subtest):
                 subc_src, pv_src = fun(subc_tmplt, pv_tmplt)

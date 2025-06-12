@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import Tuple, Optional
+from typing import Optional
 
 from ObjectsGroupCounter import ObjectsGroupCounter
 from libs.SubCParser import SubCParser
@@ -65,12 +65,7 @@ class BranchingListener(BinaryExpressionsListener):
         return super().exitIfNoItemsAround(ctx)
 
     def exitJustIfBlockItems(self, ctx: SubCParser.JustIfBlockItemsContext):
-        block_item = ctx.blockItem()
-        if_items = ctx.ifBlockItems()
-        items = [block_item] if if_items is None else [block_item, if_items]
-        self._tree[ctx] = '\n'.join(map(self._tree.get,
-                                        filter(self._tree.__contains__,
-                                               items)))
+        self._just_concat_items(ctx, ctx.funCallItems(), ctx.ifBlockItems())
         return super().exitJustIfBlockItems(ctx)
 
     def exitNestedIfStatement(self, ctx: SubCParser.NestedIfStatementContext):

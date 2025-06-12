@@ -2,10 +2,10 @@
 from typing import Any
 
 from libs.SubCParser import SubCParser
-from listeners.PostfixExpressionsListener import PostfixExpressionsListener
+from listeners.UnaryExpressionsListener import UnaryExpressionsListener
 
 
-class BinaryExpressionsListener(PostfixExpressionsListener):
+class BinaryExpressionsListener(UnaryExpressionsListener):
     def exitBaseMultiplicativeExpression(self,
             ctx: SubCParser.BaseMultiplicativeExpressionContext):
         self._pass_state_to_parent(ctx.castExpression(), ctx)

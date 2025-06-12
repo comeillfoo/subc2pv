@@ -59,12 +59,7 @@ class LoopsListener(BranchingListener):
 
     def exitJustLoopBlockItems(self,
             ctx: SubCParser.JustLoopBlockItemsContext):
-        block_items = ctx.ifBlockItems()
-        loop_items = ctx.loopBlockItems()
-        items = [block_items] if loop_items is None else [block_items, loop_items]
-        self._tree[ctx] = '\n'.join(map(self._tree.get,
-                                        filter(self._tree.__contains__,
-                                               items)))
+        self._just_concat_items(ctx, ctx.ifBlockItems(), ctx.loopBlockItems())
         return super().exitJustLoopBlockItems(ctx)
 
     def exitNestedLoopStatement(self,

@@ -137,7 +137,15 @@ ifBlockItems
     | ifBlockItems ifStatement              # ifNoSubsequentItems
     | ifStatement ifBlockItems              # ifNoPrecedingItems
     | ifStatement                           # ifNoItemsAround
-    | blockItem ifBlockItems?               # justIfBlockItems
+    | funCallItems ifBlockItems?            # justIfBlockItems
+    ;
+
+funCallItems
+    : funCallItems funCallStatement funCallItems # funCallBothItemsAround
+    | funCallItems funCallStatement              # funCallNoSubsequentItems
+    | funCallStatement funCallItems              # funCallNoPrecedingItems
+    | funCallStatement                           # funCallNoItemsAround
+    | blockItem funCallItems?                    # justFunCallItems
     ;
 
 blockItem
@@ -157,6 +165,7 @@ variableDeclaration
 statement
     : compoundStatement
     | assignmentStatement
+    | funCallStatement
     | nestedIfStatement
     | nestedLoopStatement
     ;
@@ -189,6 +198,10 @@ nestedIfStatement
 
 ifStatement
     : 'if' '(' expression ')' statement ('else' statement)?
+    ;
+
+funCallStatement
+    : functionCall ';'
     ;
 
 assignmentStatement
@@ -292,10 +305,14 @@ postfixExpression
     // | postfixExpression '[' expression ']'               # arrayIndexingExpression
     // | postfixExpression '.' Identifier                   # memberAccessExpression
     // | postfixExpression '->' Identifier                  # memberAccessFromPointerExpression
-    : postfixExpression '++'                             # postIncrementExpression
-    | postfixExpression '--'                             # postDecrementExpression
-    | Identifier '(' (expression (',' expression)*)? ')' # functionCallExpression
-    | parenthesisExpression                              # basePostfixExpression
+    : postfixExpression '++' # postIncrementExpression
+    | postfixExpression '--' # postDecrementExpression
+    | functionCall           # functionCallExpression
+    | parenthesisExpression  # basePostfixExpression
+    ;
+
+functionCall
+    : Identifier '(' (expression (',' expression)*)? ')'
     ;
 
 parenthesisExpression

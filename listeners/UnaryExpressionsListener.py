@@ -3,7 +3,7 @@ from typing import Any, NamedTuple
 
 from ObjectsCounter import ObjectsCounter
 from libs.SubCParser import SubCParser
-from listeners.StatementsListener import StatementsListener
+from listeners.FunctionsListener import FunctionsListener
 
 
 STRING_LIT_TMPLT: str = 'free {}: bitstring [private]. (* "{}" *)'
@@ -20,7 +20,7 @@ StringLiterals = NamedTuple('StringLiterals', strings=dict[str, str],
                             names=ObjectsCounter)
 
 
-class UnaryExpressionsListener(StatementsListener):
+class UnaryExpressionsListener(FunctionsListener):
     TYPED_VAR_TMPLT: str = '{}: {}'
 
     def __init__(self):

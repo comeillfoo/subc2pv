@@ -21,7 +21,7 @@ ASSIGN_OPERATORS = {
 
 
 class StatementsListener(VariablesListener):
-    LET_PAT_TMPLT: str = 'let {} = {} in '
+    LET_PAT_TMPLT: str = 'let {} = {} in'
 
     def __init__(self):
         super().__init__()

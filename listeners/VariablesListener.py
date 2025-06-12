@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from listeners.FunctionsListener import FunctionsListener
+from listeners.TypesListener import TypesListener
 
 
-class VariablesListener(FunctionsListener):
+class VariablesListener(TypesListener):
     NEW_VAR_TMPLT: str = 'new {}: {};'
 
     def __init__(self):

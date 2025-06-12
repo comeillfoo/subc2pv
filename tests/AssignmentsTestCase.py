@@ -11,7 +11,7 @@ class AssignmentsTestCase(unittest.TestCase):
         source = 'void %s() { int a; }' % (name)
         model = Translator.from_line(source, False).translate()
         self.assertTrue(not model.preamble)
-        self.assertEqual((name, f'let {name}() = new a: nat.'),
+        self.assertEqual((name, f'let {name}(_end: channel) = new a: nat; out(_end, true).'),
                          model.functions[0])
 
     def _function_variable_primitive_init_subtest(self, name: str):
@@ -19,14 +19,14 @@ class AssignmentsTestCase(unittest.TestCase):
             source = 'void %s(%s a) { %s b = a; }' % (name, ttype, ttype)
             model = Translator.from_line(source, False).translate()
             self.assertTrue(not model.preamble)
-            expected = f'let {name}(a: {pvtype}) = new b: {pvtype}.'
+            expected = f'let {name}(a: {pvtype}, _end: channel) = new b: {pvtype}; out(_end, true).'
             self.assertEqual((name, expected), model.functions[0])
 
     def _function_variable_assign_to_constant_subtest(self, name: str):
         source = 'void %s() { int a; a = 42; }' % (name)
         model = Translator.from_line(source, False).translate()
         self.assertTrue(not model.preamble)
-        expected = f'let {name}() = new a: nat;\nlet a = 42 in 0.'
+        expected = f'let {name}(_end: channel) = new a: nat;\nlet a = 42 in out(_end, true).'
         self.assertEqual((name, expected), model.functions[0])
 
     def _function_variable_assign_to_identifier_subtest(self, name: str):
@@ -34,7 +34,7 @@ class AssignmentsTestCase(unittest.TestCase):
             source = 'void %s(%s a) { %s b; b = a; }' % (name, ttype, ttype)
             model = Translator.from_line(source, False).translate()
             self.assertTrue(not model.preamble)
-            expected = f'let {name}(a: {pvtype}) = new b: {pvtype};\nlet b = a in 0.'
+            expected = f'let {name}(a: {pvtype}, _end: channel) = new b: {pvtype};\nlet b = a in out(_end, true).'
             self.assertEqual((name, expected), model.functions[0])
 
     def _function_variable_assign_to_strings_subtest(self, name: str):
@@ -52,7 +52,7 @@ class AssignmentsTestCase(unittest.TestCase):
             expr = ''.join(map(lambda s: f'"{s}"', strings_case))
             source = 'void %s() { char *a; a = %s; }' % (name, expr)
             model = Translator.from_line(source, False).translate()
-            expected = f'let {name}() = new a: bitstring;\nlet a = _strlit{_id} in 0.'
+            expected = f'let {name}(_end: channel) = new a: bitstring;\nlet a = _strlit{_id} in out(_end, true).'
             self.assertEqual((name, expected), model.functions[0],
                              f'functions differs with {strings_case}')
 
