@@ -12,6 +12,7 @@ from tests.AssignmentsTestCase import AssignmentsTestCase
 from tests.BranchingTestCase import BranchingTestCase
 from tests.ExpressionsTestCase import ExpressionsTestCase
 from tests.LoopsTestCase import LoopsTestCase
+from tests.FunctionCallTestCase import FunctionCallTestCase
 
 
 def lut_suite() -> list:
@@ -28,6 +29,7 @@ def translator_suite() -> list:
         BranchingTestCase,
         ExpressionsTestCase,
         LoopsTestCase,
+        FunctionCallTestCase
     ]
 
 

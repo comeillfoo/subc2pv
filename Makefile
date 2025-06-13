@@ -13,7 +13,7 @@ TESTS=LUTBasicDirectivesTestCase TranslatorBasicTestCase \
 	UnionsOrStructsDeclarationsAndDefinitionsTestCase \
 	FunctionsDeclarationsTestCase FunctionDefinitionsTestCase \
 	AssignmentsTestCase BranchingTestCase ExpressionsTestCase \
-	LoopsTestCase
+	LoopsTestCase FunctionCallTestCase
 
 JUNKDIRS=. auxilaries $(PARSERDIR) listeners $(TESTSDIR)
 

@@ -133,7 +133,9 @@ class FunctionsListener(StatementsListener):
     def exitFunCallStatement(self, ctx: SubCParser.FunCallStatementContext):
         lines = self._tree[ctx.functionCall()]
         # add end channel argument
-        lines[-1] = lines[-1].removesuffix(')') + ', {})'
+        func, args = lines[-1].split('(')
+        args = args.rstrip(')')
+        lines[-1] = func + '(' + args + ('' if not args else ', ') + '{})'
         self._tree[ctx] = '\n'.join(lines)
         return super().exitFunCallStatement(ctx)
 
