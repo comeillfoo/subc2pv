@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import Optional
 
-from ObjectsGroupCounter import ObjectsGroupCounter
+from ObjectsCounter import ObjectsCounter
 from libs.SubCParser import SubCParser
 from listeners.BinaryExpressionsListener import BinaryExpressionsListener
 
@@ -11,11 +11,11 @@ class BranchingListener(BinaryExpressionsListener):
 
     def __init__(self):
         super().__init__()
-        self._ifs = ObjectsGroupCounter('_if', ['cond', 'end', 'var'])
+        self._ifs = ObjectsCounter('_if_end')
 
     def _if(self, preceding: Optional[str], ctx: SubCParser.IfStatementContext,
             subsequent: Optional[str]) -> str:
-        cond, end, var = self._ifs.next()
+        end = self._ifs.next()
         goto_if_end = self.GOTO_TMPLT.format(end)
         branches = ctx.statement()
         then_br = self._tree[branches[0]] + ' ' + goto_if_end
@@ -25,7 +25,6 @@ class BranchingListener(BinaryExpressionsListener):
         pre_statements = self._tree.get(ctx.expression(), '').strip()
 
         lines = [
-            self.NEW_VAR_TMPLT.format(cond, 'channel'),
             self.NEW_VAR_TMPLT.format(end, 'channel'),
             '(('
         ]
@@ -34,8 +33,7 @@ class BranchingListener(BinaryExpressionsListener):
         if pre_statements:
             lines.append(pre_statements)
         lines.extend([
-            f'out({cond}, {self._exprs.pop()}))',
-            f'| (in({cond}, {var}: bool); if {var} then {then_br} else {else_br})',
+            f'if {self._exprs.pop()} then {then_br} else {else_br})',
             f'| (in({end}, {tvar}: bool);',
         ])
         if subsequent is not None:
@@ -43,31 +41,45 @@ class BranchingListener(BinaryExpressionsListener):
         lines.append('))')
         return '\n'.join(lines)
 
-    def exitIfNoSubsequentItems(self,
-            ctx: SubCParser.IfNoSubsequentItemsContext):
-        self._tree[ctx] = self._if(self._tree[ctx.ifBlockItems()],
-                                   ctx.ifStatement(), None)
-        return super().exitIfNoSubsequentItems(ctx)
+    def _branching(self, preceding: Optional[str],
+                   ctx: SubCParser.BranchingStatementContext,
+                   subsequent: Optional[str]) -> str:
+        branching_ctx = ctx.ifStatement()
+        if branching_ctx is not None:
+            return self._if(preceding, branching_ctx, subsequent)
+        # TODO: place for switch-case implementation
+        raise NotImplementedError
 
-    def exitIfNoPrecedingItems(self, ctx: SubCParser.IfNoPrecedingItemsContext):
-        self._tree[ctx] = self._if(None, ctx.ifStatement(),
-                                   self._tree[ctx.ifBlockItems()])
-        return super().exitIfNoPrecedingItems(ctx)
+    def exitBranchingNoSubsequentItems(self,
+            ctx: SubCParser.BranchingNoSubsequentItemsContext):
+        self._tree[ctx] = self._branching(self._tree[ctx.branchingItems()],
+                                   ctx.branchingStatement(), None)
+        return super().exitBranchingNoSubsequentItems(ctx)
 
-    def exitIfBothItemsAround(self, ctx: SubCParser.IfBothItemsAroundContext):
-        preceding, subsequent = ctx.ifBlockItems()
+    def exitBranchingNoPrecedingItems(self,
+            ctx: SubCParser.BranchingNoPrecedingItemsContext):
+        self._tree[ctx] = self._branching(None, ctx.branchingStatement(),
+                                   self._tree[ctx.branchingItems()])
+        return super().exitBranchingNoPrecedingItems(ctx)
+
+    def exitBranchingBothItemsAround(self,
+            ctx: SubCParser.BranchingBothItemsAroundContext):
+        preceding, subsequent = ctx.branchingItems()
         preceding, subsequent = self._tree[preceding], self._tree[subsequent]
-        self._tree[ctx] = self._if(preceding, ctx.ifStatement(), subsequent)
-        return super().exitIfBothItemsAround(ctx)
+        self._tree[ctx] = self._branching(preceding, ctx.branchingStatement(),
+                                          subsequent)
+        return super().exitBranchingBothItemsAround(ctx)
 
-    def exitIfNoItemsAround(self, ctx: SubCParser.IfNoItemsAroundContext):
-        self._tree[ctx] = self._if(None, ctx.ifStatement(), None)
-        return super().exitIfNoItemsAround(ctx)
+    def exitBranchingNoItemsAround(self,
+            ctx: SubCParser.BranchingNoItemsAroundContext):
+        self._tree[ctx] = self._branching(None, ctx.branchingStatement(), None)
+        return super().exitBranchingNoItemsAround(ctx)
 
-    def exitJustIfBlockItems(self, ctx: SubCParser.JustIfBlockItemsContext):
-        self._just_concat_items(ctx, ctx.funCallItems(), ctx.ifBlockItems())
-        return super().exitJustIfBlockItems(ctx)
+    def exitJustBranchingItems(self, ctx: SubCParser.JustBranchingItemsContext):
+        self._just_concat_items(ctx, ctx.funCallItems(), ctx.branchingItems())
+        return super().exitJustBranchingItems(ctx)
 
-    def exitNestedIfStatement(self, ctx: SubCParser.NestedIfStatementContext):
-        self._tree[ctx] = self._if(None, ctx.ifStatement(), None)
-        return super().exitNestedIfStatement(ctx)
+    def exitNestedBranchingStatement(self,
+            ctx: SubCParser.NestedBranchingStatementContext):
+        self._tree[ctx] = self._branching(None, ctx.branchingStatement(), None)
+        return super().exitNestedBranchingStatement(ctx)

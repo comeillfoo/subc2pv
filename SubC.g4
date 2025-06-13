@@ -129,15 +129,15 @@ loopBlockItems
     | loopBlockItems loopStatement                # loopNoSubsequentItems
     | loopStatement loopBlockItems                # loopNoPrecedingItems
     | loopStatement                               # loopNoItemsAround
-    | ifBlockItems loopBlockItems?                # justLoopBlockItems
+    | branchingItems loopBlockItems?              # justLoopBlockItems
     ;
 
-ifBlockItems
-    : ifBlockItems ifStatement ifBlockItems # ifBothItemsAround
-    | ifBlockItems ifStatement              # ifNoSubsequentItems
-    | ifStatement ifBlockItems              # ifNoPrecedingItems
-    | ifStatement                           # ifNoItemsAround
-    | funCallItems ifBlockItems?            # justIfBlockItems
+branchingItems
+    : branchingItems branchingStatement branchingItems # branchingBothItemsAround
+    | branchingItems branchingStatement                # branchingNoSubsequentItems
+    | branchingStatement branchingItems                # branchingNoPrecedingItems
+    | branchingStatement                               # branchingNoItemsAround
+    | funCallItems branchingItems?                     # justBranchingItems
     ;
 
 funCallItems
@@ -166,7 +166,7 @@ statement
     : compoundStatement
     | assignmentStatement
     | funCallStatement
-    | nestedIfStatement
+    | nestedBranchingStatement
     | nestedLoopStatement
     ;
 
@@ -192,7 +192,11 @@ forStatement
     : 'for' '(' (variableDeclaration | assignmentStatement | ';') expression? ';' assignmentExpression? ')' statement
     ;
 
-nestedIfStatement
+nestedBranchingStatement
+    : branchingStatement
+    ;
+
+branchingStatement
     : ifStatement
     ;
 

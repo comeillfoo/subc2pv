@@ -59,7 +59,7 @@ class LoopsListener(BranchingListener):
 
     def exitJustLoopBlockItems(self,
             ctx: SubCParser.JustLoopBlockItemsContext):
-        self._just_concat_items(ctx, ctx.ifBlockItems(), ctx.loopBlockItems())
+        self._just_concat_items(ctx, ctx.branchingItems(), ctx.loopBlockItems())
         return super().exitJustLoopBlockItems(ctx)
 
     def exitNestedLoopStatement(self,

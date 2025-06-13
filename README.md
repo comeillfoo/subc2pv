@@ -47,12 +47,9 @@ else
 ```
 ---
 ```ocaml
-new if_cond0: channel;
 new if_end0: channel;
 (
-    ((* statements-before *) out(if_cond0, (* condition *)))
-    | (in(if_cond0, _cond0: bool);
-       if _cond0 then
+    ((* statements-before *) if (* condition *) then
          (* then-branch *); out(if_end0, true)
        else
          (* else_branch *); out(if_end0, true))
@@ -70,12 +67,9 @@ if (/* condition */)
 ```
 ---
 ```ocaml
-new if_cond0: channel;
 new if_end0: channel;
 (
-    ((* statements-before *); out(if_cond0, (* condition *)))
-    | (in(if_cond0, _cond0: bool);
-       if _cond then
+    ((* statements-before *) if (* condition *) then
          (* then-branch *); out(if_end0, true)
        else
          out(if_end0, true))
