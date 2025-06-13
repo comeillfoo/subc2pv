@@ -31,9 +31,11 @@ TODO: fill in
 
 ## Statements
 
-### If statements
+### Branching statements
 
-#### w/ else
+#### If statements
+
+##### w/ else
 
 ```c
 /* statements-before */
@@ -48,17 +50,17 @@ else
 new if_cond0: channel;
 new if_end0: channel;
 (
-    (<statements-before>; out(if_cond0, <condition>))
+    ((* statements-before *) out(if_cond0, (* condition *)))
     | (in(if_cond0, _cond0: bool);
-       if _cond then
-         <then-branch>; out(if_end0, true)
+       if _cond0 then
+         (* then-branch *); out(if_end0, true)
        else
-         <else_branch>; out(if_end0, true))
-    | (in(if_end0, _tvar0: bool); <statements-after>)
+         (* else_branch *); out(if_end0, true))
+    | (in(if_end0, _tvar0: bool); (* statements-after *))
 )
 ```
 
-#### w/o else
+##### w/o else
 
 ```c
 /* statements-before */
@@ -71,14 +73,52 @@ if (/* condition */)
 new if_cond0: channel;
 new if_end0: channel;
 (
-    (<statements-before>; out(if_cond0, <condition>))
+    ((* statements-before *); out(if_cond0, (* condition *)))
     | (in(if_cond0, _cond0: bool);
        if _cond then
-         <then-branch>; out(if_end0, true)
+         (* then-branch *); out(if_end0, true)
        else
          out(if_end0, true))
-    | (in(if_end0: _tvar0: bool); <statements-after>)
+    | (in(if_end0: _tvar0: bool); (* statements-after *))
 )
+```
+
+#### Switch-case statements
+
+```c
+/* statements-before */
+switch (/* expression */) {
+  case /* const-expr0 */: /* stmnt0 */
+  case /* const-expr1 */: /* stmnt1 */ break;
+  case /* const-expr2 */: /* stmnt2 */ break;
+  default: /* def-stmnt */
+}
+/* statements-after */
+```
+
+```ocaml
+new _sw0_case0: channel;
+new _sw0_case1: channel;
+new _sw0_case2: channel;
+new _sw0_default: channel;
+new _sw0_end: channel;
+(((* statements-before *)
+  if (* expression *) = (* const-expr0 *) then
+    out(_sw0_case0, true)
+  else
+    if (* expression *) = (* const-expr1 *) then
+      out(_sw0_case1, true)
+    else
+      if (* expression *) = (* const-expr2 *) then
+        out(_sw0_case2, true)
+      else
+        out(_sw0_default, true))
+  | (in(_sw0_case0, _tvar0: bool); (* stmnt0 *) out(_sw0_case1, true))
+  | (in(_sw0_case1, _tvar1: bool); (* stmnt1 *) out(_sw0_end, true))
+  | (in(_sw0_case2, _tvar2: bool); (* stmnt2 *) out(_sw0_end, true))
+  | (in(_sw0_default, _tvar3: bool); (* def-stmnt *) out(_sw0_end, true))
+  | (in(_sw0_end, _tvar4: bool);
+     (* statements-after *)))
 ```
 
 ### Loops
@@ -86,82 +126,82 @@ new if_end0: channel;
 #### While loops
 
 ```c
-<операторы до цикла>
-while (<условие>) {
-  <тело цикла> }
-<операторы после цикла>
+/* statements-before */
+while (/* condition */) {
+  /* loop-body */ }
+/* statements-after */
 ```
 ---
 ```ocaml
-new _while0_begin: channel;
-new _while0_end: channel;
-new _while0_cond: channel;
-((<операторы до цикла>;
-  out(_while0_cond, <условие>))
- |!(in(_while0_cond, _cond0: bool);
+new _while_begin0: channel;
+new _while_end0: channel;
+new _while_cond0: channel;
+(((* statements-before *);
+  out(_while_cond0, (* condition *)))
+ |!(in(_while_cond0, _cond0: bool);
     if _cond0 then
-      out(_while0_begin, true)
+      out(_while_begin0, true)
     else
-      out(_while0_end, true))
- |!(in(_while0_begin, _tmp0: bool);
-    <тело цикла>
-    out(_while0_cond, <условие>))
- |(in(_while0_end, _tmp1: bool);
-   <операторы после цикла>))
+      out(_while_end0, true))
+ |!(in(_while_begin0, _tvar0: bool);
+    (* loop-body *)
+    out(_while_cond0, (* condition *)))
+ |(in(_while_end0, _tvar1: bool);
+   (* statements-after *)))
 ```
 
 #### Do-while loops
 
 ```c
-// операторы до цикла>
+/* statements-before */
 do {
-    /* тело цикла */
-} while (/* условие */)
-/* операторы после цикла */
+    /* loop-body */
+} while (/* condition */)
+/* statements-after */
 ```
 ---
 ```ocaml
-new _dowhile0_begin: channel;
-new _dowhile0_end: channel;
-new _dowhile0_cond: channel;
-((<операторы до цикла>;
-  out(_dowhile0_cond, true))
- |!(in(_dowhile0_cond, _cond0: bool);
+new _dowhile_begin0: channel;
+new _dowhile_end0: channel;
+new _dowhile_cond0: channel;
+(((* statements-before *);
+  out(_dowhile_cond0, true))
+ |!(in(_dowhile_cond0, _cond0: bool);
     if _cond0 then
-      out(_dowhile0_begin, true)
+      out(_dowhile_begin0, true)
     else
-      out(_dowhile0_end, true))
- |!(in(_dowhile0_begin, _tmp0: bool);
-    <тело цикла>
-    out(_dowhile0_cond, <условие>))
- |(in(_dowhile0_end, _tmp1: bool);
-   <операторы после цикла>))
+      out(_dowhile_end0, true))
+ |!(in(_dowhile_begin0, _tvar0: bool);
+    (* loop-body *)
+    out(_dowhile_cond0, (* condition *)))
+ |(in(_dowhile_end0, _tvar1: bool);
+   (* statements-after *)))
 ```
 
 #### For-loops
 
 ```c
-/* операторы до цикла */
-for (/* инициализация */; /* условие */; /* выражение */)
-    /* тело цикла */
-/* операторы после цикла */
+/* statements-before */
+for (/* initialization */; /* condition */; /* expression */)
+    /* loop-body */
+/* statements-after */
 ```
 ---
 ```ocaml
-new _for0_begin: channel;
-new _for0_end: channel;
-new _for0_cond: channel;
-((<операторы до цикла> <инициализация> out(_for0_cond, <условие>))
- |!(in(_for0_cond, _cond0: bool);
+new _for_begin0: channel;
+new _for_end0: channel;
+new _for_cond0: channel;
+(((* statements-before *) (* initialization *) out(_for_cond0, (* condition *)))
+ |!(in(_for_cond0, _cond0: bool);
     if _cond0 then
-      out(_for0_begin, true)
+      out(_for_begin0, true)
     else
-      out(_for0_end, true))
- |!(in(_for0_begin, _tmp0: bool);
-    <тело цикла>
-    <выражение>
-    out(_for0_cond, <условие>))
- |(in(_for0_end, _tmp1: bool); <операторы после цикла>))
+      out(_for_end0, true))
+ |!(in(_for_begin0, _tvar0: bool);
+    (* loop-body *)
+    (* expression *)
+    out(_for_cond0, (* condition *)))
+ |(in(_for_end0, _tvar1: bool); (* statements-after *)))
 ```
 
 ## Expressions
@@ -188,9 +228,9 @@ void baz(int a)
   int x = a + 1;
 }
 ...
-/* операторы до вызова */
+/* statements-before */
 baz(8);
-/* операторы после вызова*/
+/* statements-after */
 ```
 
 ```ocaml
@@ -199,9 +239,9 @@ let baz(a: nat, _end: channel) = let x: nat = a + 1 in out(_end, true).
 new _fcall_begin0: channel;
 new _fcall_end0: channel;
 (
-  (<операторы до вызова> out(_fcall_begin0, true))
+  ((* statements-before *) out(_fcall_begin0, true))
   | (in(_fcall_begin0, _tvar0: bool); baz(8, _fcall_end0))
-  | (in(_fcall_end0, _tvar1: bool); <операторы после вызова>)
+  | (in(_fcall_end0, _tvar1: bool); (* statements-after *))
 )
 ```
 
@@ -213,9 +253,9 @@ int foo(int a)
   return a + 1;
 }
 ...
-/* операторы до вызова */
+/* statements-before */
 int x = foo(8);
-/* операторы после вызова*/
+/* statements-after*/
 ```
 
 ```ocaml
@@ -226,11 +266,11 @@ new _fcall_begin0: channel;
 new _fcall_end0: channel;
 new _fcall_ret0: channel;
 (
-  (<операторы до вызова> out(_fcall_begin0, true))
+  ((* statements-before *) out(_fcall_begin0, true))
   | (in(_fcall_begin0, _tvar1: bool); foo(8, _fcall_ret0, _fcall_end0))
   | (in(_fcall_end0, _tvar2: bool);
      in(_fcall_ret0, _tvar3: nat);
      let x: nat = _tvar3 in
-     <операторы после вызова>)
+     (* statements-after *))
 )
 ```
