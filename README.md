@@ -89,7 +89,7 @@ switch (/* expression */) {
 }
 /* statements-after */
 ```
-
+---
 ```ocaml
 new _sw0_case0: channel;
 new _sw0_case1: channel;
@@ -226,7 +226,7 @@ void baz(int a)
 baz(8);
 /* statements-after */
 ```
-
+---
 ```ocaml
 let baz(a: nat, _end: channel) = let x: nat = a + 1 in out(_end, true).
 ...
@@ -251,7 +251,7 @@ int foo(int a)
 int x = foo(8);
 /* statements-after*/
 ```
-
+---
 ```ocaml
 let foo(a: nat, _ret_ch: channel, _end: channel) =
   let _tvar0: nat = a + 1 in out(_ret_ch, _tvar0); out(_end, true).
