@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import unittest
-from typing import Tuple
 
-
+from helpers import Parameter
 from translator import Translator
 from tests.common import *
 
@@ -13,10 +12,10 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
         self.assertTrue(not model.functions)
         self.assertEqual(model.preamble, f'type {name}.')
 
-    def _dict2fielded_def(self, name: str, fields: Tuple[str, str] = [],
+    def _dict2fielded_def(self, name: str, fields: list[Parameter] = [],
                           ttype: str = 'struct') -> str:
         lines = [f'{ttype} {name}', '{']
-        for fname, ftype in fields:
+        for ftype, fname in fields:
             lines.append(f'{ftype} {fname};')
         lines.append('};')
         return '\n'.join(lines)
@@ -30,7 +29,7 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
 
     def _fielded_with_single_enum_subtest(self, name: str, ttype: str):
         model = Translator.from_line(
-            self._dict2fielded_def(name, [('x', 'enum A')], ttype),
+            self._dict2fielded_def(name, [('enum A', 'x')], ttype),
             False).translate()
         self.assertTrue(not model.functions)
         expected = '\n'.join([
@@ -41,7 +40,7 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
 
     def _fielded_single_integer_helper(self, name: str, ttype: str, fname: str,
                                        ftype: str):
-        fielded_definition = self._dict2fielded_def(name, [(fname, ftype)], ttype)
+        fielded_definition = self._dict2fielded_def(name, [(ftype, fname)], ttype)
         translator = Translator.from_line(fielded_definition, False)
         model = translator.translate()
         self.assertTrue(not model.functions)
@@ -59,7 +58,7 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
 
     def _fielded_single_bool_subtest(self, name: str, ttype: str):
         for fname in IDENTIFIERS:
-            fielded_definition = self._dict2fielded_def(name, [(fname, '_Bool')],
+            fielded_definition = self._dict2fielded_def(name, [('_Bool', fname)],
                                                         ttype)
             model = Translator.from_line(fielded_definition, False).translate()
             self.assertTrue(not model.functions)

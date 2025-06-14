@@ -1,5 +1,6 @@
-from typing import Union, Iterable, Tuple, Optional, Any
+from typing import Union, Iterable, Optional, Any
 
+from helpers import Parameter
 from ObjectsGroupCounter import ObjectsGroupCounter
 from libs.SubCParser import SubCParser
 from listeners.StatementsListener import StatementsListener
@@ -11,17 +12,16 @@ FunctionDeclarationContexts = Union[SubCParser.VoidFunctionDeclarationContext,
                                     SubCParser.NonVoidFunctionDeclarationContext]
 FunctionDefinitionContexts = Union[SubCParser.VoidFunctionDefinitionContext,
                                    SubCParser.NonVoidFunctionDefinitionContext]
-FunctionArg = Tuple[str, str]
 
 
 FUN_TMPLT: str = 'fun {}({}): {}.'
 FUN_MACRO_TMPLT: str = 'let {}({}) = {}.'
 
 
-def anonymous_args(types: Iterable[str]) -> Iterable[FunctionArg]:
+def anonymous_args(types: Iterable[str]) -> Iterable[Parameter]:
     return [(_type, f'_p{i}') for i, _type in enumerate(types)]
 
-def arg2pv(param: Tuple[str, str]) -> str:
+def arg2pv(param: Parameter) -> str:
     _type, name = param
     return name + ': ' + _type
 
