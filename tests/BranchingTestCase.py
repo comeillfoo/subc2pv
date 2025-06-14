@@ -86,3 +86,76 @@ let a = _tvar0 in out(_if_end0, true) else out(_if_end0, true))
         model = Translator.from_line(source, False).translate()
         _, actual = model.functions[0]
         self.assertEqual(expected, actual)
+
+    def test_switch_single_default(self):
+        source = '''void main()
+{
+    int selector;
+    switch (selector) default: selector = 42;
+}'''
+        expected = '''let main(_end: channel) = new selector: nat;
+new _sw0_end: channel;
+new _sw0_default: channel;
+((
+out(_sw0_default, true))
+| (in(_sw0_default, _tvar0: bool); let selector = 42 in out(_sw0_end, true))
+| (in(_sw0_end, _tvar1: bool);
+)); out(_end, true).'''
+        model = Translator.from_line(source, False).translate()
+        _, actual = model.functions[0]
+        self.assertEqual(expected, actual)
+
+    def test_switch_single_case(self):
+        source = '''void main()
+{
+    int selector;
+    switch (selector) case 42: selector = 42;
+}'''
+        expected = '''let main(_end: channel) = new selector: nat;
+new _sw0_end: channel;
+new _sw0_case0: channel;
+((
+if selector = 42 then out(_sw0_case0, true) else out(_sw0_end, true))
+| (in(_sw0_case0, _tvar0: bool); let selector = 42 in out(_sw0_end, true))
+| (in(_sw0_end, _tvar1: bool);
+)); out(_end, true).'''
+        model = Translator.from_line(source, False).translate()
+        _, actual = model.functions[0]
+        self.assertEqual(expected, actual)
+
+    def test_multiple_cases_and_default(self):
+        source = '''void main()
+{
+    int selector;
+    switch (selector) {
+        case 0: selector = 1;
+        case 1: selector = 2;
+        case 2: selector = 4;
+        case 3: selector = 8;
+        default: selector = 16;
+    }
+}'''
+        expected = '''let main(_end: channel) = new selector: nat;
+new _sw0_end: channel;
+new _sw0_default: channel;
+new _sw0_case0: channel;
+new _sw0_case1: channel;
+new _sw0_case2: channel;
+new _sw0_case3: channel;
+((
+if selector = 0 then out(_sw0_case3, true)
+else if selector = 1 then out(_sw0_case2, true)
+else if selector = 2 then out(_sw0_case1, true)
+else if selector = 3 then out(_sw0_case0, true)
+else out(_sw0_default, true))
+| (in(_sw0_case3, _tvar3: bool); let selector = 1 in out(_sw0_case2, true))
+| (in(_sw0_case2, _tvar2: bool); let selector = 2 in out(_sw0_case1, true))
+| (in(_sw0_case1, _tvar1: bool); let selector = 4 in out(_sw0_case0, true))
+| (in(_sw0_case0, _tvar0: bool); let selector = 8 in out(_sw0_default, true))
+| (in(_sw0_default, _tvar4: bool); let selector = 0 in out(_sw0_end, true))
+| (in(_sw0_end, _tvar4: bool);
+)); out(_end, true).'''
+        model = Translator.from_line(source, False).translate()
+        _, actual = model.functions[0]
+        self.maxDiff = None
+        self.assertEqual(expected, actual)

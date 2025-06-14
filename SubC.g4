@@ -198,10 +198,20 @@ nestedBranchingStatement
 
 branchingStatement
     : ifStatement
+    | switchStatement
     ;
 
 ifStatement
     : 'if' '(' expression ')' statement ('else' statement)?
+    ;
+
+caseStatement
+    : 'case' primaryExpression ':' statement
+    | 'default' ':' statement
+    ;
+
+switchStatement
+    : 'switch' '(' expression ')' (caseStatement | '{' caseStatement+ '}')
     ;
 
 funCallStatement
@@ -562,4 +572,8 @@ BlockComment
 
 LineComment
     : '//' ~[\r\n]* -> channel(HIDDEN)
+    ;
+
+Break
+    : 'break'
     ;
