@@ -148,12 +148,12 @@ else if selector = 1 then out(_sw0_case2, true)
 else if selector = 2 then out(_sw0_case1, true)
 else if selector = 3 then out(_sw0_case0, true)
 else out(_sw0_default, true))
-| (in(_sw0_case3, _tvar3: bool); let selector = 1 in out(_sw0_case2, true))
-| (in(_sw0_case2, _tvar2: bool); let selector = 2 in out(_sw0_case1, true))
-| (in(_sw0_case1, _tvar1: bool); let selector = 4 in out(_sw0_case0, true))
-| (in(_sw0_case0, _tvar0: bool); let selector = 8 in out(_sw0_default, true))
-| (in(_sw0_default, _tvar4: bool); let selector = 0 in out(_sw0_end, true))
-| (in(_sw0_end, _tvar4: bool);
+| (in(_sw0_case3, _tvar4: bool); let selector = 1 in out(_sw0_case2, true))
+| (in(_sw0_case2, _tvar3: bool); let selector = 2 in out(_sw0_case1, true))
+| (in(_sw0_case1, _tvar2: bool); let selector = 4 in out(_sw0_case0, true))
+| (in(_sw0_case0, _tvar1: bool); let selector = 8 in out(_sw0_default, true))
+| (in(_sw0_default, _tvar0: bool); let selector = 16 in out(_sw0_end, true))
+| (in(_sw0_end, _tvar5: bool);
 )); out(_end, true).'''
         model = Translator.from_line(source, False).translate()
         _, actual = model.functions[0]
