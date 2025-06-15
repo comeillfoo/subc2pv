@@ -1,6 +1,6 @@
 from typing import Union, Iterable, Optional, Any
 
-from helpers import Parameter
+from helpers import Parameter, list_pop_n
 from ObjectsGroupCounter import ObjectsGroupCounter
 from libs.SubCParser import SubCParser
 from listeners.StatementsListener import StatementsListener
@@ -33,14 +33,8 @@ def protect_from_redeclaration(function):
         function(self, ctx)
     return wrapper
 
-def list_pop_n(lst: list, n: int) -> list:
-    ans = lst[-n:]
-    del lst[-n:]
-    return ans
-
 
 class FunctionsListener(StatementsListener):
-
     def __init__(self):
         super().__init__()
         self._functions: dict[str, str] = {}

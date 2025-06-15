@@ -21,8 +21,6 @@ ASSIGN_OPERATORS = {
 
 
 class StatementsListener(VariablesListener):
-    LET_PAT_TMPLT: str = 'let {} = {} in'
-
     def __init__(self):
         super().__init__()
         self._tvars = ObjectsCounter('_tvar')
