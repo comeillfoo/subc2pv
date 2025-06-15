@@ -2,10 +2,10 @@
 from typing import Any
 
 from libs.SubCParser import SubCParser
-from listeners.LoopsListener import LoopsListener
+from listeners.ArraysListener import ArraysListener
 
 
-class SubC2PVListener(LoopsListener):
+class SubC2PVListener(ArraysListener):
     def __init__(self):
         super().__init__()
         self._loops_id = -1

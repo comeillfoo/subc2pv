@@ -157,9 +157,31 @@ blockItem
     ;
 
 variableDeclaration
-    : typeSpecifier Identifier ';'                         # noInitializerVariable
-    | typeSpecifier Identifier '=' compoundInitializer ';' # compoundInitializerVariable
-    | typeSpecifier Identifier '=' primaryExpression ';'   # objectDeclarationVariable
+    : typeSpecifier Identifier ';'                                        # noInitializerVariable
+    | typeSpecifier Identifier '=' primaryExpression ';'                  # objectDeclarationVariable
+    | structOrUnionType Identifier '=' structOrUnionInitializer ';'       # structOrUnionInitializerVariable
+    | typeSpecifier Identifier arraySpecifier ('=' arrayInitializer)? ';' # arrayInitializerVariable
+    ;
+
+structOrUnionInitializer
+    : '{' fieldInitializerList? '}'
+    ;
+
+fieldInitializerList
+    : fieldInitializer (',' fieldInitializer)*
+    ;
+
+fieldInitializer
+    : '.' Identifier '=' expression
+    | expression
+    ;
+
+arraySpecifier
+    : ('[' expression? ']')+
+    ;
+
+arrayInitializer
+    : '{' (expression (',' expression)*)? '}'
     ;
 
 statement
@@ -338,24 +360,6 @@ primaryExpression
     : Identifier     # primaryExprIdentifier
     | Constant       # primaryExprConstant
     | StringLiteral+ # primaryExprStringLits
-    ;
-
-compoundInitializer
-    : structOrUnionInitializer
-    // | arrayInitializer // TODO: implement
-    ;
-
-structOrUnionInitializer
-    : '{' fieldInitializerList? '}'
-    ;
-
-fieldInitializerList
-    : fieldInitializer (',' fieldInitializer)*
-    ;
-
-fieldInitializer
-    : '.' Identifier '=' expression
-    | expression
     ;
 
 // Lexer rules
