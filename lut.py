@@ -132,4 +132,4 @@ class LookUpTable:
 
     @classmethod
     def from_line(cls, line: str):
-        return cls.from_lines(line.split('\n'))
+        return cls.from_lines(line.splitlines(keepends=True))

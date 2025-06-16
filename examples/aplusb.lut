@@ -5,3 +5,4 @@ process
     new argc: nat;
     new argv: bitstring;
     main(argc, argv, _end)
+%%

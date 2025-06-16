@@ -102,4 +102,4 @@ process
     0''']
         for case in cases:
             lut = LookUpTable.from_line(template.format(case))
-            self.assertEqual(lut.paste(), case)
+            self.assertEqual(lut.paste(), case + '\n')
