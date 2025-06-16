@@ -103,7 +103,7 @@ class LookUpTable:
                 if line.startswith('%%'):
                     break
                 paste.append(line)
-            self.rules['P'] = '\n'.join(paste)
+            self.rules['P'] = ''.join(paste)
             return i
 
         def parse(self, lines: list[str]):
