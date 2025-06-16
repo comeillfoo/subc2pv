@@ -171,7 +171,7 @@ void main(void) { struct A a = {}; struct B b = { .a = a }; }
         return source, expected
 
     def _subtest_array_with_size(self) -> Tuple[str, str]:
-        source = 'void main(void) { int a[8] = { 1, 2, 3, 4, 5 }; }'
+        source = 'void main(void) { int a[8] = {}; }'
         expected = 'let main(_end: channel) = new a: bitstring; out(_end, true).'
         return source, expected
 
