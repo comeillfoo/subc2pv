@@ -161,6 +161,7 @@ variableDeclaration
     | typeSpecifier Identifier '=' primaryExpression ';'                  # objectDeclarationVariable
     | structOrUnionType Identifier '=' structOrUnionInitializer ';'       # structOrUnionInitializerVariable
     | typeSpecifier Identifier arraySpecifier ('=' arrayInitializer)? ';' # arrayInitializerVariable
+    // | typeSpecifier Identifier '=' expression ';'                         # complexInitializerVariable
     ;
 
 structOrUnionInitializer
