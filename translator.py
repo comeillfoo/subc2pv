@@ -14,7 +14,7 @@ class Translator:
         'const NULL: bitstring.',               # NULL
         'fun _addressof(any_type): bitstring.', # &a
         'fun _deref(bitstring): bitstring\n' \
-        '\treduc forall _deref(NULL) = fail.',  # *a
+        '\treduc _deref(NULL) = fail.',         # *a
         'fun _sizeof(any_type): nat.',          # sizeof(a)
         'fun _mul(nat, nat): nat.',             # a * b
         'fun _div(nat, nat): nat.',             # a / b
@@ -27,7 +27,7 @@ class Translator:
         'fun _not(nat): nat.',                  # ~a
         'fun _ternary(bool, any_type, any_type): any_type\n' \
         '\treduc forall a: any_type, b: any_type; _ternary(true, a, b) = a\n' \
-        '\t\totherwise forall a: any_type, b: any_type; _ternary(false, a, b) = b', # cond ? a : b
+        '\t\totherwise forall a: any_type, b: any_type; _ternary(false, a, b) = b.', # cond ? a : b
     ]
 
     def __init__(self, stream: antlr4.InputStream,
