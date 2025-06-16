@@ -1,0 +1,7 @@
+%X main
+%P
+process
+    new _end: channel;
+    new argc: nat;
+    new argv: bitstring;
+    main(argc, argv, _end)
