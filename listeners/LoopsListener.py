@@ -17,9 +17,9 @@ class LoopsListener(BranchingListener):
         self._dowhiles = ObjectsGroupCounter('_dowhile', loops_groups)
         self._fors = ObjectsGroupCounter('_for', loops_groups)
 
-    def _loop(self, preceding: Optional[str],
+    def _loop(self, preceding: list[str],
                ctx: SubCParser.LoopStatementContext,
-               subsequent: Optional[str]) -> str:
+               subsequent: list[str]) -> str:
         loop_ctx = ctx.whileStatement()
         if loop_ctx is not None:
             return WhileLoopTranslator.translate(preceding, loop_ctx,
@@ -37,12 +37,12 @@ class LoopsListener(BranchingListener):
     def exitLoopNoSubsequentItems(self,
             ctx: SubCParser.LoopNoSubsequentItemsContext):
         self._tree[ctx] = self._loop(self._tree[ctx.loopBlockItems()],
-                                     ctx.loopStatement(), None)
+                                     ctx.loopStatement(), [])
         return super().exitLoopNoSubsequentItems(ctx)
 
     def exitLoopNoPrecedingItems(self,
             ctx: SubCParser.LoopNoPrecedingItemsContext):
-        self._tree[ctx] = self._loop(None, ctx.loopStatement(),
+        self._tree[ctx] = self._loop([], ctx.loopStatement(),
                                      self._tree[ctx.loopBlockItems()])
         return super().exitLoopNoPrecedingItems(ctx)
 
@@ -54,7 +54,7 @@ class LoopsListener(BranchingListener):
         return super().exitLoopBothItemsAround(ctx)
 
     def exitLoopNoItemsAround(self, ctx: SubCParser.LoopNoItemsAroundContext):
-        self._tree[ctx] = self._loop(None, ctx.loopStatement(), None)
+        self._tree[ctx] = self._loop([], ctx.loopStatement(), [])
         return super().exitLoopNoItemsAround(ctx)
 
     def exitJustLoopBlockItems(self,
@@ -64,5 +64,5 @@ class LoopsListener(BranchingListener):
 
     def exitNestedLoopStatement(self,
             ctx: SubCParser.NestedLoopStatementContext):
-        self._tree[ctx] = self._loop(None, ctx.loopStatement(), None)
+        self._tree[ctx] = self._loop([], ctx.loopStatement(), [])
         return super().exitNestedLoopStatement(ctx)

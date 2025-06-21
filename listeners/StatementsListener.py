@@ -38,12 +38,11 @@ class StatementsListener(VariablesListener):
     def exitAssignmentExpression(self,
             ctx: SubCParser.AssignmentExpressionContext):
         ectx = ctx.expression()
-        pre_statements = self._tree[ectx]
         source = self._exprs.pop()
         target = str(ctx.Identifier())
         op = ctx.assignmentOperator().getText().rstrip('=')
 
-        lines = [] if not pre_statements else [pre_statements]
+        lines = self._tree.get(ectx, [])
         if not op:
             lines.append(self.LET_PAT_TMPLT.format(target, source))
         else:
@@ -53,7 +52,7 @@ class StatementsListener(VariablesListener):
                 self.LET_PAT_TMPLT.format(tmpvar, tmplt.format(target, source)),
                 self.LET_PAT_TMPLT.format(target, tmpvar)
             ])
-        self._tree[ctx] = '\n'.join(lines)
+        self._tree[ctx] = lines
         self._exprs.append(target)
         return super().exitAssignmentExpression(ctx)
 

@@ -13,18 +13,17 @@ class BinaryExpressionsListener(UnaryExpressionsListener):
 
     def _binary_expr(self, parent: Any, left: Any, right: Any, rtype: str,
                      tmplt: str):
-        rarg, prer = self._exprs.pop(), self._tree.get(right, '')
-        larg, prel = self._exprs.pop(), self._tree.get(left, '')
+        rarg, prer = self._exprs.pop(), self._tree.get(right, [])
+        larg, prel = self._exprs.pop(), self._tree.get(left, [])
         # TODO: consider order of prepends
-        lines = [] if not prer else [prer]
-        if prel:
-            lines.append(prel)
+        lines = prer
+        lines.extend(prel)
 
         target = self._tvars.next()
         lines.append(self.LET_PAT_TMPLT.format(
             self.TYPED_VAR_TMPLT.format(target, rtype),
             tmplt.format(larg, rarg)))
-        self._tree[parent] = '\n'.join(lines)
+        self._tree[parent] = lines
         self._exprs.append(target)
 
     def exitModuloExpression(self, ctx: SubCParser.ModuloExpressionContext):
@@ -171,21 +170,19 @@ class BinaryExpressionsListener(UnaryExpressionsListener):
         cond = ctx.logicalOrExpression()
         left = ctx.expression()
         right = ctx.conditionalExpression()
-        rarg, prer = self._exprs.pop(), self._tree.get(right, '')
-        larg, prel = self._exprs.pop(), self._tree.get(left, '')
-        carg, prec = self._exprs.pop(), self._tree.get(cond, '')
+        rarg, prer = self._exprs.pop(), self._tree.get(right, [])
+        larg, prel = self._exprs.pop(), self._tree.get(left, [])
+        carg, prec = self._exprs.pop(), self._tree.get(cond, [])
 
         # TODO: consider order of prepends
-        lines = [] if not prec else [prec]
-        if prel:
-            lines.append(prel)
-        if prer:
-            lines.append(prer)
+        lines = prec
+        lines.extend(prel)
+        lines.extend(prer)
         target = self._tvars.next()
 
         lines.append(self.LET_PAT_TMPLT.format(
             target, f'_ternary({carg}, {larg}, {rarg})'))
-        self._tree[ctx] = '\n'.join(lines)
+        self._tree[ctx] = lines
         self._exprs.append(target)
         return super().exitTernaryExpression(ctx)
 

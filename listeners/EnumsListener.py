@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import Any
+from typing import Any, Union
 
 from libs.SubCListener import SubCListener
 from libs.SubCParser import SubCParser
@@ -22,7 +22,7 @@ def define_enumeration(name: str,
 class EnumsListener(SubCListener):
     def __init__(self):
         super().__init__()
-        self._tree: dict[Any, str] = {}
+        self._tree: dict[Any, Union[str, list[str]]] = {}
         self._globals: list[str] = []
         self._anon_types = ObjectsCounter('_anon_t')
 

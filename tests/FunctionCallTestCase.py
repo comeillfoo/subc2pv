@@ -22,7 +22,9 @@ class FunctionCallTestCase(unittest.TestCase):
 new _fcall_end0: channel;
 ((
 out(_fcall_begin0, true))
-| (in(_fcall_begin0, _tvar0: bool); main(_fcall_end0))
+| (in(_fcall_begin0, _tvar0: bool);
+main(_fcall_end0)
+)
 | (in(_fcall_end0, _tvar1: bool);
 )); out(_end, true).'''
         return source, expected
@@ -38,7 +40,9 @@ new _fcall_begin0: channel;
 new _fcall_end0: channel;
 ((
 out(_fcall_begin0, true))
-| (in(_fcall_begin0, _tvar0: bool); main(args, _fcall_end0))
+| (in(_fcall_begin0, _tvar0: bool);
+main(args, _fcall_end0)
+)
 | (in(_fcall_end0, _tvar1: bool);
 )); out(_end, true).'''
         return source, expected
@@ -53,7 +57,9 @@ out(_fcall_begin0, true))
 new _fcall_end0: channel;
 ((
 out(_fcall_begin0, true))
-| (in(_fcall_begin0, _tvar0: bool); main(argc, _fcall_end0))
+| (in(_fcall_begin0, _tvar0: bool);
+main(argc, _fcall_end0)
+)
 | (in(_fcall_end0, _tvar1: bool);
 new args: nat;
 )); out(_end, true).'''
@@ -71,8 +77,10 @@ new _fcall_begin0: channel;
 new _fcall_end0: channel;
 ((
 out(_fcall_begin0, true))
-| (in(_fcall_begin0, _tvar1: bool); let _tvar0: nat = a + b in
-main(_tvar0, _fcall_end0))
+| (in(_fcall_begin0, _tvar1: bool);
+let _tvar0: nat = a + b in
+main(_tvar0, _fcall_end0)
+)
 | (in(_fcall_end0, _tvar2: bool);
 new c: nat;
 )); out(_end, true).'''

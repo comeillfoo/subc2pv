@@ -1,6 +1,7 @@
 from typing import Union, Iterable, Optional, Any
+from functools import reduce
 
-from helpers import Parameter, list_pop_n
+from helpers import Parameter, list_pop_n, list_extended
 from ObjectsGroupCounter import ObjectsGroupCounter
 from libs.SubCParser import SubCParser
 from listeners.StatementsListener import StatementsListener
@@ -35,6 +36,8 @@ def protect_from_redeclaration(function):
 
 
 class FunctionsListener(StatementsListener):
+    GOTO_TMPLT: str = 'out({}, true)'
+
     def __init__(self):
         super().__init__()
         self._functions: dict[str, str] = {}
@@ -87,7 +90,8 @@ class FunctionsListener(StatementsListener):
             params.append(('channel', '_ret_ch'))
         params.append(('channel', '_end'))
         params = ', '.join(map(arg2pv, params))
-        body = self._tree[ctx.compoundStatement()].removesuffix('0').rstrip(';')
+        body = '\n'.join(self._tree[ctx.compoundStatement()]) \
+            .removesuffix('0').rstrip(';')
         body += (' ' if not body or body.endswith(' in') else '; ') \
             + 'out(_end, true)'
         body = FUN_MACRO_TMPLT.format(name, params, body.strip())
@@ -108,8 +112,8 @@ class FunctionsListener(StatementsListener):
         ctxes = ctx.expression() or []
         args = ', '.join(list_pop_n(self._exprs, len(ctxes)))
         # TODO: consider order or statements
-        lines = list(filter(lambda c: not (not c),
-                            map(lambda _ctx: self._tree.get(_ctx, ''), ctxes)))
+        lines = reduce(lambda acc, _ctx: \
+                       list_extended(acc, self._tree.get(_ctx, [])), ctxes, [])
         lines.append(func + '(' + args + ')')
         self._tree[ctx] = lines
         return super().exitFunctionCall(ctx)
@@ -120,7 +124,7 @@ class FunctionsListener(StatementsListener):
         # TODO: handle functions with definitions (process macros)
         lines = self._tree[ctx.functionCall()]
         lines[-1] = self.LET_PAT_TMPLT.format(target, lines[-1])
-        self._tree[ctx] = '\n'.join(lines)
+        self._tree[ctx] = lines
         self._exprs.append(target)
         return super().exitFunctionCallExpression(ctx)
 
@@ -130,43 +134,43 @@ class FunctionsListener(StatementsListener):
         func, args = lines[-1].split('(')
         args = args.rstrip(')')
         lines[-1] = func + '(' + args + ('' if not args else ', ') + '{})'
-        self._tree[ctx] = '\n'.join(lines)
+        self._tree[ctx] = lines
         return super().exitFunCallStatement(ctx)
 
-    def _funcall(self, preceding: Optional[str],
+    def _funcall(self, preceding: list[str],
                  ctx: SubCParser.FunCallStatementContext,
-                 subsequent: Optional[str]) -> str:
+                 subsequent: list[str]) -> str:
         begin, end = self._fcalls.next()
         tvar0 = self._tvars.next()
         tvar1 = self._tvars.next()
-        fcall = self._tree[ctx].format(end)
+        fcall = self._tree[ctx]
+        fcall[-1] = fcall[-1].format(end)
 
         lines = [
             self.NEW_VAR_TMPLT.format(begin, 'channel'),
             self.NEW_VAR_TMPLT.format(end, 'channel'),
             '(('
         ]
-        if preceding is not None:
-            lines.append(preceding)
-        lines.extend([
-            f'out({begin}, true))',
-            f'| (in({begin}, {tvar0}: bool); {fcall})',
-            f'| (in({end}, {tvar1}: bool);'
-        ])
-        if subsequent is not None:
-            lines.append(subsequent)
+        if not (not preceding):
+            lines.extend(preceding)
+        lines.extend([f'out({begin}, true))',
+                      f'| (in({begin}, {tvar0}: bool);'])
+        lines.extend(fcall)
+        lines.extend([')', f'| (in({end}, {tvar1}: bool);'])
+        if not (not subsequent):
+            lines.extend(subsequent)
         lines.append('))')
-        return '\n'.join(lines)
+        return lines
 
     def exitFunCallNoSubsequentItems(self,
             ctx: SubCParser.FunCallNoSubsequentItemsContext):
         self._tree[ctx] = self._funcall(self._tree[ctx.funCallItems()],
-                                        ctx.funCallStatement(), None)
+                                        ctx.funCallStatement(), [])
         return super().exitFunCallNoSubsequentItems(ctx)
 
     def exitFunCallNoPrecedingItems(self,
             ctx: SubCParser.FunCallNoPrecedingItemsContext):
-        self._tree[ctx] = self._funcall(None, ctx.funCallStatement(),
+        self._tree[ctx] = self._funcall([], ctx.funCallStatement(),
                                         self._tree[ctx.funCallItems()])
         return super().exitFunCallNoPrecedingItems(ctx)
 
@@ -180,14 +184,14 @@ class FunctionsListener(StatementsListener):
 
     def exitFunCallNoItemsAround(self,
             ctx: SubCParser.FunCallNoItemsAroundContext):
-        self._tree[ctx] = self._funcall(None, ctx.funCallStatement(), None)
+        self._tree[ctx] = self._funcall([], ctx.funCallStatement(), [])
         return super().exitFunCallNoItemsAround(ctx)
 
     def _just_concat_items(self, ctx: Any, first: Any, next: Optional[Any]):
         items = [first] if next is None else [first, next]
-        self._tree[ctx] = '\n'.join(map(self._tree.get,
-                                        filter(self._tree.__contains__,
-                                               items)))
+        self._tree[ctx] = reduce(lambda acc, item: \
+                                 list_extended(acc, self._tree.get(item, [])),
+                                 items, [])
 
     def exitJustFunCallItems(self,
             ctx: SubCParser.JustFunCallItemsContext):

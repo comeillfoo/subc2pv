@@ -7,45 +7,42 @@ from listeners.BinaryExpressionsListener import BinaryExpressionsListener
 
 
 class BranchingListener(BinaryExpressionsListener):
-    GOTO_TMPLT: str = 'out({}, true)'
-    CASE_TMPLT: str = '| (in({}, {}: bool); {} ' + GOTO_TMPLT + ')'
-
     def __init__(self):
         super().__init__()
         self._ifs = ObjectsCounter('_if_end')
         self._switches = ObjectsCounter('_sw')
         self._cases = ObjectsCounter('_case')
 
-    def _if(self, preceding: Optional[str], ctx: SubCParser.IfStatementContext,
-            subsequent: Optional[str]) -> str:
+    def _if(self, preceding: list[str], ctx: SubCParser.IfStatementContext,
+            subsequent: list[str]) -> str:
         end = self._ifs.next()
         goto_if_end = self.GOTO_TMPLT.format(end)
         branches = ctx.statement()
-        then_br = self._tree[branches[0]] + ' ' + goto_if_end
-        else_br = (self._tree[branches[1]] + ' ' if len(branches) > 1 else '') \
-            + goto_if_end
+        then_br = self._tree.get(branches[0], [])
+        then_br.append(goto_if_end)
+        else_br = self._tree.get(branches[1], []) if len(branches) > 1 else []
+        else_br.append(goto_if_end)
         tvar = self._tvars.next()
-        pre_statements = self._tree.get(ctx.expression(), '').strip()
 
         lines = [
             self.NEW_VAR_TMPLT.format(end, 'channel'),
             '(('
         ]
-        if preceding is not None:
-            lines.append(preceding)
-        if pre_statements:
-            lines.append(pre_statements)
+        lines.extend(preceding)
+        lines.extend(self._tree.get(ctx.expression(), []))
+
         lines.extend([
-            f'if {self._exprs.pop()} then {then_br} else {else_br})',
-            f'| (in({end}, {tvar}: bool);',
-        ])
-        if subsequent is not None:
-            lines.append(subsequent)
+            f'if {self._exprs.pop()} then'])
+        lines.extend(then_br)
+        lines.append('else')
+        lines.extend(else_br)
+        lines.extend([')', f'| (in({end}, {tvar}: bool);'])
+        lines.extend(subsequent)
         lines.append('))')
-        return '\n'.join(lines)
+        return lines
 
     def _case(self, ctx: SubCParser.CaseStatementContext, switch: str,
-              next: str) -> Tuple[str, str, str, str]:
+              next: str) -> Tuple[str, str, list[str], str]:
         expr_ctx = ctx.primaryExpression()
         is_default = expr_ctx is None
         label = switch + ('_default' if is_default else self._cases.next())
@@ -54,15 +51,14 @@ class BranchingListener(BinaryExpressionsListener):
             + ('' if is_default else 'if {expr} = ' + self._exprs.pop() + ' then ')
         selector += self.GOTO_TMPLT.format(label)
 
-        return (label,
-                selector,
-                self.CASE_TMPLT.format(label, self._tvars.next(),
-                                       self._tree[ctx.statement()], next),
-                label)
+        body = ['| (in({}, {}: bool);'.format(label, self._tvars.next())]
+        body.extend(self._tree.get(ctx.statement(), []))
+        body.append(self.GOTO_TMPLT.format(next) + ')')
+        return (label, selector, body, label)
 
-    def _switch(self, preceding: Optional[str],
+    def _switch(self, preceding: list[str],
                 ctx: SubCParser.SwitchStatementContext,
-                subsequent: Optional[str]) -> str:
+                subsequent: list[str]) -> str:
         self._cases.reset()
         sw = self._switches.next()
         end = sw + '_end'
@@ -70,7 +66,7 @@ class BranchingListener(BinaryExpressionsListener):
 
         next = end
         selectors: list[str] = []
-        cases: list[str] = []
+        cases: list[list[str]] = []
         for case in reversed(ctx.caseStatement()):
             label, selector, body, next = self._case(case, sw, next)
             lines.append(self.NEW_VAR_TMPLT.format(label, 'channel'))
@@ -78,11 +74,8 @@ class BranchingListener(BinaryExpressionsListener):
             selectors.append(selector)
 
         lines.append('((')
-        if preceding is not None:
-            lines.append(preceding)
-        pre_statements = self._tree.get(ctx.expression(), '').strip()
-        if pre_statements:
-            lines.append(pre_statements)
+        lines.extend(preceding)
+        lines.extend(self._tree.get(ctx.expression(), []))
 
         selectors[-1] = selectors[-1].removeprefix('else ')
         # has default branch?
@@ -90,17 +83,17 @@ class BranchingListener(BinaryExpressionsListener):
             selectors[0] += ' else ' + self.GOTO_TMPLT.format(end)
         selectors[0] += ')'
         lines.extend(selectors[::-1])
-        lines.extend(cases[::-1])
+        for case in cases[::-1]:
+            lines.extend(case)
 
         lines.append(f'| (in({end}, {self._tvars.next()}: bool);')
-        if subsequent is not None:
-            lines.append(subsequent)
+        lines.extend(subsequent)
         lines.append('))')
-        return '\n'.join(lines).format(expr=self._exprs.pop())
+        return ('\n'.join(lines).format(expr=self._exprs.pop())).split('\n')
 
-    def _branching(self, preceding: Optional[str],
+    def _branching(self, preceding: list[str],
                    ctx: SubCParser.BranchingStatementContext,
-                   subsequent: Optional[str]) -> str:
+                   subsequent: list[str]) -> str:
         branching_ctx = ctx.ifStatement()
         if branching_ctx is not None:
             return self._if(preceding, branching_ctx, subsequent)
@@ -112,12 +105,12 @@ class BranchingListener(BinaryExpressionsListener):
     def exitBranchingNoSubsequentItems(self,
             ctx: SubCParser.BranchingNoSubsequentItemsContext):
         self._tree[ctx] = self._branching(self._tree[ctx.branchingItems()],
-                                   ctx.branchingStatement(), None)
+                                   ctx.branchingStatement(), [])
         return super().exitBranchingNoSubsequentItems(ctx)
 
     def exitBranchingNoPrecedingItems(self,
             ctx: SubCParser.BranchingNoPrecedingItemsContext):
-        self._tree[ctx] = self._branching(None, ctx.branchingStatement(),
+        self._tree[ctx] = self._branching([], ctx.branchingStatement(),
                                    self._tree[ctx.branchingItems()])
         return super().exitBranchingNoPrecedingItems(ctx)
 
@@ -131,7 +124,7 @@ class BranchingListener(BinaryExpressionsListener):
 
     def exitBranchingNoItemsAround(self,
             ctx: SubCParser.BranchingNoItemsAroundContext):
-        self._tree[ctx] = self._branching(None, ctx.branchingStatement(), None)
+        self._tree[ctx] = self._branching([], ctx.branchingStatement(), [])
         return super().exitBranchingNoItemsAround(ctx)
 
     def exitJustBranchingItems(self, ctx: SubCParser.JustBranchingItemsContext):
@@ -140,5 +133,5 @@ class BranchingListener(BinaryExpressionsListener):
 
     def exitNestedBranchingStatement(self,
             ctx: SubCParser.NestedBranchingStatementContext):
-        self._tree[ctx] = self._branching(None, ctx.branchingStatement(), None)
+        self._tree[ctx] = self._branching([], ctx.branchingStatement(), [])
         return super().exitNestedBranchingStatement(ctx)

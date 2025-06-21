@@ -15,16 +15,18 @@ class DoWhileLoopTranslator(LoopTranslator):
                    end: str, cond: str, var: str) -> Iterable[str]:
         enter = listener.GOTO_TMPLT.format(begin)
         exit = listener.GOTO_TMPLT.format(end)
-        body = listener._tree[ctx.statement()]
+        body = listener._tree.get(ctx.statement(), [])
         tvar0 = listener._tvars.next()
         tvar1 = listener._tvars.next()
-        cond_stmts = listener._tree.get(ctx.expression(), '').strip()
-        update_cond = cond_stmts + \
-            '{}out({}, {})'.format('' if not cond_stmts else ' ', cond,
-                                   listener._exprs.pop())
-        return [
+        update_cond: list[str] = listener._tree.get(ctx.expression(), [])
+        update_cond.append('out({}, {})'.format(cond, listener._exprs.pop()))
+
+        lines = [
             f'out({cond}, true))',
             f'| !(in({cond}, {var}: bool); if {var} then {enter} else {exit})',
-            f'| !(in({begin}, {tvar0}: bool); {body} {update_cond})',
-            f'| (in({end}, {tvar1}: bool);'
+            f'| !(in({begin}, {tvar0}: bool);'
         ]
+        lines.extend(body)
+        lines.extend(update_cond)
+        lines.extend([')', f'| (in({end}, {tvar1}: bool);'])
+        return lines

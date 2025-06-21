@@ -8,9 +8,7 @@ from listeners.ArraysListener import ArraysListener
 class SubC2PVListener(ArraysListener):
     def __init__(self):
         super().__init__()
-        self._loops_id = -1
 
     def exitCompoundStatement(self, ctx: SubCParser.CompoundStatementContext):
-        block_items = ctx.loopBlockItems()
-        self._tree[ctx] = '0' if block_items is None else self._tree[block_items]
+        self._tree[ctx] = self._tree.get(ctx.loopBlockItems(), ['0'])
         return super().exitCompoundStatement(ctx)

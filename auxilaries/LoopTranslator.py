@@ -12,10 +12,10 @@ LoopsStatementsContexts = Union[SubCParser.WhileStatementContext,
 
 class LoopTranslator(ABC):
     @classmethod
-    def translate(cls, preceding: Optional[str],
+    def translate(cls, preceding: list[str],
                   ctx: LoopsStatementsContexts,
-                  subsequent: Optional[str],
-                  listener) -> str:
+                  subsequent: list[str],
+                  listener) -> list[str]:
         begin, end, cond, var = cls._counters(listener)
 
         lines = [
@@ -24,15 +24,11 @@ class LoopTranslator(ABC):
             listener.NEW_VAR_TMPLT.format(cond, 'channel'),
             '((',
         ]
-        if preceding is not None:
-            lines.append(preceding)
-
+        lines.extend(preceding)
         lines.extend(cls._loop_body(ctx, listener, begin, end, cond, var))
-
-        if subsequent is not None:
-            lines.append(subsequent)
+        lines.extend(subsequent)
         lines.append('))')
-        return '\n'.join(lines)
+        return lines
 
     @classmethod
     @abstractmethod

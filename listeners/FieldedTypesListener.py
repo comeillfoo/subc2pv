@@ -58,9 +58,7 @@ class StructOrUnion:
                 fname = str(ident_ctx)
             else:
                 i += 1
-            line = listener._tree.get(fctx.expression(), '')
-            if not (not line):
-                lines.append(line)
+            lines.extend(listener._tree.get(fctx.expression(), []))
             kwargs[fname] = expr
 
     def init(self, ctx: Optional[SubCParser.FieldInitializerListContext],

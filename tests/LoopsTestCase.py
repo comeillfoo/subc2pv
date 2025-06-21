@@ -13,9 +13,13 @@ class LoopsTestCase(unittest.TestCase):
 new _while_end0: channel;
 new _while_cond0: channel;
 ((
-out(_while_cond0, true))
+out(_while_cond0, true)
+)
 | !(in(_while_cond0, _while_var0: bool); if _while_var0 then out(_while_begin0, true) else out(_while_end0, true))
-| !(in(_while_begin0, _tvar0: bool); new a: nat; out(_while_cond0, true))
+| !(in(_while_begin0, _tvar0: bool);
+new a: nat;
+out(_while_cond0, true)
+)
 | (in(_while_end0, _tvar1: bool);
 )); out(_end, true).'''
         return 'simplest-while', source, expected
@@ -28,7 +32,10 @@ new _dowhile_cond0: channel;
 ((
 out(_dowhile_cond0, true))
 | !(in(_dowhile_cond0, _dowhile_var0: bool); if _dowhile_var0 then out(_dowhile_begin0, true) else out(_dowhile_end0, true))
-| !(in(_dowhile_begin0, _tvar0: bool); new b: nat; out(_dowhile_cond0, true))
+| !(in(_dowhile_begin0, _tvar0: bool);
+new b: nat;
+out(_dowhile_cond0, true)
+)
 | (in(_dowhile_end0, _tvar1: bool);
 )); out(_end, true).'''
         return 'simplest-do-while', source, expected
@@ -41,11 +48,18 @@ new _for_end0: channel;
 new _for_cond0: channel;
 ((
 new i: nat;
-let _tvar0: bool = i < 10 in out(_for_cond0, _tvar0))
+let _tvar0: bool = i < 10 in
+out(_for_cond0, _tvar0)
+)
 | !(in(_for_cond0, _for_var0: bool); if _for_var0 then out(_for_begin0, true) else out(_for_end0, true))
-| !(in(_for_begin0, _tvar3: bool); let _tvar2: nat = _mul(2, i) in
-let a = _tvar2 in let _tvar1: nat = i + 1 in
-let i = _tvar1 in let _tvar0: bool = i < 10 in out(_for_cond0, _tvar0))
+| !(in(_for_begin0, _tvar3: bool);
+let _tvar2: nat = _mul(2, i) in
+let a = _tvar2 in
+let _tvar1: nat = i + 1 in
+let i = _tvar1 in
+let _tvar0: bool = i < 10 in
+out(_for_cond0, _tvar0)
+)
 | (in(_for_end0, _tvar4: bool);
 )); out(_end, true).'''
         return 'simplest-for', source, expected
@@ -56,6 +70,7 @@ let i = _tvar1 in let _tvar0: bool = i < 10 in out(_for_cond0, _tvar0))
             self._subtest_simplest_dowhile,
             self._subtest_simplest_for
         ]
+        self.maxDiff = None
         for subtest in subtests:
             name, source, expected = subtest()
             with self.subTest(name):
@@ -75,21 +90,30 @@ new _while_begin1: channel;
 new _while_end1: channel;
 new _while_cond1: channel;
 ((
-out(_while_cond1, true))
+out(_while_cond1, true)
+)
 | !(in(_while_cond1, _while_var1: bool); if _while_var1 then out(_while_begin1, true) else out(_while_end1, true))
-| !(in(_while_begin1, _tvar2: bool); new _while_begin0: channel;
+| !(in(_while_begin1, _tvar2: bool);
+new _while_begin0: channel;
 new _while_end0: channel;
 new _while_cond0: channel;
 ((
-out(_while_cond0, false))
+out(_while_cond0, false)
+)
 | !(in(_while_cond0, _while_var0: bool); if _while_var0 then out(_while_begin0, true) else out(_while_end0, true))
-| !(in(_while_begin0, _tvar0: bool); let foo = _strlit0 in out(_while_cond0, false))
+| !(in(_while_begin0, _tvar0: bool);
+let foo = _strlit0 in
+out(_while_cond0, false)
+)
 | (in(_while_end0, _tvar1: bool);
-)) out(_while_cond1, true))
+))
+out(_while_cond1, true)
+)
 | (in(_while_end1, _tvar3: bool);
 )); out(_end, true).'''
         model = Translator.from_line(source, False).translate()
         _, actual = model.functions[0]
+        self.maxDiff = None
         self.assertEqual(expected, actual)
 
     def _subtest_no_cond_for(self):
@@ -105,11 +129,16 @@ new _for_end0: channel;
 new _for_cond0: channel;
 ((
 new i: nat;
-out(_for_cond0, true))
+out(_for_cond0, true)
+)
 | !(in(_for_cond0, _for_var0: bool); if _for_var0 then out(_for_begin0, true) else out(_for_end0, true))
-| !(in(_for_begin0, _tvar2: bool); let _tvar1 = a + i in
-let a = _tvar1 in let _tvar0: nat = i + 1 in
-let i = _tvar0 in out(_for_cond0, true))
+| !(in(_for_begin0, _tvar2: bool);
+let _tvar1 = a + i in
+let a = _tvar1 in
+let _tvar0: nat = i + 1 in
+let i = _tvar0 in
+out(_for_cond0, true)
+)
 | (in(_for_end0, _tvar3: bool);
 )); out(_end, true).'''
         return 'no-condition-for', source, expected
@@ -127,10 +156,16 @@ new _for_end0: channel;
 new _for_cond0: channel;
 ((
 let a = 1 in
-let _tvar0: bool = a <> 4 in out(_for_cond0, _tvar0))
+let _tvar0: bool = a <> 4 in
+out(_for_cond0, _tvar0)
+)
 | !(in(_for_cond0, _for_var0: bool); if _for_var0 then out(_for_begin0, true) else out(_for_end0, true))
-| !(in(_for_begin0, _tvar2: bool); let _tvar1: nat = _shl(a, 1) in
-let a = _tvar1 in let _tvar0: bool = a <> 4 in out(_for_cond0, _tvar0))
+| !(in(_for_begin0, _tvar2: bool);
+let _tvar1: nat = _shl(a, 1) in
+let a = _tvar1 in
+let _tvar0: bool = a <> 4 in
+out(_for_cond0, _tvar0)
+)
 | (in(_for_end0, _tvar3: bool);
 )); out(_end, true).'''
         return 'no-iteration-for', source, expected
@@ -142,10 +177,14 @@ new _for_begin0: channel;
 new _for_end0: channel;
 new _for_cond0: channel;
 ((
-out(_for_cond0, true))
+out(_for_cond0, true)
+)
 | !(in(_for_cond0, _for_var0: bool); if _for_var0 then out(_for_begin0, true) else out(_for_end0, true))
-| !(in(_for_begin0, _tvar1: bool); let _tvar0 = _mul(a, 2) in
-let a = _tvar0 in out(_for_cond0, true))
+| !(in(_for_begin0, _tvar1: bool);
+let _tvar0 = _mul(a, 2) in
+let a = _tvar0 in
+out(_for_cond0, true)
+)
 | (in(_for_end0, _tvar2: bool);
 )); out(_end, true).'''
         return 'infinite-for', source, expected

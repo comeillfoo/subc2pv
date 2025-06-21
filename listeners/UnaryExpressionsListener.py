@@ -58,7 +58,7 @@ class UnaryExpressionsListener(FunctionsListener):
         return super().exitPrimaryExprConstant(ctx)
 
     def _pass_state_to_parent(self, child: Any, parent: Any):
-        self._tree[parent] = self._tree.get(child, '')
+        self._tree[parent] = self._tree.get(child, [])
 
     def exitParenthesisExpression(self,
             ctx: SubCParser.ParenthesisExpressionContext):
@@ -75,12 +75,11 @@ class UnaryExpressionsListener(FunctionsListener):
     def _unary_expr(self, parent: Any, child: Any, rtype: str, tmplt: str):
         tvar = self._tvars.next()
         expr = self._exprs.pop()
-        pre_statements = self._tree.get(child, '')
 
-        lines = [] if not pre_statements else [pre_statements]
+        lines = self._tree.get(child, [])
         lines.append(self.LET_PAT_TMPLT.format(
             self.TYPED_VAR_TMPLT.format(tvar, rtype), tmplt.format(expr)))
-        self._tree[parent] = '\n'.join(lines)
+        self._tree[parent] = lines
         self._exprs.append(tvar)
 
     def exitPostIncrementExpression(self,
