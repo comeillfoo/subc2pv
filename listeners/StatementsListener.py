@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import Any
 
-from ObjectsCounter import ObjectsCounter
+from objects_counters import ObjectsCounter
 from libs.SubCParser import SubCParser
 from listeners.VariablesListener import VariablesListener
 
@@ -23,7 +23,7 @@ ASSIGN_OPERATORS = {
 class StatementsListener(VariablesListener):
     def __init__(self):
         super().__init__()
-        self._tvars = ObjectsCounter('_tvar')
+        self._tvars = ObjectsCounter('tvar')
 
     def exitStatement(self, ctx: SubCParser.StatementContext):
         self._tree[ctx] = self._tree[ctx.getChild(0)]

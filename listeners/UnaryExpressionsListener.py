@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import Any, NamedTuple
 
-from ObjectsCounter import ObjectsCounter
+from objects_counters import ObjectsCounter
 from libs.SubCParser import SubCParser
 from listeners.FunctionsListener import FunctionsListener
 
@@ -25,7 +25,7 @@ class UnaryExpressionsListener(FunctionsListener):
 
     def __init__(self):
         super().__init__()
-        self._strlits = StringLiterals({}, ObjectsCounter('_strlit'))
+        self._strlits = StringLiterals({}, ObjectsCounter('strlit'))
         self._casters: set[str] = set()
 
     def _declare_single_strlit(self, strlit: str) -> str:

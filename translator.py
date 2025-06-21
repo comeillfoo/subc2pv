@@ -4,9 +4,9 @@ import antlr4
 
 from libs.SubCLexer import SubCLexer
 from libs.SubCParser import SubCParser
-from SubC2PVListener import SubC2PVListener
+from listeners.SubC2PVListener import SubC2PVListener
 
-from model import Model, FunctionModel
+from model import Model
 
 
 class Translator:

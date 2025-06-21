@@ -2,7 +2,7 @@ from typing import Union, Iterable, Optional, Any
 from functools import reduce
 
 from helpers import Parameter, list_pop_n, list_extended
-from ObjectsGroupCounter import ObjectsGroupCounter
+from objects_counters import ObjectsGroupCounter
 from libs.SubCParser import SubCParser
 from listeners.StatementsListener import StatementsListener
 
@@ -41,7 +41,7 @@ class FunctionsListener(StatementsListener):
     def __init__(self):
         super().__init__()
         self._functions: dict[str, str] = {}
-        self._fcalls = ObjectsGroupCounter('_fcall', ['begin', 'end'])
+        self._fcalls = ObjectsGroupCounter('fcall', ['begin', 'end'])
         # TODO: maybe need for '_fcall_ret%i'
 
     def exitFunctionParamsDefinition(self,

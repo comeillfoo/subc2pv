@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import Optional
 
-from ObjectsGroupCounter import ObjectsGroupCounter
+from objects_counters import ObjectsGroupCounter
 from libs.SubCParser import SubCParser
 from listeners.BranchingListener import BranchingListener
 from auxilaries.WhileLoopTranslator import WhileLoopTranslator
@@ -13,9 +13,9 @@ class LoopsListener(BranchingListener):
     def __init__(self):
         super().__init__()
         loops_groups = ['begin', 'end', 'cond', 'var']
-        self._whiles = ObjectsGroupCounter('_while', loops_groups)
-        self._dowhiles = ObjectsGroupCounter('_dowhile', loops_groups)
-        self._fors = ObjectsGroupCounter('_for', loops_groups)
+        self._whiles = ObjectsGroupCounter('while', loops_groups)
+        self._dowhiles = ObjectsGroupCounter('dowhile', loops_groups)
+        self._fors = ObjectsGroupCounter('for', loops_groups)
 
     def _loop(self, preceding: list[str],
                ctx: SubCParser.LoopStatementContext,

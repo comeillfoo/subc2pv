@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 
 FunctionModel = Tuple[str, str]
 
+
 @dataclass
 class Model:
     preamble: str = ''

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import Optional, Tuple
 
-from ObjectsCounter import ObjectsCounter
+from objects_counters import ObjectsCounter
 from libs.SubCParser import SubCParser
 from listeners.BinaryExpressionsListener import BinaryExpressionsListener
 
@@ -9,9 +9,9 @@ from listeners.BinaryExpressionsListener import BinaryExpressionsListener
 class BranchingListener(BinaryExpressionsListener):
     def __init__(self):
         super().__init__()
-        self._ifs = ObjectsCounter('_if_end')
-        self._switches = ObjectsCounter('_sw')
-        self._cases = ObjectsCounter('_case')
+        self._ifs = ObjectsCounter('if_end')
+        self._switches = ObjectsCounter('sw')
+        self._cases = ObjectsCounter('case')
 
     def _if(self, preceding: list[str], ctx: SubCParser.IfStatementContext,
             subsequent: list[str]) -> str:

@@ -3,7 +3,7 @@ from typing import Any, Union
 
 from libs.SubCListener import SubCListener
 from libs.SubCParser import SubCParser
-from ObjectsCounter import ObjectsCounter
+from objects_counters import ObjectsCounter
 
 
 def enumerators2consts(enumeration: str):
@@ -24,7 +24,7 @@ class EnumsListener(SubCListener):
         super().__init__()
         self._tree: dict[Any, Union[str, list[str]]] = {}
         self._globals: list[str] = []
-        self._anon_types = ObjectsCounter('_anon_t')
+        self._anon_types = ObjectsCounter('anon_t')
 
     def exitEnumDeclaration(self, ctx: SubCParser.EnumDeclarationContext):
         self._globals.append(f'type {str(ctx.Identifier())}.')
