@@ -61,3 +61,7 @@ class StatementsListener(VariablesListener):
         self._exprs.pop()
         self._tree[ctx] = self._tree[ctx.assignmentExpression()]
         return super().exitAssignmentStatement(ctx)
+
+    def exitCompoundStatement(self, ctx: SubCParser.CompoundStatementContext):
+        self._tree[ctx] = self._tree.get(ctx.loopBlockItems(), ['0'])
+        return super().exitCompoundStatement(ctx)
