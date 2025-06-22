@@ -24,7 +24,7 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
         model = Translator.from_line(
             self._dict2fielded_def(name, ttype=ttype), False).translate()
         self.assertTrue(not model.functions)
-        expected = '\n'.join([f'type {name}.', f'fun _{name}_init(): {name}.'])
+        expected = '\n'.join([f'type {name}.', f"fun u'{name}_init(): {name}."])
         self.assertEqual(model.preamble, expected)
 
     def _fielded_with_single_enum_subtest(self, name: str, ttype: str):
@@ -33,9 +33,9 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
             False).translate()
         self.assertTrue(not model.functions)
         expected = '\n'.join([
-            f'type {name}.', f'fun _{name}_get_x({name}): A.',
-            f'fun _{name}_set_x({name}, A): {name}.',
-            f'fun _{name}_init(A): {name}.'])
+            f'type {name}.', f"fun u'{name}_get_x({name}): A.",
+            f"fun u'{name}_set_x({name}, A): {name}.",
+            f"fun u'{name}_init(A): {name}."])
         self.assertEqual(model.preamble, expected)
 
     def _fielded_single_integer_helper(self, name: str, ttype: str, fname: str,
@@ -45,9 +45,9 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
         model = translator.translate()
         self.assertTrue(not model.functions)
         expected = '\n'.join([
-            f'type {name}.', f'fun _{name}_get_{fname}({name}): nat.',
-            f'fun _{name}_set_{fname}({name}, nat): {name}.',
-            f'fun _{name}_init(nat): {name}.'])
+            f'type {name}.', f"fun u'{name}_get_{fname}({name}): nat.",
+            f"fun u'{name}_set_{fname}({name}, nat): {name}.",
+            f"fun u'{name}_init(nat): {name}."])
         self.assertEqual(model.preamble, expected)
 
     def _fielded_single_integer_subtest(self, name: str, ttype: str):
@@ -63,9 +63,9 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
             model = Translator.from_line(fielded_definition, False).translate()
             self.assertTrue(not model.functions)
             expected = '\n'.join([
-                f'type {name}.', f'fun _{name}_get_{fname}({name}): bool.',
-                f'fun _{name}_set_{fname}({name}, bool): {name}.',
-                f'fun _{name}_init(bool): {name}.'])
+                f'type {name}.', f"fun u'{name}_get_{fname}({name}): bool.",
+                f"fun u'{name}_set_{fname}({name}, bool): {name}.",
+                f"fun u'{name}_init(bool): {name}."])
             self.assertEqual(model.preamble, expected)
 
     def test_fielded(self):

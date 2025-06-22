@@ -18,15 +18,15 @@ class FunctionCallTestCase(unittest.TestCase):
 {
     main();
 }'''
-        expected = '''let main(_end: channel) = new _fcall_begin0: channel;
-new _fcall_end0: channel;
+        expected = '''let main(u'end: channel) = new u'fcall_begin0: channel;
+new u'fcall_end0: channel;
 ((
-out(_fcall_begin0, true))
-| (in(_fcall_begin0, _tvar0: bool);
-main(_fcall_end0)
+out(u'fcall_begin0, true))
+| (in(u'fcall_begin0, u'tvar0: bool);
+main(u'fcall_end0)
 )
-| (in(_fcall_end0, _tvar1: bool);
-)); out(_end, true).'''
+| (in(u'fcall_end0, u'tvar1: bool);
+)); out(u'end, true).'''
         return source, expected
 
     def _funcall_no_subsequent(self) -> Tuple[str, str]:
@@ -35,16 +35,16 @@ main(_fcall_end0)
     int args = 0;
     main(args);
 }'''
-        expected = '''let main(argc: nat, _end: channel) = new args: nat;
-new _fcall_begin0: channel;
-new _fcall_end0: channel;
+        expected = '''let main(argc: nat, u'end: channel) = new args: nat;
+new u'fcall_begin0: channel;
+new u'fcall_end0: channel;
 ((
-out(_fcall_begin0, true))
-| (in(_fcall_begin0, _tvar0: bool);
-main(args, _fcall_end0)
+out(u'fcall_begin0, true))
+| (in(u'fcall_begin0, u'tvar0: bool);
+main(args, u'fcall_end0)
 )
-| (in(_fcall_end0, _tvar1: bool);
-)); out(_end, true).'''
+| (in(u'fcall_end0, u'tvar1: bool);
+)); out(u'end, true).'''
         return source, expected
 
     def _funcall_no_preceding(self) -> Tuple[str, str]:
@@ -53,16 +53,16 @@ main(args, _fcall_end0)
     main(argc);
     int args = 0;
 }'''
-        expected = '''let main(argc: nat, _end: channel) = new _fcall_begin0: channel;
-new _fcall_end0: channel;
+        expected = '''let main(argc: nat, u'end: channel) = new u'fcall_begin0: channel;
+new u'fcall_end0: channel;
 ((
-out(_fcall_begin0, true))
-| (in(_fcall_begin0, _tvar0: bool);
-main(argc, _fcall_end0)
+out(u'fcall_begin0, true))
+| (in(u'fcall_begin0, u'tvar0: bool);
+main(argc, u'fcall_end0)
 )
-| (in(_fcall_end0, _tvar1: bool);
+| (in(u'fcall_end0, u'tvar1: bool);
 new args: nat;
-)); out(_end, true).'''
+)); out(u'end, true).'''
         return source, expected
 
     def _funcall_both_around(self) -> Tuple[str, str]:
@@ -72,18 +72,18 @@ new args: nat;
     main(a + b);
     int c = 6;
 }'''
-        expected = '''let main(a: nat, _end: channel) = new b: nat;
-new _fcall_begin0: channel;
-new _fcall_end0: channel;
+        expected = '''let main(a: nat, u'end: channel) = new b: nat;
+new u'fcall_begin0: channel;
+new u'fcall_end0: channel;
 ((
-out(_fcall_begin0, true))
-| (in(_fcall_begin0, _tvar1: bool);
-let _tvar0: nat = a + b in
-main(_tvar0, _fcall_end0)
+out(u'fcall_begin0, true))
+| (in(u'fcall_begin0, u'tvar1: bool);
+let u'tvar0: nat = a + b in
+main(u'tvar0, u'fcall_end0)
 )
-| (in(_fcall_end0, _tvar2: bool);
+| (in(u'fcall_end0, u'tvar2: bool);
 new c: nat;
-)); out(_end, true).'''
+)); out(u'end, true).'''
         return source, expected
 
 

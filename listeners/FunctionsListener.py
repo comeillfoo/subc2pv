@@ -65,10 +65,10 @@ class FunctionsListener(StatementsListener):
             ctx: SubCParser.VoidFunctionDeclarationContext):
         name = str(ctx.Identifier())
         params = self._tree.get(ctx.functionParamsDeclaration(), [])
-        params.append(('channel', '_end'))
+        params.append(('channel', "u'end"))
         params = ', '.join(map(arg2pv, params))
         self._functions[name] = FUN_MACRO_TMPLT.format(name, params,
-                                                       'out(_end, true)')
+                                                       "out(u'end, true)")
         return super().exitVoidFunctionDeclaration(ctx)
 
     @protect_from_redeclaration
@@ -87,13 +87,13 @@ class FunctionsListener(StatementsListener):
         name = str(ctx.Identifier())
         params = self._tree.get(ctx.functionParamsDefinition(), [])
         if not is_void:
-            params.append(('channel', '_ret_ch'))
-        params.append(('channel', '_end'))
+            params.append(('channel', "u'ret"))
+        params.append(('channel', "u'end"))
         params = ', '.join(map(arg2pv, params))
         body = '\n'.join(self._tree[ctx.compoundStatement()]) \
             .removesuffix('0').rstrip(';')
         body += (' ' if not body or body.endswith(' in') else '; ') \
-            + 'out(_end, true)'
+            + "out(u'end, true)"
         body = FUN_MACRO_TMPLT.format(name, params, body.strip())
         self._functions[name] = body
 

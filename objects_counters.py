@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-COMMON_PREFIX = '_'
+from typing import Optional
+
+
+COMMON_PREFIX = "u'" # u - utility
 
 
 class ObjectsCounter:
-    def __init__(self, prefix: str):
+    def __init__(self, prefix: str, common_prefix: Optional[str] = None):
         self._counter = -1
-        self._template = COMMON_PREFIX + prefix + '%d'
+        common_prefix = common_prefix or COMMON_PREFIX
+        self._template = common_prefix + prefix + '%d'
 
     def next(self) -> str:
         self._counter += 1
@@ -16,10 +20,12 @@ class ObjectsCounter:
 
 
 class ObjectsGroupCounter:
-    def __init__(self, group_prefix: str, groups: list[str]):
+    def __init__(self, group_prefix: str, groups: list[str],
+                 common_prefix: Optional[str] = None):
         self._counter = -1
         self._groups = groups
-        self._template = COMMON_PREFIX + group_prefix + '_%s%d'
+        common_prefix = common_prefix or COMMON_PREFIX
+        self._template = common_prefix + group_prefix + '_%s%d'
 
     def _format_group(self, group: str) -> str:
         return self._template % (group, self._counter)

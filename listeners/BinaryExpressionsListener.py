@@ -28,17 +28,17 @@ class BinaryExpressionsListener(UnaryExpressionsListener):
 
     def exitModuloExpression(self, ctx: SubCParser.ModuloExpressionContext):
         self._binary_expr(ctx, ctx.castExpression(),
-                          ctx.multiplicativeExpression(), 'nat', '_mod({}, {})')
+                          ctx.multiplicativeExpression(), 'nat', "u'mod({}, {})")
         return super().exitModuloExpression(ctx)
 
     def exitDivisionExpression(self, ctx: SubCParser.DivisionExpressionContext):
         self._binary_expr(ctx, ctx.castExpression(),
-                          ctx.multiplicativeExpression(), 'nat', '_div({}, {})')
+                          ctx.multiplicativeExpression(), 'nat', "u'div({}, {})")
         return super().exitDivisionExpression(ctx)
 
     def exitMultiplyExpression(self, ctx: SubCParser.MultiplyExpressionContext):
         self._binary_expr(ctx, ctx.castExpression(),
-                          ctx.multiplicativeExpression(), 'nat', '_mul({}, {})')
+                          ctx.multiplicativeExpression(), 'nat', "u'mul({}, {})")
         return super().exitMultiplyExpression(ctx)
 
     def exitBaseAdditiveExpression(self,
@@ -65,13 +65,13 @@ class BinaryExpressionsListener(UnaryExpressionsListener):
     def exitRightShiftExpression(self,
             ctx: SubCParser.RightShiftExpressionContext):
         self._binary_expr(ctx, ctx.additiveExpression(), ctx.shiftExpression(),
-                          'nat', '_shr({}, {})')
+                          'nat', "u'shr({}, {})")
         return super().exitRightShiftExpression(ctx)
 
     def exitLeftShiftExpression(self,
             ctx: SubCParser.LeftShiftExpressionContext):
         self._binary_expr(ctx, ctx.additiveExpression(), ctx.shiftExpression(),
-                          'nat', '_shl({}, {})')
+                          'nat', "u'shl({}, {})")
         return super().exitLeftShiftExpression(ctx)
 
     def exitBaseRelationalExpression(self,
@@ -124,19 +124,19 @@ class BinaryExpressionsListener(UnaryExpressionsListener):
 
     def exitAndExpression(self, ctx: SubCParser.AndExpressionContext):
         self._binary_expr(ctx, ctx.equalityExpression(),
-                          ctx.bitwiseExpression(), 'nat', '_and({}, {})')
+                          ctx.bitwiseExpression(), 'nat', "u'and({}, {})")
         return super().exitAndExpression(ctx)
 
     def exitExclusiveOrExpression(self,
             ctx: SubCParser.ExclusiveOrExpressionContext):
         self._binary_expr(ctx, ctx.equalityExpression(),
-                          ctx.bitwiseExpression(), 'nat', '_xor({}, {})')
+                          ctx.bitwiseExpression(), 'nat', "u'xor({}, {})")
         return super().exitExclusiveOrExpression(ctx)
 
     def exitInclusiveOrExpression(self,
             ctx: SubCParser.InclusiveOrExpressionContext):
         self._binary_expr(ctx, ctx.equalityExpression(),
-                          ctx.bitwiseExpression(), 'nat', '_or({}, {})')
+                          ctx.bitwiseExpression(), 'nat', "u'or({}, {})")
         return super().exitInclusiveOrExpression(ctx)
 
     def exitBaseLogicalAndExpression(self,
@@ -181,7 +181,7 @@ class BinaryExpressionsListener(UnaryExpressionsListener):
         target = self._tvars.next()
 
         lines.append(self.LET_PAT_TMPLT.format(
-            target, f'_ternary({carg}, {larg}, {rarg})'))
+            target, f"u'ternary({carg}, {larg}, {rarg})"))
         self._tree[ctx] = lines
         self._exprs.append(target)
         return super().exitTernaryExpression(ctx)

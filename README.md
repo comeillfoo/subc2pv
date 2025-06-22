@@ -47,13 +47,13 @@ else
 ```
 ---
 ```ocaml
-new if_end0: channel;
+new u'if_end0: channel;
 (
     ((* statements-before *) if (* condition *) then
-         (* then-branch *); out(if_end0, true)
+         (* then-branch *); out(u'if_end0, true)
        else
-         (* else_branch *); out(if_end0, true))
-    | (in(if_end0, _tvar0: bool); (* statements-after *))
+         (* else_branch *); out(u'if_end0, true))
+    | (in(u'if_end0, u'tvar0: bool); (* statements-after *))
 )
 ```
 
@@ -67,13 +67,13 @@ if (/* condition */)
 ```
 ---
 ```ocaml
-new if_end0: channel;
+new u'if_end0: channel;
 (
     ((* statements-before *) if (* condition *) then
-         (* then-branch *); out(if_end0, true)
+         (* then-branch *); out(u'if_end0, true)
        else
-         out(if_end0, true))
-    | (in(if_end0: _tvar0: bool); (* statements-after *))
+         out(u'if_end0, true))
+    | (in(u'if_end0: u'tvar0: bool); (* statements-after *))
 )
 ```
 
@@ -91,27 +91,27 @@ switch (/* expression */) {
 ```
 ---
 ```ocaml
-new _sw0_case0: channel;
-new _sw0_case1: channel;
-new _sw0_case2: channel;
-new _sw0_default: channel;
-new _sw0_end: channel;
+new u'sw0_case0: channel;
+new u'sw0_case1: channel;
+new u'sw0_case2: channel;
+new u'sw0_default: channel;
+new u'sw0_end: channel;
 (((* statements-before *)
   if (* expression *) = (* const-expr0 *) then
-    out(_sw0_case0, true)
+    out(u'sw0_case0, true)
   else
     if (* expression *) = (* const-expr1 *) then
-      out(_sw0_case1, true)
+      out(u'sw0_case1, true)
     else
       if (* expression *) = (* const-expr2 *) then
-        out(_sw0_case2, true)
+        out(u'sw0_case2, true)
       else
-        out(_sw0_default, true))
-  | (in(_sw0_case0, _tvar0: bool); (* stmnt0 *) out(_sw0_case1, true))
-  | (in(_sw0_case1, _tvar1: bool); (* stmnt1 *) out(_sw0_end, true))
-  | (in(_sw0_case2, _tvar2: bool); (* stmnt2 *) out(_sw0_end, true))
-  | (in(_sw0_default, _tvar3: bool); (* def-stmnt *) out(_sw0_end, true))
-  | (in(_sw0_end, _tvar4: bool);
+        out(u'sw0_default, true))
+  | (in(u'sw0_case0, u'tvar0: bool); (* stmnt0 *) out(u'sw0_case1, true))
+  | (in(u'sw0_case1, u'tvar1: bool); (* stmnt1 *) out(u'sw0_end, true))
+  | (in(u'sw0_case2, u'tvar2: bool); (* stmnt2 *) out(u'sw0_end, true))
+  | (in(u'sw0_default, u'tvar3: bool); (* def-stmnt *) out(u'sw0_end, true))
+  | (in(u'sw0_end, u'tvar4: bool);
      (* statements-after *)))
 ```
 
@@ -127,20 +127,20 @@ while (/* condition */) {
 ```
 ---
 ```ocaml
-new _while_begin0: channel;
-new _while_end0: channel;
-new _while_cond0: channel;
+new u'while_begin0: channel;
+new u'while_end0: channel;
+new u'while_cond0: channel;
 (((* statements-before *);
-  out(_while_cond0, (* condition *)))
- |!(in(_while_cond0, _cond0: bool);
+  out(u'while_cond0, (* condition *)))
+ |!(in(u'while_cond0, _cond0: bool);
     if _cond0 then
-      out(_while_begin0, true)
+      out(u'while_begin0, true)
     else
-      out(_while_end0, true))
- |!(in(_while_begin0, _tvar0: bool);
+      out(u'while_end0, true))
+ |!(in(u'while_begin0, u'tvar0: bool);
     (* loop-body *)
-    out(_while_cond0, (* condition *)))
- |(in(_while_end0, _tvar1: bool);
+    out(u'while_cond0, (* condition *)))
+ |(in(u'while_end0, u'tvar1: bool);
    (* statements-after *)))
 ```
 
@@ -155,20 +155,20 @@ do {
 ```
 ---
 ```ocaml
-new _dowhile_begin0: channel;
-new _dowhile_end0: channel;
-new _dowhile_cond0: channel;
+new u'dowhile_begin0: channel;
+new u'dowhile_end0: channel;
+new u'dowhile_cond0: channel;
 (((* statements-before *);
-  out(_dowhile_cond0, true))
- |!(in(_dowhile_cond0, _cond0: bool);
+  out(u'dowhile_cond0, true))
+ |!(in(u'dowhile_cond0, _cond0: bool);
     if _cond0 then
-      out(_dowhile_begin0, true)
+      out(u'dowhile_begin0, true)
     else
-      out(_dowhile_end0, true))
- |!(in(_dowhile_begin0, _tvar0: bool);
+      out(u'dowhile_end0, true))
+ |!(in(u'dowhile_begin0, u'tvar0: bool);
     (* loop-body *)
-    out(_dowhile_cond0, (* condition *)))
- |(in(_dowhile_end0, _tvar1: bool);
+    out(u'dowhile_cond0, (* condition *)))
+ |(in(u'dowhile_end0, u'tvar1: bool);
    (* statements-after *)))
 ```
 
@@ -182,20 +182,20 @@ for (/* initialization */; /* condition */; /* expression */)
 ```
 ---
 ```ocaml
-new _for_begin0: channel;
-new _for_end0: channel;
-new _for_cond0: channel;
-(((* statements-before *) (* initialization *) out(_for_cond0, (* condition *)))
- |!(in(_for_cond0, _cond0: bool);
+new u'for_begin0: channel;
+new u'for_end0: channel;
+new u'for_cond0: channel;
+(((* statements-before *) (* initialization *) out(u'for_cond0, (* condition *)))
+ |!(in(u'for_cond0, _cond0: bool);
     if _cond0 then
-      out(_for_begin0, true)
+      out(u'for_begin0, true)
     else
-      out(_for_end0, true))
- |!(in(_for_begin0, _tvar0: bool);
+      out(u'for_end0, true))
+ |!(in(u'for_begin0, u'tvar0: bool);
     (* loop-body *)
     (* expression *)
-    out(_for_cond0, (* condition *)))
- |(in(_for_end0, _tvar1: bool); (* statements-after *)))
+    out(u'for_cond0, (* condition *)))
+ |(in(u'for_end0, u'tvar1: bool); (* statements-after *)))
 ```
 
 ## Expressions
@@ -228,14 +228,14 @@ baz(8);
 ```
 ---
 ```ocaml
-let baz(a: nat, _end: channel) = let x: nat = a + 1 in out(_end, true).
+let baz(a: nat, u'end: channel) = let x: nat = a + 1 in out(u'end, true).
 ...
-new _fcall_begin0: channel;
-new _fcall_end0: channel;
+new u'fcall_begin0: channel;
+new u'fcall_end0: channel;
 (
-  ((* statements-before *) out(_fcall_begin0, true))
-  | (in(_fcall_begin0, _tvar0: bool); baz(8, _fcall_end0))
-  | (in(_fcall_end0, _tvar1: bool); (* statements-after *))
+  ((* statements-before *) out(u'fcall_begin0, true))
+  | (in(u'fcall_begin0, u'tvar0: bool); baz(8, u'fcall_end0))
+  | (in(u'fcall_end0, u'tvar1: bool); (* statements-after *))
 )
 ```
 
@@ -253,18 +253,18 @@ int x = foo(8);
 ```
 ---
 ```ocaml
-let foo(a: nat, _ret_ch: channel, _end: channel) =
-  let _tvar0: nat = a + 1 in out(_ret_ch, _tvar0); out(_end, true).
+let foo(a: nat, u'ret: channel, u'end: channel) =
+  let u'tvar0: nat = a + 1 in out(u'ret, u'tvar0); out(u'end, true).
 ...
-new _fcall_begin0: channel;
-new _fcall_end0: channel;
-new _fcall_ret0: channel;
+new u'fcall_begin0: channel;
+new u'fcall_end0: channel;
+new u'fcall_ret0: channel;
 (
-  ((* statements-before *) out(_fcall_begin0, true))
-  | (in(_fcall_begin0, _tvar1: bool); foo(8, _fcall_ret0, _fcall_end0))
-  | (in(_fcall_end0, _tvar2: bool);
-     in(_fcall_ret0, _tvar3: nat);
-     let x: nat = _tvar3 in
+  ((* statements-before *) out(u'fcall_begin0, true))
+  | (in(u'fcall_begin0, u'tvar1: bool); foo(8, u'fcall_ret0, u'fcall_end0))
+  | (in(u'fcall_end0, u'tvar2: bool);
+     in(_fcall_ret0, u'tvar3: nat);
+     let x: nat = u'tvar3 in
      (* statements-after *))
 )
 ```

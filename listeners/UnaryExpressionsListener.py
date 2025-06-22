@@ -7,7 +7,7 @@ from listeners.FunctionsListener import FunctionsListener
 
 
 STRING_LIT_TMPLT: str = 'free {}: bitstring [private]. (* "{}" *)'
-CASTER_NAME_TMPLT: str = '_cast2{}'
+CASTER_NAME_TMPLT: str = "u'cast2{}"
 CASTER_TMPLT: str = 'fun {}(any_type): {}.'
 
 
@@ -98,7 +98,7 @@ class UnaryExpressionsListener(FunctionsListener):
         return super().exitBaseUnaryExpression(ctx)
 
     def exitSizeofExpression(self, ctx: SubCParser.SizeofExpressionContext):
-        self._unary_expr(ctx, ctx.unaryExpression(), 'nat', '_sizeof({})')
+        self._unary_expr(ctx, ctx.unaryExpression(), 'nat', "u'sizeof({})")
         return super().exitSizeofExpression(ctx)
 
     def exitLogicalNotExpression(self,
@@ -108,7 +108,7 @@ class UnaryExpressionsListener(FunctionsListener):
 
     def exitBitwiseNotExpression(self,
             ctx: SubCParser.BitwiseNotExpressionContext):
-        self._unary_expr(ctx, ctx.unaryExpression(), 'nat', '_not({})')
+        self._unary_expr(ctx, ctx.unaryExpression(), 'nat', "u'not({})")
         return super().exitBitwiseNotExpression(ctx)
 
     def exitUnaryMinusExpression(self,
@@ -123,13 +123,13 @@ class UnaryExpressionsListener(FunctionsListener):
 
     def exitDereferenceExpression(self,
             ctx: SubCParser.DereferenceExpressionContext):
-        self._unary_expr(ctx, ctx.unaryExpression(), 'bitstring', '_deref({})')
+        self._unary_expr(ctx, ctx.unaryExpression(), 'bitstring', "u'deref({})")
         return super().exitDereferenceExpression(ctx)
 
     def exitAddressOfExpression(self,
             ctx: SubCParser.AddressOfExpressionContext):
         self._unary_expr(ctx, ctx.unaryExpression(), 'bitstring',
-                         '_addressof({})')
+                         "u'addressof({})")
         return super().exitAddressOfExpression(ctx)
 
     def exitBaseCastExpression(self,

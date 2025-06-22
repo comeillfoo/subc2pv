@@ -6,15 +6,15 @@ from libs.SubCParser import SubCParser
 from listeners.EnumsListener import EnumsListener
 
 
-GETTER_TEMPLATE = 'fun _{name}_get_{fname}({name}): {ftype}.'
-SETTER_TEMPLATE = 'fun _{name}_set_{fname}({name}, {ftype}): {name}.'
-INIT_TEMPLATE = 'fun _{name}_init({params}): {name}.'
+GETTER_TEMPLATE = "fun u'{name}_get_{fname}({name}): {ftype}."
+SETTER_TEMPLATE = "fun u'{name}_set_{fname}({name}, {ftype}): {name}."
+INIT_TEMPLATE = "fun u'{name}_init({params}): {name}."
 
 
 class StructOrUnion:
-    CALL_GETTER: str = '_{}_get_{}(%s)'
-    CALL_SETTER: str = '_{}_set_{}(%s, %s)'
-    CALL_INIT: str = '_{}_init(%s)'
+    CALL_GETTER: str = "u'{}_get_{}(%s)"
+    CALL_SETTER: str = "u'{}_set_{}(%s, %s)"
+    CALL_INIT: str = "u'{}_init(%s)"
 
     def __init__(self, name: str, fields: list[Parameter] = []):
         self.name = name

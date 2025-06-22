@@ -12,22 +12,22 @@ from model import Model
 class Translator:
     AUXILARY_GLOBALS = [
         'const NULL: bitstring.',               # NULL
-        'fun _addressof(any_type): bitstring.', # &a
-        'fun _deref(bitstring): bitstring\n' \
-        '\treduc _deref(NULL) = fail.',         # *a
-        'fun _sizeof(any_type): nat.',          # sizeof(a)
-        'fun _mul(nat, nat): nat.',             # a * b
-        'fun _div(nat, nat): nat.',             # a / b
-        'fun _mod(nat, nat): nat.',             # a % b
-        'fun _shl(nat, nat): nat.',             # a << b
-        'fun _shr(nat, nat): nat.',             # a >> b
-        'fun _and(nat, nat): nat.',             # a & b
-        'fun _xor(nat, nat): nat.',             # a ^ b
-        'fun _or(nat, nat): nat.',              # a | b
-        'fun _not(nat): nat.',                  # ~a
-        'fun _ternary(bool, any_type, any_type): any_type\n' \
-        '\treduc forall a: any_type, b: any_type; _ternary(true, a, b) = a\n' \
-        '\t\totherwise forall a: any_type, b: any_type; _ternary(false, a, b) = b.', # cond ? a : b
+        "fun u'addressof(any_type): bitstring.", # &a
+        "fun u'deref(bitstring): bitstring\n" \
+        "\treduc u'deref(NULL) = fail.",         # *a
+        "fun u'sizeof(any_type): nat.",          # sizeof(a)
+        "fun u'mul(nat, nat): nat.",             # a * b
+        "fun u'div(nat, nat): nat.",             # a / b
+        "fun u'mod(nat, nat): nat.",             # a % b
+        "fun u'shl(nat, nat): nat.",             # a << b
+        "fun u'shr(nat, nat): nat.",             # a >> b
+        "fun u'and(nat, nat): nat.",             # a & b
+        "fun u'xor(nat, nat): nat.",             # a ^ b
+        "fun u'or(nat, nat): nat.",              # a | b
+        "fun u'not(nat): nat.",                  # ~a
+        "fun u'ternary(bool, any_type, any_type): any_type\n" \
+        "\treduc forall a: any_type, b: any_type; u'ternary(true, a, b) = a\n" \
+        "\t\totherwise forall a: any_type, b: any_type; u'ternary(false, a, b) = b.", # cond ? a : b
     ]
 
     def __init__(self, stream: antlr4.InputStream,

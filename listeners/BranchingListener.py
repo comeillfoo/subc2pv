@@ -11,7 +11,7 @@ class BranchingListener(BinaryExpressionsListener):
         super().__init__()
         self._ifs = ObjectsCounter('if_end')
         self._switches = ObjectsCounter('sw')
-        self._cases = ObjectsCounter('case')
+        self._cases = ObjectsCounter('case', '_')
 
     def _if(self, preceding: list[str], ctx: SubCParser.IfStatementContext,
             subsequent: list[str]) -> str:

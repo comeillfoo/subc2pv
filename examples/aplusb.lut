@@ -1,8 +1,8 @@
 %X main
 %P
 process
-    new _end: channel;
+    new u'end: channel;
     new argc: nat;
     new argv: bitstring;
-    main(argc, argv, _end)
+    main(argc, argv, u'end)
 %%

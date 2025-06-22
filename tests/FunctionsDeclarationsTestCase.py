@@ -11,7 +11,7 @@ class FunctionsDeclarationsTestCase(unittest.TestCase):
         source = f'static _Noreturn inline void {name}({"void" if use_void else ""});'
         model = Translator.from_line(source, False).translate()
         self.assertTrue(not model.preamble)
-        self.assertEqual((name, f'let {name}(_end: channel) = out(_end, true).'), model.functions[0])
+        self.assertEqual((name, f'let {name}(u\'end: channel) = out(u\'end, true).'), model.functions[0])
 
     def _function_declare_nonvoid_0_arity(self, name: str, use_void: bool = False):
         tmplt = 'extern __stdcall __inline__ {} %s(%s);' \
@@ -35,7 +35,7 @@ class FunctionsDeclarationsTestCase(unittest.TestCase):
             model = Translator.from_line(tmplt.format(name, param),
                                          False).translate()
             self.assertTrue(not model.preamble)
-            self.assertEqual((name, f'let {name}({param_name}: {pvtype}, _end: channel) = out(_end, true).'),
+            self.assertEqual((name, f'let {name}({param_name}: {pvtype}, u\'end: channel) = out(u\'end, true).'),
                              model.functions[0])
 
     def _function_declare_nonvoid_1_arity(self, name: str, anon: bool):

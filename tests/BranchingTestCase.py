@@ -8,32 +8,32 @@ from tests.common import *
 class BranchingTestCase(unittest.TestCase):
     def test_if_without_else_branch(self):
         source = 'void main() { if (false) { int a = 8; } }'
-        expected = '''let main(_end: channel) = new _if_end0: channel;
+        expected = '''let main(u'end: channel) = new u'if_end0: channel;
 ((
 if false then
 new a: nat;
-out(_if_end0, true)
+out(u'if_end0, true)
 else
-out(_if_end0, true)
+out(u'if_end0, true)
 )
-| (in(_if_end0, _tvar0: bool);
-)); out(_end, true).'''
+| (in(u'if_end0, u'tvar0: bool);
+)); out(u'end, true).'''
         model = Translator.from_line(source, False).translate()
         self.assertEqual(('main', expected), model.functions[0])
 
     def test_if_with_else_branch(self):
         source = 'void main() { if (false) { int a = 8; } else { short b; } }'
-        expected = '''let main(_end: channel) = new _if_end0: channel;
+        expected = '''let main(u'end: channel) = new u'if_end0: channel;
 ((
 if false then
 new a: nat;
-out(_if_end0, true)
+out(u'if_end0, true)
 else
 new b: nat;
-out(_if_end0, true)
+out(u'if_end0, true)
 )
-| (in(_if_end0, _tvar0: bool);
-)); out(_end, true).'''
+| (in(u'if_end0, u'tvar0: bool);
+)); out(u'end, true).'''
         model = Translator.from_line(source, False).translate()
         self.assertEqual(('main', expected), model.functions[0])
 
@@ -51,38 +51,38 @@ out(_if_end0, true)
         b -= 50;
     a = a + b;
 }'''
-        expected = '''let main(_end: channel) = new a: nat;
-new _if_end0: channel;
+        expected = '''let main(u'end: channel) = new a: nat;
+new u'if_end0: channel;
 ((
-let _tvar0: bool = a < 6 in
-if _tvar0 then
-let _tvar1 = _mul(a, 4) in
-let a = _tvar1 in
-out(_if_end0, true)
+let u'tvar0: bool = a < 6 in
+if u'tvar0 then
+let u'tvar1 = u'mul(a, 4) in
+let a = u'tvar1 in
+out(u'if_end0, true)
 else
-let _tvar2 = a + 28 in
-let a = _tvar2 in
-out(_if_end0, true)
+let u'tvar2 = a + 28 in
+let a = u'tvar2 in
+out(u'if_end0, true)
 )
-| (in(_if_end0, _tvar3: bool);
+| (in(u'if_end0, u'tvar3: bool);
 ))
 new b: nat;
-new _if_end1: channel;
+new u'if_end1: channel;
 ((
-let _tvar5: nat = _mul(a, 2) in
-let _tvar4: nat = a + b in
-let _tvar6: bool = _tvar4 > _tvar5 in
-if _tvar6 then
-let _tvar7 = b - 50 in
-let b = _tvar7 in
-out(_if_end1, true)
+let u'tvar5: nat = u'mul(a, 2) in
+let u'tvar4: nat = a + b in
+let u'tvar6: bool = u'tvar4 > u'tvar5 in
+if u'tvar6 then
+let u'tvar7 = b - 50 in
+let b = u'tvar7 in
+out(u'if_end1, true)
 else
-out(_if_end1, true)
+out(u'if_end1, true)
 )
-| (in(_if_end1, _tvar8: bool);
+| (in(u'if_end1, u'tvar8: bool);
 ))
-let _tvar9: nat = a + b in
-let a = _tvar9 in out(_end, true).'''
+let u'tvar9: nat = a + b in
+let a = u'tvar9 in out(u'end, true).'''
         model = Translator.from_line(source, False).translate()
         self.maxDiff = None
         self.assertEqual(('main', expected), model.functions[0])
@@ -94,27 +94,27 @@ let a = _tvar9 in out(_end, true).'''
     if (true)
         if (false) a %= 4;
 }'''
-        expected = '''let main(_end: channel) = new a: nat;
-new _if_end1: channel;
+        expected = '''let main(u'end: channel) = new a: nat;
+new u'if_end1: channel;
 ((
 if true then
-new _if_end0: channel;
+new u'if_end0: channel;
 ((
 if false then
-let _tvar0 = _mod(a, 4) in
-let a = _tvar0 in
-out(_if_end0, true)
+let u'tvar0 = u'mod(a, 4) in
+let a = u'tvar0 in
+out(u'if_end0, true)
 else
-out(_if_end0, true)
+out(u'if_end0, true)
 )
-| (in(_if_end0, _tvar1: bool);
+| (in(u'if_end0, u'tvar1: bool);
 ))
-out(_if_end1, true)
+out(u'if_end1, true)
 else
-out(_if_end1, true)
+out(u'if_end1, true)
 )
-| (in(_if_end1, _tvar2: bool);
-)); out(_end, true).'''
+| (in(u'if_end1, u'tvar2: bool);
+)); out(u'end, true).'''
         model = Translator.from_line(source, False).translate()
         _, actual = model.functions[0]
         self.assertEqual(expected, actual)
@@ -125,16 +125,16 @@ out(_if_end1, true)
     int selector;
     switch (selector) default: selector = 42;
 }'''
-        expected = '''let main(_end: channel) = new selector: nat;
-new _sw0_end: channel;
-new _sw0_default: channel;
+        expected = '''let main(u'end: channel) = new selector: nat;
+new u'sw0_end: channel;
+new u'sw0_default: channel;
 ((
-out(_sw0_default, true))
-| (in(_sw0_default, _tvar0: bool);
+out(u'sw0_default, true))
+| (in(u'sw0_default, u'tvar0: bool);
 let selector = 42 in
-out(_sw0_end, true))
-| (in(_sw0_end, _tvar1: bool);
-)); out(_end, true).'''
+out(u'sw0_end, true))
+| (in(u'sw0_end, u'tvar1: bool);
+)); out(u'end, true).'''
         model = Translator.from_line(source, False).translate()
         _, actual = model.functions[0]
         self.assertEqual(expected, actual)
@@ -145,16 +145,16 @@ out(_sw0_end, true))
     int selector;
     switch (selector) case 42: selector = 42;
 }'''
-        expected = '''let main(_end: channel) = new selector: nat;
-new _sw0_end: channel;
-new _sw0_case0: channel;
+        expected = '''let main(u'end: channel) = new selector: nat;
+new u'sw0_end: channel;
+new u'sw0_case0: channel;
 ((
-if selector = 42 then out(_sw0_case0, true) else out(_sw0_end, true))
-| (in(_sw0_case0, _tvar0: bool);
+if selector = 42 then out(u'sw0_case0, true) else out(u'sw0_end, true))
+| (in(u'sw0_case0, u'tvar0: bool);
 let selector = 42 in
-out(_sw0_end, true))
-| (in(_sw0_end, _tvar1: bool);
-)); out(_end, true).'''
+out(u'sw0_end, true))
+| (in(u'sw0_end, u'tvar1: bool);
+)); out(u'end, true).'''
         model = Translator.from_line(source, False).translate()
         _, actual = model.functions[0]
         self.assertEqual(expected, actual)
@@ -171,36 +171,36 @@ out(_sw0_end, true))
         default: selector = 16;
     }
 }'''
-        expected = '''let main(_end: channel) = new selector: nat;
-new _sw0_end: channel;
-new _sw0_default: channel;
-new _sw0_case0: channel;
-new _sw0_case1: channel;
-new _sw0_case2: channel;
-new _sw0_case3: channel;
+        expected = '''let main(u'end: channel) = new selector: nat;
+new u'sw0_end: channel;
+new u'sw0_default: channel;
+new u'sw0_case0: channel;
+new u'sw0_case1: channel;
+new u'sw0_case2: channel;
+new u'sw0_case3: channel;
 ((
-if selector = 0 then out(_sw0_case3, true)
-else if selector = 1 then out(_sw0_case2, true)
-else if selector = 2 then out(_sw0_case1, true)
-else if selector = 3 then out(_sw0_case0, true)
-else out(_sw0_default, true))
-| (in(_sw0_case3, _tvar4: bool);
+if selector = 0 then out(u'sw0_case3, true)
+else if selector = 1 then out(u'sw0_case2, true)
+else if selector = 2 then out(u'sw0_case1, true)
+else if selector = 3 then out(u'sw0_case0, true)
+else out(u'sw0_default, true))
+| (in(u'sw0_case3, u'tvar4: bool);
 let selector = 1 in
-out(_sw0_case2, true))
-| (in(_sw0_case2, _tvar3: bool);
+out(u'sw0_case2, true))
+| (in(u'sw0_case2, u'tvar3: bool);
 let selector = 2 in
-out(_sw0_case1, true))
-| (in(_sw0_case1, _tvar2: bool);
+out(u'sw0_case1, true))
+| (in(u'sw0_case1, u'tvar2: bool);
 let selector = 4 in
-out(_sw0_case0, true))
-| (in(_sw0_case0, _tvar1: bool);
+out(u'sw0_case0, true))
+| (in(u'sw0_case0, u'tvar1: bool);
 let selector = 8 in
-out(_sw0_default, true))
-| (in(_sw0_default, _tvar0: bool);
+out(u'sw0_default, true))
+| (in(u'sw0_default, u'tvar0: bool);
 let selector = 16 in
-out(_sw0_end, true))
-| (in(_sw0_end, _tvar5: bool);
-)); out(_end, true).'''
+out(u'sw0_end, true))
+| (in(u'sw0_end, u'tvar5: bool);
+)); out(u'end, true).'''
         model = Translator.from_line(source, False).translate()
         _, actual = model.functions[0]
         self.maxDiff = None

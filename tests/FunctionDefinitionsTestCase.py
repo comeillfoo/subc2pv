@@ -10,7 +10,7 @@ class FunctionDefinitionsTestCase(unittest.TestCase):
         source = '_Noreturn void %s(%s) { }' % (name, 'void' if use_void else '')
         model = Translator.from_line(source, False).translate()
         self.assertTrue(not model.preamble)
-        self.assertEqual((name, f'let {name}(_end: channel) = out(_end, true).'),
+        self.assertEqual((name, f'let {name}(u\'end: channel) = out(u\'end, true).'),
                          model.functions[0])
 
     def _function_define_empty_nonvoid_0_arity(self, name: str, use_void: bool = False):
@@ -19,7 +19,7 @@ class FunctionDefinitionsTestCase(unittest.TestCase):
                                                  'void' if use_void else '')
             model = Translator.from_line(tmplt, False).translate()
             self.assertTrue(not model.preamble)
-            self.assertEqual((name, f'let {name}(_ret_ch: channel, _end: channel) = out(_end, true).'),
+            self.assertEqual((name, f'let {name}(u\'ret: channel, u\'end: channel) = out(u\'end, true).'),
                              model.functions[0])
 
     def _function_0_arity_definitions_empty_subtest(self, name: str):
