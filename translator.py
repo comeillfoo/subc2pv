@@ -5,31 +5,11 @@ import antlr4
 from libs.SubCLexer import SubCLexer
 from libs.SubCParser import SubCParser
 from listeners.SubC2PVListener import SubC2PVListener
-
+from auxilaries.globals import GLOBALS
 from model import Model
 
 
 class Translator:
-    AUXILARY_GLOBALS = [
-        'const NULL: bitstring.',               # NULL
-        "fun u'addressof(any_type): bitstring.", # &a
-        "fun u'deref(bitstring): bitstring\n" \
-        "\treduc u'deref(NULL) = fail.",         # *a
-        "fun u'sizeof(any_type): nat.",          # sizeof(a)
-        "fun u'mul(nat, nat): nat.",             # a * b
-        "fun u'div(nat, nat): nat.",             # a / b
-        "fun u'mod(nat, nat): nat.",             # a % b
-        "fun u'shl(nat, nat): nat.",             # a << b
-        "fun u'shr(nat, nat): nat.",             # a >> b
-        "fun u'and(nat, nat): nat.",             # a & b
-        "fun u'xor(nat, nat): nat.",             # a ^ b
-        "fun u'or(nat, nat): nat.",              # a | b
-        "fun u'not(nat): nat.",                  # ~a
-        "fun u'ternary(bool, any_type, any_type): any_type\n" \
-        "\treduc forall a: any_type, b: any_type; u'ternary(true, a, b) = a\n" \
-        "\t\totherwise forall a: any_type, b: any_type; u'ternary(false, a, b) = b.", # cond ? a : b
-    ]
-
     def __init__(self, stream: antlr4.InputStream,
                  predefine_helpers: bool = True):
         self._stream = stream
@@ -38,7 +18,7 @@ class Translator:
     def _preamble(self, listener: SubC2PVListener) -> str:
         _globals = []
         if self._predefine_helpers:
-            _globals.extend(self.AUXILARY_GLOBALS)
+            _globals.extend(GLOBALS)
         _globals.extend(listener._globals)
         return '\n'.join(_globals)
 

@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
-from typing import Any
-
+from helpers import shadow_name
 from objects_counters import ObjectsCounter
 from libs.SubCParser import SubCParser
 from listeners.VariablesListener import VariablesListener
 
 
+def call_binop(name: str) -> str:
+    return shadow_name(name) + '({}, {})'
+
+
 ASSIGN_OPERATORS = {
-    '*': 'u\'mul({}, {})',
-    '/': 'u\'div({}, {})',
-    '%': 'u\'mod({}, {})',
-    '+': '{} + {}',
-    '-': '{} - {}',
-    '<<': 'u\'shl({}, {})',
-    '>>': 'u\'shr({}, {})',
-    '&': 'u\'and({}, {})',
-    '^': 'u\'xor({}, {})',
-    '|': 'u\'or({}, {})',
+    '*':  call_binop('mul'),
+    '/':  call_binop('div'),
+    '%':  call_binop('mod'),
+    '+':  '{} + {}',
+    '-':  '{} - {}',
+    '<<': call_binop('shl'),
+    '>>': call_binop('shr'),
+    '&':  call_binop('and'),
+    '|':  call_binop('or'),
+    '^':  call_binop('xor'),
 }
 
 

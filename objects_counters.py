@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 from typing import Optional
 
-
-COMMON_PREFIX = "u'" # u - utility
+from helpers import shadow_name
 
 
 class ObjectsCounter:
     def __init__(self, prefix: str, common_prefix: Optional[str] = None):
         self._counter = -1
-        common_prefix = common_prefix or COMMON_PREFIX
-        self._template = common_prefix + prefix + '%d'
+        self._template = shadow_name(prefix + '%d', common_prefix)
 
     def next(self) -> str:
         self._counter += 1
@@ -24,8 +22,7 @@ class ObjectsGroupCounter:
                  common_prefix: Optional[str] = None):
         self._counter = -1
         self._groups = groups
-        common_prefix = common_prefix or COMMON_PREFIX
-        self._template = common_prefix + group_prefix + '_%s%d'
+        self._template = shadow_name(group_prefix + '_%s%d', common_prefix)
 
     def _format_group(self, group: str) -> str:
         return self._template % (group, self._counter)
