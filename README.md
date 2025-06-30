@@ -21,6 +21,45 @@ Translates into network protocol specifications.
 | `static void foo(...) { ... }`          | `let foo(...) = ....`             |
 | `int main(void) { ... }`                | `process ...`                     |
 
+## Expressions
+
+### Binary expressions
+
+| SubC      | Applied Pi Calculus |
+| :-------: | :-----------------: |
+| `a + b`   | -                   |
+| `a + c`   | `a + c`             |
+| `c + a`   | `c + a`             |
+| `a - b`   | -                   |
+| `a - c`   | `a - c`             |
+| `c - a`   | `c - a`             |
+| `a * b`   | `u'mul(a, b)`       |
+| `a / b`   | `u'div(a, b)`       |
+| `a % b`   | `u'mod(a, b)`       |
+| `a \| b`  | `u'or(a, b)`        |
+| `a & b`   | `u'and(a, b)`       |
+| `a ^ b`   | `u'xor(a, b)`       |
+| `a << b`  | `u'shl(a, b)`       |
+| `a >> b`  | `u'shr(a, b)`       |
+
+#### Multiplication
+
+It could be defined in the following way, but recursion is prohibited:
+
+```ocaml
+fun u'mul(nat, nat, nat): nat
+  reduc forall a: nat, b: nat; u'mul(a, b, 0) = u'mul(a, b - 1, a)
+  otherwise forall a: nat, b: nat, c: nat; u'mul(a, b, c) = u'mul(a, b - 1, c + a)
+  otherwise forall a: nat, c: nat; u'mul(a, 0, c) = c.
+```
+
+so, for now there is just a stub:
+
+```ocaml
+fun u'mul(nat, nat): nat
+  reduc forall a, b: nat; u'mul(a, b) = 0.
+```
+
 ## Declarations
 
 TODO: fill in
@@ -267,4 +306,57 @@ new u'fcall_ret0: channel;
      let x: nat = u'tvar3 in
      (* statements-after *))
 )
+```
+
+#### Recursive functions call
+
+```c
+unsigned int fact(unsigned int n)
+{
+  return (n > 0) ? (n * fact(n - 1)) : n;
+}
+
+int main(int argc, char** argv)
+{
+  int ans = fact(8);
+  return 0;
+}
+```
+
+Suggestion (won't work):
+
+```ocaml
+let fact(n: nat, u'ret: channel, u'end: channel) =
+  if n > 0 then
+    new u'fcall_begin0: channel;
+    new u'fcall_end0: channel;
+    new u'fcall_ret0: channel;
+    (
+      (out(u'fcall_begin0, true))
+      | (in(u'fcall_begin0, u'tvar0: bool);
+         fact(n - 1, u'fcall_ret0, u'fcall_end0))
+      | (in(u'fcall_end0, u'tvar1: bool);
+         in(u'fcall_ret0, u'tvar2: nat);
+         let u'tvar3: nat = u'mul(n, u'tvar2) in
+         out(u'ret, u'tvar3);
+         out(u'end, true))
+    )
+  else
+    out(u'ret, n);
+    out(u'end, true).
+
+let main(argc: nat, argv: bitstring, u'ret: channel, u'end: channel) =
+  new u'fcall_begin1: channel;
+  new u'fcall_end1: channel;
+  new u'fcall_ret1: channel;
+  (
+    (out(u'fcall_begin1, true))
+    | (in(u'fcall_begin1, u'tvar0: bool);
+       fact(8, u'fcall_ret1, u'fcall_end1))
+    | (in(u'fcall_end1, u'tvar1: bool);
+       in(u'fcall_ret1, u'tvar2: nat);
+       let ans: nat = u'tvar2 in
+       out(u'ret, 0);
+       out(u'end, true))
+  ).
 ```
