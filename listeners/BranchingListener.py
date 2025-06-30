@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import Optional, Tuple
+from typing import Tuple
 
 from objects_counters import ObjectsCounter
 from libs.SubCParser import SubCParser
