@@ -96,13 +96,21 @@ functionSpecifier
     | 'static'
     ;
 
+functionParamDefinition
+    : typeSpecifier Identifier arraySpecifier?
+    ;
+
 functionParamsDefinition
     : 'void'
-    | typeSpecifier Identifier (',' typeSpecifier Identifier)*
+    | functionParamDefinition (',' functionParamDefinition)*
+    ;
+
+functionParamDeclaration
+    : typeSpecifier arraySpecifier?
     ;
 
 functionParamsDeclaration
-    : typeSpecifier (',' typeSpecifier)*
+    : functionParamDeclaration (',' functionParamDeclaration)*
     | functionParamsDefinition
     ;
 

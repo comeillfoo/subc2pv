@@ -44,18 +44,33 @@ class FunctionsListener(StatementsListener):
         self._fcalls = ObjectsGroupCounter('fcall', ['begin', 'end'])
         # TODO: maybe need for '_fcall_ret%i'
 
+    def exitFunctionParamDefinition(self,
+            ctx: SubCParser.FunctionParamDefinitionContext):
+        _type = self._tree[ctx.typeSpecifier()] if ctx.arraySpecifier() is None \
+            else 'bitstring'
+        self._tree[ctx] = (_type, str(ctx.Identifier()))
+        return super().exitFunctionParamDefinition(ctx)
+
     def exitFunctionParamsDefinition(self,
             ctx: SubCParser.FunctionParamsDefinitionContext):
-        self._tree[ctx] = list(zip(map(self._tree.get, ctx.typeSpecifier()),
-                                   map(str, ctx.Identifier())))
+        self._tree[ctx] = list(map(self._tree.get,
+                                   ctx.functionParamDefinition()))
         return super().exitFunctionParamsDefinition(ctx)
+
+    def exitFunctionParamDeclaration(self,
+            ctx: SubCParser.FunctionParamDeclarationContext):
+        if ctx.arraySpecifier() is None:
+            self._tree[ctx] = self._tree[ctx.typeSpecifier()]
+        else:
+            self._tree[ctx] = 'bitstring'
+        return super().exitFunctionParamDeclaration(ctx)
 
     def exitFunctionParamsDeclaration(self,
             ctx: SubCParser.FunctionParamsDeclarationContext):
         other_ctx = ctx.functionParamsDefinition()
         if other_ctx is None:
-            self._tree[ctx] = anonymous_args(map(self._tree.get,
-                                                 ctx.typeSpecifier()))
+            self._tree[ctx] = anonymous_args(map(
+                self._tree.get, ctx.functionParamDeclaration()))
         else:
             self._tree[ctx] = self._tree[other_ctx]
         return super().exitFunctionParamsDeclaration(ctx)
