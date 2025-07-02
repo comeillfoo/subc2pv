@@ -2,12 +2,11 @@
 from typing import Tuple
 import unittest
 
-from translator import Translator
 from tests.common import *
 
 
 class LoopsTestCase(unittest.TestCase):
-    def _subtest_simplest_while(self) -> Tuple[str, str, str]:
+    def _subtest_simplest_while(self) -> Tuple[str, str]:
         source = 'void main() { while (true) { int a = 7; } }'
         expected = '''let main(u'end: channel) = new u'while_begin0: channel;
 new u'while_end0: channel;
@@ -22,9 +21,9 @@ out(u'while_cond0, true)
 )
 | (in(u'while_end0, u'tvar1: bool);
 )); out(u'end, true).'''
-        return 'simplest-while', source, expected
+        return source, expected
 
-    def _subtest_simplest_dowhile(self) -> Tuple[str, str, str]:
+    def _subtest_simplest_dowhile(self) -> Tuple[str, str]:
         source = 'void main() { do { int b = 0x54; } while (true); }'
         expected = '''let main(u'end: channel) = new u'dowhile_begin0: channel;
 new u'dowhile_end0: channel;
@@ -38,9 +37,9 @@ out(u'dowhile_cond0, true)
 )
 | (in(u'dowhile_end0, u'tvar1: bool);
 )); out(u'end, true).'''
-        return 'simplest-do-while', source, expected
+        return source, expected
 
-    def _subtest_simplest_for(self) -> Tuple[str, str, str]:
+    def _subtest_simplest_for(self) -> Tuple[str, str]:
         source = 'void main() { int a = 0; for (int i = 0; i < 10; i = i + 1) a = 2 * i; }'
         expected = '''let main(u'end: channel) = new a: nat;
 new u'for_begin0: channel;
@@ -62,23 +61,14 @@ out(u'for_cond0, u'tvar0)
 )
 | (in(u'for_end0, u'tvar4: bool);
 )); out(u'end, true).'''
-        return 'simplest-for', source, expected
+        return source, expected
 
     def test_simplest_loops(self):
-        subtests = [
-            self._subtest_simplest_while,
-            self._subtest_simplest_dowhile,
-            self._subtest_simplest_for
-        ]
-        self.maxDiff = None
-        for subtest in subtests:
-            name, source, expected = subtest()
-            with self.subTest(name):
-                model = Translator.from_line(source, False).translate()
-                _, actual = model.functions[0]
-                self.assertEqual(expected, actual)
+        check_subtest_single(self, self._subtest_simplest_while)
+        check_subtest_single(self, self._subtest_simplest_dowhile)
+        check_subtest_single(self, self._subtest_simplest_for)
 
-    def test_nested_whiles(self):
+    def _subtest_nested_whiles(self) -> Tuple[str, str]:
         source = '''void main()
 {
     char const* foo = "Hello, World!\\n";
@@ -111,12 +101,12 @@ out(u'while_cond1, true)
 )
 | (in(u'while_end1, u'tvar3: bool);
 )); out(u'end, true).'''
-        model = Translator.from_line(source, False).translate()
-        _, actual = model.functions[0]
-        self.maxDiff = None
-        self.assertEqual(expected, actual)
+        return source, expected
 
-    def _subtest_no_cond_for(self):
+    def test_nested_loops(self):
+        check_subtest_single(self, self._subtest_nested_whiles)
+
+    def _subtest_no_cond_for(self) -> Tuple[str, str]:
         source = '''void main()
 {
     int a = 0;
@@ -141,9 +131,9 @@ out(u'for_cond0, true)
 )
 | (in(u'for_end0, u'tvar3: bool);
 )); out(u'end, true).'''
-        return 'no-condition-for', source, expected
+        return source, expected
 
-    def _subtest_no_iter_for(self):
+    def _subtest_no_iter_for(self) -> Tuple[str, str]:
         source = '''void main()
 {
     int a;
@@ -168,9 +158,9 @@ out(u'for_cond0, u'tvar0)
 )
 | (in(u'for_end0, u'tvar3: bool);
 )); out(u'end, true).'''
-        return 'no-iteration-for', source, expected
+        return source, expected
 
-    def _subtest_infinite_for(self):
+    def _subtest_infinite_for(self) -> Tuple[str, str]:
         source = 'void main() { int a = 1; for (;;) a *= 2; }'
         expected = '''let main(u'end: channel) = new a: nat;
 new u'for_begin0: channel;
@@ -187,18 +177,9 @@ out(u'for_cond0, true)
 )
 | (in(u'for_end0, u'tvar2: bool);
 )); out(u'end, true).'''
-        return 'infinite-for', source, expected
+        return source, expected
 
     def test_for_loop_variants(self):
-        subtests = [
-            self._subtest_no_cond_for,
-            self._subtest_no_iter_for,
-            self._subtest_infinite_for
-        ]
-        for subtest in subtests:
-            name, source, expected = subtest()
-            with self.subTest(name):
-                model = Translator.from_line(source, False).translate()
-                _, actual = model.functions[0]
-                self.maxDiff = None
-                self.assertEqual(expected, actual)
+        check_subtest_single(self, self._subtest_no_cond_for)
+        check_subtest_single(self, self._subtest_no_iter_for)
+        check_subtest_single(self, self._subtest_infinite_for)

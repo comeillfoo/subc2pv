@@ -1,176 +1,159 @@
 import unittest
 from typing import Tuple
 
-from translator import Translator
+from tests.common import *
 
 
 class ExpressionsTestCase(unittest.TestCase):
-    def _expression_parenthesis_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_parenthesis(self, subc_tmplt: str,
+                             pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('(42)'), pv_tmplt % ('', '42'))
 
-    def _expression_post_inc_subtest(self, subc_tmplt: str,
-                                     pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_post_inc(self, subc_tmplt: str,
+                          pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('6++'),
                 pv_tmplt % ('let u\'tvar0: nat = 6 + 1 in\n', 'u\'tvar0'))
 
-    def _expression_post_dec_subtest(self, subc_tmplt: str,
-                                     pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_post_dec(self, subc_tmplt: str,
+                          pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('42--'),
                 pv_tmplt % ('let u\'tvar0: nat = 42 - 1 in\n', 'u\'tvar0'))
 
-    def _expression_no_args_funcall_subtest(self, subc_tmplt: str,
-                                                  pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_nullary_funcall(self, subc_tmplt: str,
+                                 pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('baz()'),
                 pv_tmplt % ('let u\'tvar0 = baz() in\n', 'u\'tvar0'))
 
-    def _expression_single_arg_funcall_subtest(self, subc_tmplt: str,
-                                               pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_unary_funcall(self, subc_tmplt: str,
+                               pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('baz(42)'),
                 pv_tmplt % ('let u\'tvar0 = baz(42) in\n', 'u\'tvar0'))
 
-    def _expression_multi_args_funcall_subtest(self, subc_tmplt: str,
-                                               pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_ternary_funcall(self, subc_tmplt: str,
+                                 pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('foo(42, true, "text")'),
                 pv_tmplt % ('let u\'tvar0 = foo(42, true, u\'strlit0) in\n',
                             'u\'tvar0'))
 
-    def _expression_sizeof_subtest(self, subc_tmplt: str,
-                                   pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_sizeof(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('sizeof(a)'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'sizeof(a) in\n', 'u\'tvar0'))
 
-    def _expression_logic_not_subtest(self, subc_tmplt: str,
-                                      pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_logic_not(self, subc_tmplt: str,
+                           pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('!0'),
                 pv_tmplt % ('let u\'tvar0: bool = not(0) in\n', 'u\'tvar0'))
 
-    def _expression_bitwise_not_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_bitwise_not(self, subc_tmplt: str,
+                             pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('~1'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'not(1) in\n', 'u\'tvar0'))
 
-    def _expression_unary_plus_subtest(self, subc_tmplt: str,
-                                       pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_unary_plus(self, subc_tmplt: str,
+                            pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('+11'),
                 pv_tmplt % ('let u\'tvar0: nat = 0 + 11 in\n', 'u\'tvar0'))
 
-    def _expression_negation_subtest(self, subc_tmplt: str,
-                                     pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_negation(self, subc_tmplt: str,
+                          pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('-3'),
                 pv_tmplt % ('let u\'tvar0: nat = 0 - 3 in\n', 'u\'tvar0'))
 
-    def _expression_dereference_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_dereference(self, subc_tmplt: str,
+                             pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('*NULL'),
                 pv_tmplt % ('let u\'tvar0: bitstring = u\'deref(NULL) in\n',
                             'u\'tvar0'))
 
-    def _expression_addressof_subtest(self, subc_tmplt: str,
-                                      pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_addressof(self, subc_tmplt: str,
+                           pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('&a'),
                 pv_tmplt % ('let u\'tvar0: bitstring = u\'addressof(a) in\n',
                             'u\'tvar0'))
 
-    def _expression_cast_subtest(self, subc_tmplt: str,
-                                pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_cast(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('(bool) a'),
                 pv_tmplt % ('let u\'tvar0: bool = u\'cast2bool(a) in\n',
                             'u\'tvar0'))
 
-    def _expression_modulo_subtest(self, subc_tmplt: str,
-                                   pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_modulo(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a % 2'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'mod(a, 2) in\n',
                             'u\'tvar0'))
 
-    def _expression_division_subtest(self, subc_tmplt: str,
-                                     pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_division(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a / a'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'div(a, a) in\n', 'u\'tvar0'))
 
-    def _expression_multiply_subtest(self, subc_tmplt: str,
-                                     pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_multiply(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a * a'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'mul(a, a) in\n', 'u\'tvar0'))
 
-    def _expression_subtraction_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_subtraction(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a - 3'),
                 pv_tmplt % ('let u\'tvar0: nat = a - 3 in\n', 'u\'tvar0'))
 
-    def _expression_addition_subtest(self, subc_tmplt: str,
-                                     pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_addition(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('42 + a'),
                 pv_tmplt % ('let u\'tvar0: nat = 42 + a in\n', 'u\'tvar0'))
 
-    def _expression_right_shift_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_right_shift(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a >> 32'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'shr(a, 32) in\n', 'u\'tvar0'))
 
-    def _expression_left_shift_subtest(self, subc_tmplt: str,
-                                       pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_left_shift(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('1 << a'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'shl(1, a) in\n', 'u\'tvar0'))
 
-    def _expression_greater_or_equals_subtest(self, subc_tmplt: str,
-                                              pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_greater_or_equals(self, subc_tmplt: str,
+                                   pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('1 >= 0'),
                 pv_tmplt % ('let u\'tvar0: bool = 1 >= 0 in\n', 'u\'tvar0'))
 
-    def _expression_less_or_equals_subtest(self, subc_tmplt: str,
-                                           pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_less_or_equals(self, subc_tmplt: str,
+                                pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('42 <= a'),
                 pv_tmplt % ('let u\'tvar0: bool = 42 <= a in\n', 'u\'tvar0'))
 
-    def _expression_greater_subtest(self, subc_tmplt: str,
-                                    pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_greater(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a > a'),
                 pv_tmplt % ('let u\'tvar0: bool = a > a in\n', 'u\'tvar0'))
 
-    def _expression_less_subtest(self, subc_tmplt: str,
-                                 pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_less(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a < 0'),
                 pv_tmplt % ('let u\'tvar0: bool = a < 0 in\n', 'u\'tvar0'))
 
-    def _expression_unequal_subtest(self, subc_tmplt: str,
-                                    pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_not_equal(self, subc_tmplt: str,
+                           pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a != a'),
                 pv_tmplt % ('let u\'tvar0: bool = a <> a in\n', 'u\'tvar0'))
 
-    def _expression_equal_subtest(self, subc_tmplt: str,
-                                  pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_equal(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('4 == 8'),
                 pv_tmplt % ('let u\'tvar0: bool = 4 = 8 in\n', 'u\'tvar0'))
 
-    def _expression_bitwise_and_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_bitwise_and(self, subc_tmplt: str,
+                             pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('a & a'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'and(a, a) in\n', 'u\'tvar0'))
 
-    def _expression_bitwise_xor_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_bitwise_xor(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('0 ^ a'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'xor(0, a) in\n', 'u\'tvar0'))
 
-    def _expression_bitwise_or_subtest(self, subc_tmplt: str,
-                                       pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_bitwise_or(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('8 | 4'),
                 pv_tmplt % ('let u\'tvar0: nat = u\'or(8, 4) in\n', 'u\'tvar0'))
 
-    def _expression_conjuction_subtest(self, subc_tmplt: str,
-                                       pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_conjuction(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('1 && 1'),
                 pv_tmplt % ('let u\'tvar0: bool = 1 && 1 in\n', 'u\'tvar0'))
 
-    def _expression_disjunction_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_disjunction(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('0 || 0'),
                 pv_tmplt % ('let u\'tvar0: bool = 0 || 0 in\n', 'u\'tvar0'))
 
-    def _expression_conditional_subtest(self, subc_tmplt: str,
-                                        pv_tmplt: str) -> Tuple[str, str]:
+    def _subtest_conditional(self, subc_tmplt: str, pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('true ? a : 0'),
                 pv_tmplt % ('let u\'tvar0 = u\'ternary(true, a, 0) in\n',
                             'u\'tvar0'))
@@ -178,49 +161,36 @@ class ExpressionsTestCase(unittest.TestCase):
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
         pv_tmplt = 'let foo(a: nat, u\'end: channel) = %slet a = %s in out(u\'end, true).'
-        def at_subtest(subtest: str, fun):
-            with self.subTest(subtest):
-                subc_src, pv_src = fun(subc_tmplt, pv_tmplt)
-                model = Translator.from_line(subc_src, False).translate()
-                self.assertEqual(('foo', pv_src), model.functions[0])
-        at_subtest('parenthesis-expression', self._expression_parenthesis_subtest)
-        at_subtest('post-increment-expression', self._expression_post_inc_subtest)
-        at_subtest('post-decrement-expression', self._expression_post_dec_subtest)
-        at_subtest('no-args-funcall-expression',
-                   self._expression_no_args_funcall_subtest)
-        at_subtest('single-arg-funcall-expression',
-                   self._expression_single_arg_funcall_subtest)
-        at_subtest('multi-args-funcall-expression',
-                   self._expression_multi_args_funcall_subtest)
-        at_subtest('sizeof-expression', self._expression_sizeof_subtest)
-        at_subtest('logical-not-expression', self._expression_logic_not_subtest)
-        at_subtest('bitwise-not-expression',
-                   self._expression_bitwise_not_subtest)
-        at_subtest('unary-plus-expression', self._expression_unary_plus_subtest)
-        at_subtest('negation-expression', self._expression_negation_subtest)
-        at_subtest('dereference-expression',
-                   self._expression_dereference_subtest)
-        at_subtest('addressof-expression', self._expression_addressof_subtest)
-        at_subtest('cast-expression', self._expression_cast_subtest)
-        at_subtest('modulo-expression', self._expression_modulo_subtest)
-        at_subtest('division-expression', self._expression_division_subtest)
-        at_subtest('multiply-expression', self._expression_multiply_subtest)
-        at_subtest('subtraction-expression',
-                   self._expression_subtraction_subtest)
-        at_subtest('addition-expression', self._expression_addition_subtest)
-        at_subtest('right-shift-expression', self._expression_right_shift_subtest)
-        at_subtest('left-shift-expression', self._expression_left_shift_subtest)
-        at_subtest('greater-or-equals-expression',
-                   self._expression_greater_or_equals_subtest)
-        at_subtest('less-or-equals-expression',
-                   self._expression_less_or_equals_subtest)
-        at_subtest('greater-than-expression', self._expression_greater_subtest)
-        at_subtest('less-than-expression', self._expression_less_subtest)
-        at_subtest('unequal-expression', self._expression_unequal_subtest)
-        at_subtest('equal-expression', self._expression_equal_subtest)
-        at_subtest('bitwise-and-expression', self._expression_bitwise_and_subtest)
-        at_subtest('bitwise-or-expression', self._expression_bitwise_or_subtest)
-        at_subtest('bitwise-xor-expression', self._expression_bitwise_xor_subtest)
-        at_subtest('disjunction-expression', self._expression_disjunction_subtest)
-        at_subtest('conjunction-expression', self._expression_conjuction_subtest)
-        at_subtest('conditional-expression', self._expression_conditional_subtest)
+        check_subtest_single(self, self._subtest_parenthesis, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_post_inc, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_post_dec, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_nullary_funcall, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_unary_funcall, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_ternary_funcall, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_sizeof, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_logic_not, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_bitwise_not, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_unary_plus, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_negation, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_dereference, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_addressof, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_cast, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_modulo, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_division, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_multiply, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_subtraction, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_addition, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_right_shift, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_left_shift, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_greater_or_equals, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_less_or_equals, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_greater, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_less, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_not_equal, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_equal, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_bitwise_and, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_bitwise_or, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_bitwise_xor, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_disjunction, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_conjuction, subc_tmplt, pv_tmplt)
+        check_subtest_single(self, self._subtest_conditional, subc_tmplt, pv_tmplt)

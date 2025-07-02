@@ -1,77 +1,59 @@
 #!/usr/bin/env python3
-from typing import Callable, Tuple
+from typing import Tuple, Generator
 import unittest
 
-
-from translator import Translator
 from tests.common import *
 
 
 class AssignmentsTestCase(unittest.TestCase):
-    def _function_variable_no_init_subtest(self, name: str):
-        source = 'void %s() { int a; }' % (name)
-        model = Translator.from_line(source, False).translate()
-        self.assertTrue(not model.preamble)
-        _, actual = model.functions[0]
-        self.assertEqual(
-            f'let {name}(u\'end: channel) = new a: nat; out(u\'end, true).', actual)
-
-    def _function_variable_primitive_init_subtest(self, name: str):
-        for ttype, pvtype in TESTS_TYPES.items():
-            source = 'void %s(%s a) { %s b = a; }' % (name, ttype, ttype)
-            model = Translator.from_line(source, False).translate()
-            self.assertTrue(not model.preamble)
-            _, actual = model.functions[0]
-            expected = f'let {name}(a: {pvtype}, u\'end: channel) = new b: {pvtype}; out(u\'end, true).'
-            self.assertEqual(expected, actual)
-
-    def _function_variable_assign_to_constant_subtest(self, name: str):
-        source = 'void %s() { int a; a = 42; }' % (name)
-        model = Translator.from_line(source, False).translate()
-        self.assertTrue(not model.preamble)
-        _, actual = model.functions[0]
-        expected = f'let {name}(u\'end: channel) = new a: nat;\nlet a = 42 in out(u\'end, true).'
-        self.assertEqual(expected, actual)
-
-    def _function_variable_assign_to_identifier_subtest(self, name: str):
-        for ttype, pvtype in TESTS_TYPES.items():
-            source = 'void %s(%s a) { %s b; b = a; }' % (name, ttype, ttype)
-            model = Translator.from_line(source, False).translate()
-            self.assertTrue(not model.preamble)
-            _, actual = model.functions[0]
-            expected = f'let {name}(a: {pvtype}, u\'end: channel) = new b: {pvtype};\nlet b = a in out(u\'end, true).'
-            self.assertEqual(expected, actual)
-
-    def _function_variable_assign_to_strings_subtest(self, name: str):
-        strings_cases = [
+    def setUp(self):
+        self._strings_cases = [
             [''],
             ['', ''],
             ['A', 'B'],
             ['alsdf'],
             ['__', '---', 'lorem ipsum']
         ]
-        for strings_case in strings_cases:
+        return super().setUp()
+
+    def _subtest_variable_no_init(self, name: str) -> Tuple[str, str]:
+        source = 'void %s() { int a; }' % (name)
+        expected = f'let {name}(u\'end: channel) = new a: nat; out(u\'end, true).'
+        return source, expected
+
+    def _subtest_variable_primitive_init(self, name: str) -> Generator:
+        for ttype, pvtype in TESTS_TYPES.items():
+            source = 'void %s(%s a) { %s b = a; }' % (name, ttype, ttype)
+            expected = f'let {name}(a: {pvtype}, u\'end: channel) = new b: {pvtype}; out(u\'end, true).'
+            yield (source, expected)
+
+    def _subtest_variable_assign_constant(self, name: str) -> Tuple[str, str]:
+        source = 'void %s() { int a; a = 42; }' % (name)
+        expected = f'let {name}(u\'end: channel) = new a: nat;\nlet a = 42 in out(u\'end, true).'
+        return source, expected
+
+    def _subtest_variable_assign_identifier(self, name: str) -> Generator:
+        for ttype, pvtype in TESTS_TYPES.items():
+            source = 'void %s(%s a) { %s b; b = a; }' % (name, ttype, ttype)
+            expected = f'let {name}(a: {pvtype}, u\'end: channel) = new b: {pvtype};\nlet b = a in out(u\'end, true).'
+            yield source, expected
+
+    def _subtest_variable_assign_strings(self, name: str) -> Generator:
+        for strings_case in self._strings_cases:
             joined = ''.join(strings_case)
             unique = set([*strings_case, joined])
             _id = len(unique) - 1
             expr = ''.join(map(lambda s: f'"{s}"', strings_case))
             source = 'void %s() { char *a; a = %s; }' % (name, expr)
-            model = Translator.from_line(source, False).translate()
-            _, actual = model.functions[0]
             expected = f'let {name}(u\'end: channel) = new a: bitstring;\nlet a = u\'strlit{_id} in out(u\'end, true).'
-            self.assertEqual(expected, actual,
-                             f'functions differs with {strings_case}')
-
-    def at_fun_subtest(self, subtest: Callable):
-        with self.subTest(subtest.__name__):
-            subtest(SOME_IDENTIFIER)
+            yield source, expected
 
     def test_single_assignment(self):
-        self.at_fun_subtest(self._function_variable_no_init_subtest)
-        self.at_fun_subtest(self._function_variable_primitive_init_subtest)
-        self.at_fun_subtest(self._function_variable_assign_to_constant_subtest)
-        self.at_fun_subtest(self._function_variable_assign_to_identifier_subtest)
-        self.at_fun_subtest(self._function_variable_assign_to_strings_subtest)
+        check_subtest_single(self, self._subtest_variable_no_init, SOME_IDENTIFIER)
+        check_subtests(self, self._subtest_variable_primitive_init, SOME_IDENTIFIER)
+        check_subtest_single(self, self._subtest_variable_assign_constant, SOME_IDENTIFIER)
+        check_subtests(self, self._subtest_variable_assign_identifier, SOME_IDENTIFIER)
+        check_subtests(self, self._subtest_variable_assign_strings, SOME_IDENTIFIER)
 
 
     def _subtest_fielded_init_with_single_field(self) -> Tuple[str, str]:
@@ -132,22 +114,15 @@ void main(void) { struct A a = {}; struct B b = { .a = a }; }
                 + 'let b: B = u\'B_init(0, a) in out(u\'end, true).'
         return source, expected
 
-    def at_subtest(self, subtest: Callable):
-        with self.subTest(subtest.__name__):
-            source, expected = subtest()
-            model = Translator.from_line(source, False).translate()
-            _, actual = model.functions[0]
-            self.assertEqual(expected, actual)
-
     def test_struct_or_union_init(self):
-        self.at_subtest(self._subtest_fielded_init_with_single_field)
-        self.at_subtest(self._subtest_fielded_init_with_fields_list)
-        self.at_subtest(self._subtest_fielded_init_with_missed_fields)
-        self.at_subtest(self._subtest_fielded_init_with_single_designator)
-        self.at_subtest(self._subtest_fielded_init_with_missed_designators)
-        self.at_subtest(self._subtest_fielded_init_with_designators)
-        self.at_subtest(self._subtest_fielded_init_mixed)
-        self.at_subtest(self._subtest_nested_structs_init)
+        check_subtest_single(self, self._subtest_fielded_init_with_single_field)
+        check_subtest_single(self, self._subtest_fielded_init_with_fields_list)
+        check_subtest_single(self, self._subtest_fielded_init_with_missed_fields)
+        check_subtest_single(self, self._subtest_fielded_init_with_single_designator)
+        check_subtest_single(self, self._subtest_fielded_init_with_missed_designators)
+        check_subtest_single(self, self._subtest_fielded_init_with_designators)
+        check_subtest_single(self, self._subtest_fielded_init_mixed)
+        check_subtest_single(self, self._subtest_nested_structs_init)
 
 
     def _subtest_array_declaration(self) -> Tuple[str, str]:
@@ -176,8 +151,8 @@ void main(void) { struct A a = {}; struct B b = { .a = a }; }
         return source, expected
 
     def test_array_init(self):
-        self.at_subtest(self._subtest_array_declaration)
-        self.at_subtest(self._subtest_multidimensional_array_declaration)
-        self.at_subtest(self._subtest_multidimensional_array_with_sizes)
-        self.at_subtest(self._subtest_array_without_size)
-        self.at_subtest(self._subtest_array_with_size)
+        check_subtest_single(self, self._subtest_array_declaration)
+        check_subtest_single(self, self._subtest_multidimensional_array_declaration)
+        check_subtest_single(self, self._subtest_multidimensional_array_with_sizes)
+        check_subtest_single(self, self._subtest_array_without_size)
+        check_subtest_single(self, self._subtest_array_with_size)

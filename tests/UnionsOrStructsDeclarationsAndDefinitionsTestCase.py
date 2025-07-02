@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from typing import Tuple
 import unittest
 
 from helpers import Parameter
@@ -7,7 +8,7 @@ from tests.common import *
 
 
 class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
-    def _fielded_declaration_subtest(self, name: str, ttype: str):
+    def _subtest_fielded_declaration(self, name: str, ttype: str):
         model = Translator.from_line(f'{ttype} {name};', False).translate()
         self.assertTrue(not model.functions)
         self.assertEqual(model.preamble, f'type {name}.')
@@ -20,14 +21,14 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
         lines.append('};')
         return '\n'.join(lines)
 
-    def _fielded_empty_definition_subtest(self, name: str, ttype: str):
+    def _subtest_fielded_empty_definition(self, name: str, ttype: str):
         model = Translator.from_line(
             self._dict2fielded_def(name, ttype=ttype), False).translate()
         self.assertTrue(not model.functions)
         expected = '\n'.join([f'type {name}.', f"fun u'{name}_init(): {name}."])
         self.assertEqual(model.preamble, expected)
 
-    def _fielded_with_single_enum_subtest(self, name: str, ttype: str):
+    def _subtest_single_enum_field(self, name: str, ttype: str):
         model = Translator.from_line(
             self._dict2fielded_def(name, [('enum A', 'x')], ttype),
             False).translate()
@@ -38,29 +39,29 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
             f"fun u'{name}_init(A): {name}."])
         self.assertEqual(model.preamble, expected)
 
-    def _fielded_single_integer_helper(self, name: str, ttype: str, fname: str,
-                                       ftype: str):
-        fielded_definition = self._dict2fielded_def(name, [(ftype, fname)], ttype)
-        translator = Translator.from_line(fielded_definition, False)
-        model = translator.translate()
-        self.assertTrue(not model.functions)
+    def _define_fielded_with_single_integer(self, name: str, ttype: str,
+            fname: str, ftype: str) -> Tuple[str, str]:
+        source = self._dict2fielded_def(name, [(ftype, fname)], ttype)
         expected = '\n'.join([
             f'type {name}.', f"fun u'{name}_get_{fname}({name}): nat.",
             f"fun u'{name}_set_{fname}({name}, nat): {name}.",
             f"fun u'{name}_init(nat): {name}."])
-        self.assertEqual(model.preamble, expected)
+        return source, expected
 
-    def _fielded_single_integer_subtest(self, name: str, ttype: str):
+    def _subtest_single_integer_field(self, name: str, ttype: str):
         ftypes = ['char', 'short', 'int', 'long', '__m128', '__m128d', '__m128i']
         for fname in IDENTIFIERS:
             for ftype in ftypes:
-                self._fielded_single_integer_helper(name, ttype, fname, ftype)
+                source, expected = self._define_fielded_with_single_integer(
+                    name, ttype, fname, ftype)
+                model = Translator.from_line(source, False).translate()
+                self.assertTrue(not model.functions)
+                self.assertEqual(model.preamble, expected)
 
-    def _fielded_single_bool_subtest(self, name: str, ttype: str):
+    def _subtest_single_bool_field(self, name: str, ttype: str):
         for fname in IDENTIFIERS:
-            fielded_definition = self._dict2fielded_def(name, [('_Bool', fname)],
-                                                        ttype)
-            model = Translator.from_line(fielded_definition, False).translate()
+            source = self._dict2fielded_def(name, [('_Bool', fname)], ttype)
+            model = Translator.from_line(source, False).translate()
             self.assertTrue(not model.functions)
             expected = '\n'.join([
                 f'type {name}.', f"fun u'{name}_get_{fname}({name}): bool.",
@@ -68,17 +69,16 @@ class UnionsOrStructsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
                 f"fun u'{name}_init(bool): {name}."])
             self.assertEqual(model.preamble, expected)
 
-    def test_fielded(self):
-        def at_subtest(ttype: str, subtest: str, fun):
-            with self.subTest(f'{subtest}:{ttype}'):
-                fun(SOME_IDENTIFIER, ttype)
-        for ttype in ('struct', 'union'):
-            at_subtest(ttype, 'declaration', self._fielded_declaration_subtest)
-            at_subtest(ttype, 'empty-definition',
-                       self._fielded_empty_definition_subtest)
-            at_subtest(ttype, 'single-enum-definition',
-                       self._fielded_with_single_enum_subtest)
-            at_subtest(ttype, 'single-integer-definition',
-                       self._fielded_single_integer_subtest)
-            at_subtest(ttype, 'single-bool-definition',
-                       self._fielded_single_bool_subtest)
+    def test_unions(self):
+        at_subtest(self, self._subtest_fielded_declaration, SOME_IDENTIFIER, 'union')
+        at_subtest(self, self._subtest_fielded_empty_definition, SOME_IDENTIFIER, 'union')
+        at_subtest(self, self._subtest_single_enum_field, SOME_IDENTIFIER, 'union')
+        at_subtest(self, self._subtest_single_integer_field, SOME_IDENTIFIER, 'union')
+        at_subtest(self, self._subtest_single_bool_field, SOME_IDENTIFIER, 'union')
+
+    def test_structs(self):
+        at_subtest(self, self._subtest_fielded_declaration, SOME_IDENTIFIER, 'struct')
+        at_subtest(self, self._subtest_fielded_empty_definition, SOME_IDENTIFIER, 'struct')
+        at_subtest(self, self._subtest_single_enum_field, SOME_IDENTIFIER, 'struct')
+        at_subtest(self, self._subtest_single_integer_field, SOME_IDENTIFIER, 'struct')
+        at_subtest(self, self._subtest_single_bool_field, SOME_IDENTIFIER, 'struct')

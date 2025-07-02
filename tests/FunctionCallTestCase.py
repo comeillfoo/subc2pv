@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
+from typing import Tuple
 import unittest
-from typing import Callable, Tuple
 
-from translator import Translator
 
+from tests.common import *
 
 class FunctionCallTestCase(unittest.TestCase):
-    def _at_subtest(self, subtest: Callable):
-        with self.subTest(subtest.__name__):
-            source, expected = subtest()
-            model = Translator.from_line(source, False).translate()
-            _, actual = model.functions[0]
-            self.assertEqual(expected, actual)
-
     def _funcall_nothing_around(self) -> Tuple[str, str]:
         source = '''void main()
 {
@@ -88,7 +81,7 @@ new c: nat;
 
 
     def test_funcall_as_statements(self):
-        self._at_subtest(self._funcall_nothing_around)
-        self._at_subtest(self._funcall_no_subsequent)
-        self._at_subtest(self._funcall_no_preceding)
-        self._at_subtest(self._funcall_both_around)
+        check_subtest_single(self, self._funcall_nothing_around)
+        check_subtest_single(self, self._funcall_no_subsequent)
+        check_subtest_single(self, self._funcall_no_preceding)
+        check_subtest_single(self, self._funcall_both_around)
