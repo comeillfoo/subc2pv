@@ -1,10 +1,10 @@
-import unittest
+#!/usr/bin/env python3
 from typing import Tuple
 
-from tests.common import *
+from tests.TranslatorCommonTestCase import TranslatorCommonTestCase
 
 
-class ExpressionsTestCase(unittest.TestCase):
+class ExpressionsTestCase(TranslatorCommonTestCase):
     def _subtest_parenthesis(self, subc_tmplt: str,
                              pv_tmplt: str) -> Tuple[str, str]:
         return (subc_tmplt % ('(42)'), pv_tmplt % ('', '42'))
@@ -161,36 +161,36 @@ class ExpressionsTestCase(unittest.TestCase):
     def test_expressions_with_integers(self):
         subc_tmplt = 'void foo(int a) { a = %s; }'
         pv_tmplt = 'let foo(a: nat, u\'end: channel) = %slet a = %s in out(u\'end, true).'
-        check_subtest_single(self, self._subtest_parenthesis, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_post_inc, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_post_dec, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_nullary_funcall, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_unary_funcall, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_ternary_funcall, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_sizeof, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_logic_not, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_bitwise_not, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_unary_plus, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_negation, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_dereference, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_addressof, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_cast, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_modulo, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_division, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_multiply, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_subtraction, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_addition, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_right_shift, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_left_shift, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_greater_or_equals, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_less_or_equals, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_greater, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_less, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_not_equal, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_equal, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_bitwise_and, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_bitwise_or, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_bitwise_xor, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_disjunction, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_conjuction, subc_tmplt, pv_tmplt)
-        check_subtest_single(self, self._subtest_conditional, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_parenthesis, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_post_inc, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_post_dec, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_nullary_funcall, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_unary_funcall, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_ternary_funcall, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_sizeof, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_logic_not, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_bitwise_not, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_unary_plus, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_negation, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_dereference, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_addressof, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_cast, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_modulo, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_division, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_multiply, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_subtraction, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_addition, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_right_shift, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_left_shift, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_greater_or_equals, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_less_or_equals, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_greater, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_less, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_not_equal, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_equal, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_bitwise_and, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_bitwise_or, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_bitwise_xor, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_disjunction, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_conjuction, subc_tmplt, pv_tmplt)
+        self.check_single_function_subtest(self._subtest_conditional, subc_tmplt, pv_tmplt)

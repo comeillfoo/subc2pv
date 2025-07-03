@@ -3,9 +3,9 @@ from typing import Tuple
 import unittest
 
 
-from tests.common import *
+from tests.TranslatorCommonTestCase import TranslatorCommonTestCase
 
-class FunctionCallTestCase(unittest.TestCase):
+class FunctionCallTestCase(TranslatorCommonTestCase):
     def _funcall_nothing_around(self) -> Tuple[str, str]:
         source = '''void main()
 {
@@ -81,7 +81,7 @@ new c: nat;
 
 
     def test_funcall_as_statements(self):
-        check_subtest_single(self, self._funcall_nothing_around)
-        check_subtest_single(self, self._funcall_no_subsequent)
-        check_subtest_single(self, self._funcall_no_preceding)
-        check_subtest_single(self, self._funcall_both_around)
+        self.check_single_function_subtest(self._funcall_nothing_around)
+        self.check_single_function_subtest(self._funcall_no_subsequent)
+        self.check_single_function_subtest(self._funcall_no_preceding)
+        self.check_single_function_subtest(self._funcall_both_around)

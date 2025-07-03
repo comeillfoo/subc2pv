@@ -2,10 +2,10 @@
 from typing import Tuple
 import unittest
 
-from tests.common import *
+from tests.TranslatorCommonTestCase import TranslatorCommonTestCase
 
 
-class LoopsTestCase(unittest.TestCase):
+class LoopsTestCase(TranslatorCommonTestCase):
     def _subtest_simplest_while(self) -> Tuple[str, str]:
         source = 'void main() { while (true) { int a = 7; } }'
         expected = '''let main(u'end: channel) = new u'while_begin0: channel;
@@ -64,9 +64,9 @@ out(u'for_cond0, u'tvar0)
         return source, expected
 
     def test_simplest_loops(self):
-        check_subtest_single(self, self._subtest_simplest_while)
-        check_subtest_single(self, self._subtest_simplest_dowhile)
-        check_subtest_single(self, self._subtest_simplest_for)
+        self.check_single_function_subtest(self._subtest_simplest_while)
+        self.check_single_function_subtest(self._subtest_simplest_dowhile)
+        self.check_single_function_subtest(self._subtest_simplest_for)
 
     def _subtest_nested_whiles(self) -> Tuple[str, str]:
         source = '''void main()
@@ -104,7 +104,7 @@ out(u'while_cond1, true)
         return source, expected
 
     def test_nested_loops(self):
-        check_subtest_single(self, self._subtest_nested_whiles)
+        self.check_single_function_subtest(self._subtest_nested_whiles)
 
     def _subtest_no_cond_for(self) -> Tuple[str, str]:
         source = '''void main()
@@ -180,6 +180,6 @@ out(u'for_cond0, true)
         return source, expected
 
     def test_for_loop_variants(self):
-        check_subtest_single(self, self._subtest_no_cond_for)
-        check_subtest_single(self, self._subtest_no_iter_for)
-        check_subtest_single(self, self._subtest_infinite_for)
+        self.check_single_function_subtest(self._subtest_no_cond_for)
+        self.check_single_function_subtest(self._subtest_no_iter_for)
+        self.check_single_function_subtest(self._subtest_infinite_for)

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 from typing import Tuple
-import unittest
 
-from tests.common import *
+from tests.TranslatorCommonTestCase import TranslatorCommonTestCase
 
 
-class BranchingTestCase(unittest.TestCase):
+class BranchingTestCase(TranslatorCommonTestCase):
     def _subtest_if_without_else_branch(self) -> Tuple[str, str]:
         source = 'void main() { if (false) { int a = 8; } }'
         expected = '''let main(u'end: channel) = new u'if_end0: channel;
@@ -114,10 +113,10 @@ out(u'if_end1, true)
         return source, expected
 
     def test_if(self):
-        check_subtest_single(self, self._subtest_if_without_else_branch)
-        check_subtest_single(self, self._subtest_if_with_else_branch)
-        check_subtest_single(self, self._subtest_two_ifs)
-        check_subtest_single(self, self._subtest_nested_ifs)
+        self.check_single_function_subtest(self._subtest_if_without_else_branch)
+        self.check_single_function_subtest(self._subtest_if_with_else_branch)
+        self.check_single_function_subtest(self._subtest_two_ifs)
+        self.check_single_function_subtest(self._subtest_nested_ifs)
 
 
     def _subtest_switch_single_default(self) -> Tuple[str, str]:
@@ -201,6 +200,6 @@ out(u'sw0_end, true))
         return source, expected
 
     def test_switches(self):
-        check_subtest_single(self, self._subtest_switch_single_default)
-        check_subtest_single(self, self._subtest_switch_single_case)
-        check_subtest_single(self, self._subtest_multiple_cases_and_default)
+        self.check_single_function_subtest(self._subtest_switch_single_default)
+        self.check_single_function_subtest(self._subtest_switch_single_case)
+        self.check_single_function_subtest(self._subtest_multiple_cases_and_default)

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-import unittest
 from typing import Tuple
 
 from translator import Translator
-from tests.common import *
+from tests.TranslatorCommonTestCase import *
 
 
-class EnumsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
+class EnumsDeclarationsAndDefinitionsTestCase(TranslatorCommonTestCase):
     def setUp(self):
         self._enums_consts = [
             [ ('A', ''), ('b', ''), ('C', '') ],
@@ -22,8 +21,8 @@ class EnumsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
         self.assertEqual(model.preamble, f'type {name}.')
 
     def test_enum_declaration(self):
-        for name in IDENTIFIERS:
-            at_subtest(self, self._subtest_enum_declaration, name)
+        for name in self._stress_identifiers:
+            self.at_subtest(self._subtest_enum_declaration, name)
 
     def _subtest_enum_definition(self, name: str, consts: list[Tuple[str, str]]):
         lines = [f'enum {name}', '{']
@@ -40,6 +39,6 @@ class EnumsDeclarationsAndDefinitionsTestCase(unittest.TestCase):
         self.assertEqual(model.preamble, '\n'.join(expected))
 
     def test_enum_definition(self):
-        for name in IDENTIFIERS:
+        for name in self._stress_identifiers:
             for consts in self._enums_consts:
-                at_subtest(self, self._subtest_enum_definition, name, consts)
+                self.at_subtest(self._subtest_enum_definition, name, consts)

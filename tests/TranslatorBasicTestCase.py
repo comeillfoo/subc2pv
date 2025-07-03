@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-import unittest
+from typing import Tuple
 
-from auxilaries.globals import GLOBALS
 from translator import Translator
+from auxilaries.globals import GLOBALS
+from tests.TranslatorCommonTestCase import TranslatorCommonTestCase
 
 
-class TranslatorBasicTestCase(unittest.TestCase):
-    def test_empty_stream(self):
-        model = Translator.from_line('', False).translate()
-        self.assertTrue(not model.functions, 'No functions should be parsed')
-        self.assertTrue(not model.preamble, 'No preamble should be generated')
+class TranslatorBasicTestCase(TranslatorCommonTestCase):
+    def _subtest_empty_stream(self) -> Tuple[str, str]:
+        return '', ''
 
-    def test_empty_stream_with_helpers(self):
+    def _subtest_empty_stream_with_helpers(self):
         model = Translator.from_line('').translate()
-        self.assertTrue(not model.functions, 'No functions should be parsed')
-        self.assertEqual(model.preamble, '\n'.join(GLOBALS))
+        self.assert_preamble('\n'.join(GLOBALS), model)
+
+    def test_empty_stream(self):
+        self.check_preamble_subtest(self._subtest_empty_stream)
+        self.at_subtest(self._subtest_empty_stream_with_helpers)
