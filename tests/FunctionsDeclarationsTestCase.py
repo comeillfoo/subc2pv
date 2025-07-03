@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from typing import Tuple, Generator
-import unittest
 
 from tests.TranslatorCommonTestCase import TranslatorCommonTestCase
 
@@ -53,3 +52,18 @@ class FunctionsDeclarationsTestCase(TranslatorCommonTestCase):
         for name in self._stress_identifiers:
             self._subtest_nullary_function_declarations(name)
         self._subtest_unary_function_declarations(self._stress_test_identifier)
+
+    def _subtest_void_unary_function_declaration(self, name: str,
+            array_specifier: str) -> Generator:
+        tmplt = '__declspec(dllimport) void {}({}{});'
+        for ptype, pvtype in self._types_table.items():
+            if not (not array_specifier):
+                pvtype = 'bitstring'
+            expected = f'let {name}(_p0: {pvtype}, u\'end: channel) = out(u\'end, true).'
+            yield tmplt.format(name, ptype, array_specifier), expected
+
+    def test_single_void_unary_function_declaration_arrays(self):
+        for array_specifier in self._array_specifiers:
+            self.check_single_function_subtests(
+                self._subtest_void_unary_function_declaration,
+                self._stress_test_identifier, array_specifier)

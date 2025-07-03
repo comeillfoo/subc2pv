@@ -34,6 +34,7 @@ class TranslatorCommonTestCase(unittest.TestCase):
             'const short * const': 'bitstring',
             'struct _Struct const * const': 'bitstring',
         }
+        self._array_specifiers = ['', '[]', '[][]', '[6]', '[42][]', '[SIZE]']
         return super().setUp()
 
     def at_subtest(self, subtest: Callable, *args):

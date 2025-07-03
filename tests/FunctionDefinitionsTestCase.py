@@ -26,26 +26,26 @@ class FunctionDefinitionsTestCase(TranslatorCommonTestCase):
                 self._define_empty_nonvoid_nullary_function, funcname, use_void)
 
     def _define_empty_void_unary_function(self, name: str,
-            arr_specifier: str = '') -> Tuple[str, str]:
-        source = 'inline void %s(char x%s) { }' % (name, arr_specifier)
-        pvtype = 'nat' if not arr_specifier else 'bitstring'
+            array_specifier: str = '') -> Tuple[str, str]:
+        source = 'inline void %s(char x%s) { }' % (name, array_specifier)
+        pvtype = 'nat' if not array_specifier else 'bitstring'
         expected = f"let {name}(x: {pvtype}, u'end: channel) = out(u'end, true)."
         return source, expected
 
     def _define_empty_nonvoid_unary_function(self, name: str,
-            arr_specifier: str = '') -> Generator:
+            array_specifier: str = '') -> Generator:
         for rtype, _ in self._types_table.items():
-            source = '__inline__ %s %s(char x%s) { }' % (rtype, name, arr_specifier)
-            pvtype = 'nat' if not arr_specifier else 'bitstring'
+            source = '__inline__ %s %s(char x%s) { }' % (rtype, name, array_specifier)
+            pvtype = 'nat' if not array_specifier else 'bitstring'
             expected = f"let {name}(x: {pvtype}, u'ret: channel, u'end: channel) = out(u'end, true)."
             yield source, expected
 
     def _subtest_unary_function_definitions_no_body(self, funcname: str):
-        for arr_specifier in '', '[]', '[][]', '[6]', '[42][]', '[SIZE]':
+        for array_specifier in self._array_specifiers:
             self.check_single_function_subtest(
-                self._define_empty_void_unary_function, funcname, arr_specifier)
+                self._define_empty_void_unary_function, funcname, array_specifier)
             self.check_single_function_subtests(
-                self._define_empty_nonvoid_unary_function, funcname, arr_specifier)
+                self._define_empty_nonvoid_unary_function, funcname, array_specifier)
 
     def test_no_body_function_definitions(self):
         self._subtest_nullary_function_definitions_no_body(self._stress_test_identifier)
