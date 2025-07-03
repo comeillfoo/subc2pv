@@ -114,14 +114,14 @@ void main(void) { struct A a = {}; struct B b = { .a = a }; }
         return source, expected
 
     def test_struct_or_union_init(self):
-        self.check_single_function_subtest(self, self._subtest_fielded_init_with_single_field)
-        self.check_single_function_subtest(self, self._subtest_fielded_init_with_fields_list)
-        self.check_single_function_subtest(self, self._subtest_fielded_init_with_missed_fields)
-        self.check_single_function_subtest(self, self._subtest_fielded_init_with_single_designator)
-        self.check_single_function_subtest(self, self._subtest_fielded_init_with_missed_designators)
-        self.check_single_function_subtest(self, self._subtest_fielded_init_with_designators)
-        self.check_single_function_subtest(self, self._subtest_fielded_init_mixed)
-        self.check_single_function_subtest(self, self._subtest_nested_structs_init)
+        self.check_single_function_subtest(self._subtest_fielded_init_with_single_field)
+        self.check_single_function_subtest(self._subtest_fielded_init_with_fields_list)
+        self.check_single_function_subtest(self._subtest_fielded_init_with_missed_fields)
+        self.check_single_function_subtest(self._subtest_fielded_init_with_single_designator)
+        self.check_single_function_subtest(self._subtest_fielded_init_with_missed_designators)
+        self.check_single_function_subtest(self._subtest_fielded_init_with_designators)
+        self.check_single_function_subtest(self._subtest_fielded_init_mixed)
+        self.check_single_function_subtest(self._subtest_nested_structs_init)
 
 
     def _subtest_array_declaration(self) -> Tuple[str, str]:
