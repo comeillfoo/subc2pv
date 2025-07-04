@@ -8,7 +8,7 @@ class FunctionsDeclarationsTestCase(TranslatorCommonTestCase):
     def _declare_void_nullary_function(self, name: str,
                                        use_void: bool = False) -> Tuple[str, str]:
         source = f'static _Noreturn inline void {name}({"void" if use_void else ""});'
-        return source, f'let {name}(u\'end: channel) = out(u\'end, true).'
+        return source, f"let {name}(u'end: channel) = out(u'end, true)."
 
     def _declare_nonvoid_nullary_function(self, name: str,
                                           use_void: bool = False) -> Generator:
@@ -27,14 +27,14 @@ class FunctionsDeclarationsTestCase(TranslatorCommonTestCase):
     def _declare_void_unary_function(self, name: str, anon: bool) -> Generator:
         tmplt = 'void {}({});'
         for ptype, pvtype in self._types_table.items():
-            param_name = '_p0' if anon else f'arg_{name}'
+            param_name = "u'p0" if anon else f'arg_{name}'
             param = ptype + ('' if anon else f' {param_name}')
-            expected = f'let {name}({param_name}: {pvtype}, u\'end: channel) = out(u\'end, true).'
+            expected = f"let {name}({param_name}: {pvtype}, u'end: channel) = out(u'end, true)."
             yield tmplt.format(name, param), expected
 
     def _declare_nonvoid_unary_function(self, name: str, anon: bool) -> Generator:
         tmplt = 'static {} %s({});' % (name)
-        pname = '_p0' if anon else f'arg_{name}'
+        pname = "u'p0" if anon else f'arg_{name}'
         for rtype, rpvtype in self._types_table.items():
             for ptype, ppvtype in self._types_table.items():
                 param = ptype + ('' if anon else f' {pname}')
@@ -59,7 +59,7 @@ class FunctionsDeclarationsTestCase(TranslatorCommonTestCase):
         for ptype, pvtype in self._types_table.items():
             if not (not array_specifier):
                 pvtype = 'bitstring'
-            expected = f'let {name}(_p0: {pvtype}, u\'end: channel) = out(u\'end, true).'
+            expected = f"let {name}(u'p0: {pvtype}, u'end: channel) = out(u'end, true)."
             yield tmplt.format(name, ptype, array_specifier), expected
 
     def test_single_void_unary_function_declaration_arrays(self):

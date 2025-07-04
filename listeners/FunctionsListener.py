@@ -1,7 +1,7 @@
 from typing import Union, Iterable, Optional, Any
 from functools import reduce
 
-from helpers import Parameter, list_pop_n, list_extended
+from helpers import Parameter, list_pop_n, list_extended, shadow_name
 from objects_counters import ObjectsGroupCounter
 from libs.SubCParser import SubCParser
 from listeners.StatementsListener import StatementsListener
@@ -20,7 +20,7 @@ FUN_MACRO_TMPLT: str = 'let {}({}) = {}.'
 
 
 def anonymous_args(types: Iterable[str]) -> Iterable[Parameter]:
-    return [(_type, f'_p{i}') for i, _type in enumerate(types)]
+    return [(_type, shadow_name(f'p{i}')) for i, _type in enumerate(types)]
 
 def arg2pv(param: Parameter) -> str:
     _type, name = param
